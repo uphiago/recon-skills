@@ -6,27 +6,21 @@
 
 ---
 
-## 📦 What's Inside
+## 📦 What's Inside (144 skills)
 
 ```
 recon-skills/
-├── SOUL.md          — Philosophy & agent operating instructions
-├── AGENTS.md        — Complete catalog + HARDLINE skill standards
-└── skills/
-    ├── recon/       (22)  — WordPress recon, CORS, XMLRPC, source leaks, JS secrets, web enum, email sec
-    ├── meta/        (6)   — Recon playbook, sector methodology, attack patterns, wave delta, google dorks
-    ├── chains/      (2)   — Cross-attack chaining, WordPress full compromise
-    ├── redteam/     (104) — 51 hunt-* skills + 27 sector recon + methodology + operations + infra
-    ├── auth/        (1)   — SAML SSO attacks
-    ├── infra/       (1)   — Docker privilege escalation
-    ├── apple/       (4)   — iMessage, Notes, FindMy, Reminders
-    ├── creative/    (17)  — ASCII art, diagrams, video, p5js, excalidraw, comfyui
-    ├── mlops/       (6)   — HF hub, llama.cpp, vLLM, evaluation, wandb
-    ├── github/      (6)   — PR workflow, code review, issues, repo management
-    ├── research/    (5)   — arXiv, blogwatcher, LLM wiki, polymarket
-    ├── productivity (9)   — Airtable, Google Workspace, Notion, PowerPoint, OCR
-    ├── dev/         (10)  — TDD, debug, code review, skill authoring
-    └── other        (~20) — Email, media, data science, notes, automation
+├── SOUL.md                  — Philosophy & agent operating instructions
+├── AGENTS.md                — Complete catalog + HARDLINE skill standards
+├── recon/          (24)     — WordPress/CORS/XMLRPC recon, source leaks, JS secrets, web enum, email sec, staging hunt, port scans
+├── redteam/        (104)    — 51 hunt-* (xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, k8s, etc) + 24 sector recon + 29 methodology/ops
+├── meta/           (6)      — Recon playbook, sector methodology, attack patterns, wave delta, google dorks, pentest playbook
+├── chains/         (2)      — Cross-attack chaining, WordPress full compromise
+├── auth/           (1)      — SAML SSO attacks
+├── infra/          (1)      — Docker privilege escalation
+├── attacks/        (2)      — Flask Werkzeug debugger RCE
+├── agentiko-hermes/        — Hermes agent operating spec
+└── agentiko-worker/         — Worker runtime spec + references
 ```
 
 ## 🔥 Key Skills
