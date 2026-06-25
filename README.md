@@ -1,4 +1,4 @@
-# 🛡️ agentiko — Recon & Pentest Skill Pack
+# 🛡️ Recon & Pentest Skill Pack
 
 **212 skills** for autonomous offensive reconnaissance at scale. Built from **600+ company targets**, **9 waves of field recon**, and a **pentest playbook** validated across government, healthtech, fintech, e-commerce, ISP, and SMB sectors.
 
