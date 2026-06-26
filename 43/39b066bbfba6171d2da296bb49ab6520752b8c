@@ -1,0 +1,20 @@
+recon/proton-mail-verifier/SKILL.md
+  s_fe52c8deaa2fe4::t_0ba3e25a2992f0 295-299,302-304,309,312-314,329-331
+  s_fe52c8deaa2fe4::t_d63299b2b74670 42,44,50-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "4339b066bbfba6171d2da296bb49ab6520752b8c",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
