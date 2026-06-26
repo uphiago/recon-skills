@@ -1,0 +1,19 @@
+README.md
+  s_9d6b26015d42f7::t_40cacf31b08f45 7-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "631cb14a77b37d1846f967171fb4fad681870f08",
+  "prompts": {},
+  "sessions": {
+    "s_9d6b26015d42f7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1060f9af0ffe5fAaIQRtSwckUQ",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "agentiko <hiago@agentiko>"
+    }
+  }
+}
