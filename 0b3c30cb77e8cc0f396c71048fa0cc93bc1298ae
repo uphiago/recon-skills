@@ -1,0 +1,19 @@
+recon/llm-prompt-injection/SKILL.md
+  s_fe52c8deaa2fe4::t_398b932c9e877a 1-359
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "0b3c30cb77e8cc0f396c71048fa0cc93bc1298ae",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}

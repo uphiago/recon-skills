@@ -1,0 +1,19 @@
+recon/wp-plugin-rest-auth-bypass/SKILL.md
+  s_fe52c8deaa2fe4::t_7193aae7e4c2fa 187,189,191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "681b9836b6e409ae76bfe71f61c2545ad4745a2c",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
