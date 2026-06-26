@@ -125,7 +125,3 @@ Each skill directory has a `SKILL.md` with:
 ## 📄 License
 
 MIT — Use freely, contribute back.
-
----
-
-*Generated from **11 rounds** of field reconnaissance across **600+ company targets**. Updated: 2026-06-24.*
