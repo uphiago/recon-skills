@@ -117,7 +117,7 @@ Each skill directory has a `SKILL.md` with:
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=uphiago/recon-skills&type=Date&theme=dark" />
       <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=uphiago/recon-skills&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=uphiago/recon-skills&type=Date" width="600" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=uphiago/recon-skills&type=Date" width="100%" />
     </picture>
   </a>
 </p>
