@@ -1,0 +1,21 @@
+redteam/hunt-csrf/SKILL.md
+  s_6fa4023c79443c::t_73a1369818463b 12-40
+recon/js-secrets-extraction/SKILL.md
+  s_6fa4023c79443c::t_34fb8de8c7685e 181-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "809e73ef558621ea293232241c8e64f72703c154",
+  "prompts": {},
+  "sessions": {
+    "s_6fa4023c79443c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_10f1a4587ffeP9P7ChjJ3uRRjC",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
