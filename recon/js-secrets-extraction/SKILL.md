@@ -178,14 +178,15 @@ grep -oP '["\x60]/api/v1/[a-zA-Z0-9_\-/]+["\x60]' /tmp/*.js
 ```
 
 ### Real Field Patterns
-| Pattern | Platform | Example |
-|---------|----------|---------|
-| `*.fly.dev` | Fly.io | `ht-prod-backend.fly.dev` |
-| `*.azurewebsites.net` | Azure | `consigpro-api-prod-dhe6gxheawgsdwa4.brazilsouth-01.azurewebsites.net` |
-| `*.onrender.com` | Render | `clickcity-api.onrender.com` |
-| `*.supabase.co` | Supabase | `jxhvjufqtabpeieyhkgk.supabase.co` |
-| `*.r2.dev` | Cloudflare R2 | `pub-e6b3a81c11f34269a2cf310e36da33e9.r2.dev` |
-| `functions/v1/*` | Supabase Edge | `provision-openrouter-key`, `welcome-email` |
+| Pattern | Platform | Example | Secret? |
+|---------|----------|---------|---------|
+| `*.fly.dev` | Fly.io | `ht-prod-backend.fly.dev` | ✅ Backend URL |
+| `*.azurewebsites.net` | Azure | `consigpro-api-prod-...` | ✅ Backend URL |
+| `*.onrender.com` | Render | `clickcity-api.onrender.com` | ✅ Backend URL |
+| `*.supabase.co` | Supabase | `jxhvjufqtabpeieyhkgk.supabase.co` | ✅ Anon key is public; backend URL is intel |
+| `*.r2.dev` | Cloudflare R2 | `pub-xxx.r2.dev` | ✅ Storage URL |
+| `functions/v1/*` | Supabase Edge | `provision-openrouter-key` | ✅ Endpoint name |
+| `dpl_*` | Vercel DPL | `dpl_BCoyPsxxYLZ...` | ❌ **NOT a secret** — public deploy ID |
 
 ## Verification
 

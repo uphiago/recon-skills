@@ -9,6 +9,35 @@ report_count: 15
 
 Use when the target has any state-changing endpoint that a logged-in user can trigger — POST/PUT/DELETE on account settings, email changes, social account linking, OAuth flows, API calls, or file operations. CSRF exploits the trust a site has in a user's browser by forging cross-origin requests. Every form submission, AJAX call, OAuth callback, and API mutation is a candidate. Highest-value targets: account takeover vectors (OAuth/SSO flows, social account linking), authentication infrastructure (login CSRF, session fixation), JSON APIs accepting cross-origin POST, and third-party integrations (Grafana, monitoring dashboards).
 
+### ⚠️ CRITICAL: curl ≠ browser. Model the browser security model.
+
+**CSRF PoC MUST work in a real browser, not just curl.** The browser enforces rules that curl ignores:
+
+| Browser Rule | curl Behavior | Real CSRF Impact |
+|-------------|---------------|-----------------|
+| `SameSite=Lax` | curl sends cookie anyway | **Blocks cookie on cross-site POST** — no CSRF |
+| `SameSite=Strict` | curl sends cookie anyway | **Blocks cookie on all cross-site requests** — no CSRF |
+| CORS preflight | curl skips OPTIONS | Browser blocks if `Content-Type: application/json` |
+| `Sec-Fetch-Site: cross-site` | curl doesn't send | Server can reject cross-site requests via this header |
+
+**CSRF verification checklist:**
+1. ✅ Endpoint changes state (POST/PUT/DELETE)
+2. ✅ Cookie has `SameSite=None` OR `SameSite=Lax` with GET-based action
+3. ✅ No custom CSRF token/header required
+4. ✅ PoC works from a **different origin in a real browser**
+
+**If step 2 fails (SameSite=Lax on POST endpoint) → NOT exploitable CSRF via curl alone.** SameSite=Lax allows cookies on top-level navigation GET, not cross-site POST. A curl POST succeeding with the cookie is a **false positive** — the browser would block it.
+
+**SameSite cheat sheet:**
+| Cookie Attribute | Browser sends cookie on... |
+|-----------------|---------------------------|
+| `SameSite=None` | All cross-site requests (needs `Secure`) |
+| `SameSite=Lax` | Cross-site GET (top-level nav only). **Blocks POST** |
+| `SameSite=Strict` | Same-site only. Blocks everything cross-site |
+| Not set (default) | Treated as `Lax` in modern browsers |
+
+---
+
 ## Crown Jewel Targets
 
 CSRF becomes high-value when it touches **state-changing actions with account-level or financial consequences**. The highest-paying targets are:
