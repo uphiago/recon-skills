@@ -1,0 +1,38 @@
+recon/js-secrets-extraction/SKILL.md
+  s_6fa4023c79443c::t_fa9cadc1d0641f 162-189
+README.md
+  s_6fa4023c79443c::t_14f2ae69ca496a 11,18
+  s_6fa4023c79443c::t_968e92c2e6d668 63,65
+  s_6fa4023c79443c::t_4c8332856192b9 3
+  s_6fa4023c79443c::t_4c2330ddbbde34 44-47
+  s_6fa4023c79443c::t_815ac151e2a64a 71-72
+redteam/hunt-business-logic/SKILL.md
+  s_6fa4023c79443c::t_14cfb1edc3bbe3 237-277
+redteam/hunt-supabase/SKILL.md
+  s_6fa4023c79443c::t_ea93608e5e706f 360-391
+redteam/hunt-metrics-exposure/SKILL.md
+  s_6fa4023c79443c::t_f4c26c3b48ad87 1-2,4-104
+  s_6fa4023c79443c::t_c52c3481b2aa08 3
+redteam/hunt-write-gap/SKILL.md
+  s_6fa4023c79443c::t_803b20a1301e1f 1-2,4-114
+  s_6fa4023c79443c::t_77c12b8203412e 3
+redteam/hunt-schema-enumeration/SKILL.md
+  s_6fa4023c79443c::t_51d02a135bb318 3
+  s_6fa4023c79443c::t_1100d716b60738 1-2,4-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "e79c552a81bbdea8d7bb0e6e0901f6989e0d5d22",
+  "prompts": {},
+  "sessions": {
+    "s_6fa4023c79443c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_10f1a4587ffeP9P7ChjJ3uRRjC",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
