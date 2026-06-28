@@ -2,7 +2,7 @@
 name: api-noauth-hunt
 description: Exploit no-auth APIs for data theft and CRUD via probes.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

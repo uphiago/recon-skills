@@ -2,7 +2,7 @@
 name: cross-attack-chains
 description: Chain multiple vulns into critical impact attack paths.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

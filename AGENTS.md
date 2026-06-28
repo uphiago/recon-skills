@@ -253,7 +253,7 @@ Every skill MUST meet these standards. Reviewers reject PRs that violate them.
 name: skill-name
 description: One sentence, <=60 chars, ends with period. No marketing words.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 metadata:

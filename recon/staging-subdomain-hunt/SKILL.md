@@ -2,7 +2,7 @@
 name: staging-subdomain-hunt
 description: Hunt staging via crt.sh when production is WAF-hardened.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

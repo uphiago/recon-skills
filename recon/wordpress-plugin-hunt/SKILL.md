@@ -2,7 +2,7 @@
 name: wordpress-plugin-hunt
 description: Hunt WP plugins via REST, exploit CVEs when version known.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

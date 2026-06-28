@@ -2,7 +2,7 @@
 name: docker-privesc
 description: Escape Docker containers to host root via 5 techniques.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3)

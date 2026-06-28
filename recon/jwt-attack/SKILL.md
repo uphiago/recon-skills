@@ -2,7 +2,7 @@
 name: jwt-attack
 description: Decode, forge, brute JWTs when Bearer auth header is seen.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

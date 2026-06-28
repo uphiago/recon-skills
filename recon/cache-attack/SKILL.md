@@ -2,7 +2,7 @@
 name: cache-attack
 description: Poison CDN cache or deceive when X-Cache header is detected.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

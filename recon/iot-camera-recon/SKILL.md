@@ -2,7 +2,7 @@
 name: iot-camera-recon
 description: Attack cameras via RTSP, ONVIF, Axis config when 554 open.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

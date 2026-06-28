@@ -2,7 +2,7 @@
 name: phpinfo-to-rce
 description: Chain phpinfo to RCE via exec check when info.php exposed.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

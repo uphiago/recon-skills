@@ -2,7 +2,7 @@
 name: sector-recon-methodology
 description: Pick sectors, compile targets, batch recon for campaigns.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)
@@ -297,7 +297,7 @@ When creating a new sector-specific recon skill, use this template:
 name: recon-SECTORNAME
 description: Reconnaissance workflow for SECTOR NAME companies.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 metadata:

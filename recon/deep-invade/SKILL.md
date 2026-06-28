@@ -2,7 +2,7 @@
 name: deep-invade
 description: Deep pentest WP: SSRF, plugin CVE, JS mine, port scan chain.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

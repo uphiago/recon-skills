@@ -1,21 +1,21 @@
 # 🛡️ Recon & Pentest Skill Pack
 
-**144 skills** for autonomous offensive reconnaissance at scale. Built from **600+ company targets**, **11 rounds of field recon**, and a **pentest playbook** validated across government, healthtech, fintech, e-commerce, ISP, and SMB sectors.
+**148 skills** for autonomous offensive reconnaissance at scale. Built from **600+ company targets**, **12 rounds of field recon**, and a **pentest playbook** validated across government, healthtech, fintech, e-commerce, ISP, and SMB sectors.
 
-> 📖 **Blog & research**: [hiago.sh](https://hiago.sh) — Pentest Playbook, field notes, and tooling.
+> 📖 **Blog & research**: [uphiago](https://uphiago) — Pentest Playbook, field notes, and tooling.
 
 
 
 ---
 
-## 📦 What's Inside (144 skills)
+## 📦 What's Inside (148 skills)
 
 ```
 recon-skills/
 ├── SOUL.md                  — Philosophy & agent operating instructions
 ├── AGENTS.md                — Complete catalog + HARDLINE skill standards
 ├── recon/          (24)     — WordPress/CORS/XMLRPC recon, source leaks, JS secrets, web enum, email sec, staging hunt, port scans
-├── redteam/        (104)    — 51 hunt-* (xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, k8s, etc) + 24 sector recon + 29 methodology/ops
+├── redteam/        (107)    — 54 hunt-* (xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, schema-enum, write-gap, metrics, k8s, etc) + 24 sector recon + 29 methodology/ops
 ├── meta/           (6)      — Recon playbook, sector methodology, attack patterns, wave delta, google dorks, pentest playbook
 ├── chains/         (2)      — Cross-attack chaining, WordPress full compromise
 ├── auth/           (1)      — SAML SSO attacks
@@ -41,7 +41,10 @@ recon-skills/
 | **meta** | `cross-wave-delta-analysis` | Compare waves → NEW / REGRESSION / PERSISTENT / CHANGE |
 | **meta** | `sector-recon-methodology` | Tier-based sector selection + per-sector vulnerability baselines |
 | **meta** | `google-dorks-catalog` | 100+ dork patterns by service type + GitHub code search |
-| **redteam** | `hunt-*` (51 skills) | One per vuln class: xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, k8s, llm-ai, etc |
+| **redteam** | `hunt-*` (54 skills) | One per vuln class: xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, schema-enum, write-gap, metrics, k8s, llm-ai, etc |
+| **redteam** | `hunt-schema-enumeration` | API error hint enumeration — discover hidden tables via PostgREST/Zod/FastAPI validation leaks |
+| **redteam** | `hunt-write-gap` | Read-protected but write-open endpoints — PATCH/POST/DELETE privilege escalation |
+| **redteam** | `hunt-metrics-exposure` | Public /metrics, /health, actuator — AI usage, DB pools, operational intel |
 | **redteam** | `parallel-recon-triad` | 3 parallel subagents every 20min: Deep Invade + Expand + Skill Evolution |
 | **redteam** | `ops-proxyns` | Kernel-level proxy via network namespaces — Tor for all traffic |
 | **redteam** | `cloud-iam-deep` | AWS/GCP/Azure IAM enumeration, SA key abuse, Cloud Run, Artifact Registry |
@@ -57,16 +60,16 @@ recon-skills/
 | Attack patterns cataloged | **25** (P-01 to P-25) |
 | WP abuse patterns | **18** (WP-01 to WP-18) |
 | Attack chains confirmed | **10** |
-| Recon rounds completed | **11** |
+| Recon rounds completed | **12** |
 | Executable scripts | **48** (40 .py, 7 .sh, 1 .js) |
-| Hunt skills expanded (2025-2026) | **7** (smuggling, mfa, saml, ato, api, llm, race) |
+| Hunt skills expanded (2025-2026) | **10** (schema-enum, write-gap, metrics, smuggling, mfa, saml, ato, api, llm, race) |
 
 ### Finding Distribution
 
 | Severity | Count | Common Patterns |
 |----------|-------|-----------------|
-| Critical | 8 | MySQL exposed, PHPInfo + open reg, CORS + XMLRPC + upload → RCE |
-| High | 24 | CORS credential reflection, XMLRPC multicall, staging takeover |
+| Critical | 14 | RLS write gap (tier upgrade, balance injection), MySQL exposed, PHPInfo + open reg, CORS + XMLRPC + upload → RCE, price tampering |
+| High | 30 | CORS credential reflection, XMLRPC multicall, staging takeover, schema enumeration, metrics exposure |
 | Medium | 18 | WP user enum, WooCommerce API, plugin version disclosure |
 
 ### Top Patterns by Sector

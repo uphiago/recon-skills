@@ -2,7 +2,7 @@
 name: attack-patterns-reference
 description: "Catalog: 25 attacks, 18 WP, 8 CORS to match findings."
 version: 1.1.0
-author: agentiko
+author: uphiago
 license: MIT
 metadata:
   hermes:

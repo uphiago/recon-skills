@@ -2,7 +2,7 @@
 name: wp-mass-recon
 description: Batch WP recon: users, CORS, XMLRPC, leaks across domains.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

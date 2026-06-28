@@ -2,7 +2,7 @@
 name: error-log-mining
 description: Mine error_log for creds, paths, SQL when leak hunt finds.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

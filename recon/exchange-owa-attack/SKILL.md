@@ -2,7 +2,7 @@
 name: exchange-owa-attack
 description: Exchange/OWA NTLM AD leak, spray attack when mail subdomain.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

@@ -2,7 +2,7 @@
 name: cross-wave-delta-analysis
 description: Compare recon waves to find NEW, REGRESSED, PERSISTENT findings.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 tags: [meta, wave, delta, comparison, analysis]
 category: meta

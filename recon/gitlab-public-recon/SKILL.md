@@ -2,7 +2,7 @@
 name: gitlab-public-recon
 description: Mine GitLab for secrets, CI tokens when subdomain found.
 version: 1.0.0
-author: agentiko
+author: uphiago
 license: MIT
 platforms: [linux]
 compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)

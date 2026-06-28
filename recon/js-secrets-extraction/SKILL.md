@@ -159,6 +159,34 @@ for js_url in js_urls:
 | False positive matches | Validate keys by testing API endpoint |
 | Rate limiting | Add delays between bundle downloads |
 
+---
+
+## Backend URL Discovery
+
+JS bundles frequently leak production backend URLs, enabling direct API attacks bypassing CDN/WAF:
+
+```bash
+# Platform-specific backend URL patterns
+grep -oP 'https?://[a-zA-Z0-9.\-]+\.(fly\.dev|azurewebsites\.net|onrender\.com|vercel\.app|netlify\.app)[^"'\'' ]{0,40}' /tmp/*.js
+grep -oP 'https?://[a-zA-Z0-9.\-]+\.(supabase\.co|r2\.dev|blob\.vercel-storage\.com)[^"'\'' ]{0,40}' /tmp/*.js
+
+# Edge function URLs
+grep -oP 'functions/v1/[a-zA-Z0-9_\-]+' /tmp/*.js
+
+# Internal API paths
+grep -oP '["\x60]/api/v1/[a-zA-Z0-9_\-/]+["\x60]' /tmp/*.js
+```
+
+### Real Field Patterns
+| Pattern | Platform | Example |
+|---------|----------|---------|
+| `*.fly.dev` | Fly.io | `ht-prod-backend.fly.dev` |
+| `*.azurewebsites.net` | Azure | `consigpro-api-prod-dhe6gxheawgsdwa4.brazilsouth-01.azurewebsites.net` |
+| `*.onrender.com` | Render | `clickcity-api.onrender.com` |
+| `*.supabase.co` | Supabase | `jxhvjufqtabpeieyhkgk.supabase.co` |
+| `*.r2.dev` | Cloudflare R2 | `pub-e6b3a81c11f34269a2cf310e36da33e9.r2.dev` |
+| `functions/v1/*` | Supabase Edge | `provision-openrouter-key`, `welcome-email` |
+
 ## Verification
 
 ```bash
