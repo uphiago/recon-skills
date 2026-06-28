@@ -2,7 +2,7 @@
 
 **148 skills** for autonomous offensive reconnaissance at scale. Built from **600+ company targets**, **12 rounds of field recon**, and a **pentest playbook** validated across government, healthtech, fintech, e-commerce, ISP, and SMB sectors.
 
-> 📖 **Blog & research**: [uphiago](https://uphiago) — Pentest Playbook, field notes, and tooling.
+> 📖 **Blog & research**: [hiago.sh](https://hiago.sh) — Pentest Playbook, field notes, and tooling.
 
 
 
