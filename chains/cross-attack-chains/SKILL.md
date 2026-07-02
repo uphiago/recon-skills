@@ -5,7 +5,7 @@ version: 1.0.0
 author: uphiago
 license: MIT
 platforms: [linux]
-compatibility: Requires agentiko worker (curl, nmap, python3, masscan, subfinder, httpx, nuclei)
+compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
 disable-model-invocation: true
 metadata:
   hermes:

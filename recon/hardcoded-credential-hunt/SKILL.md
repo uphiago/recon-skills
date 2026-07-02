@@ -5,7 +5,7 @@ version: 1.0.0
 author: uphiago
 license: MIT
 platforms: [linux]
-compatibility: Requires agentiko worker (curl, python3)
+compatibility: Requires curl, python3
 metadata:
   hermes:
     tags: [recon, password, credential, hardcoded, HTML, javascript, API]

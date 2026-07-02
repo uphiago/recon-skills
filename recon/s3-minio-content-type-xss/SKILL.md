@@ -5,7 +5,7 @@ version: 1.0.0
 author: uphiago
 license: MIT
 platforms: [linux]
-compatibility: Requires agentiko worker (curl, python3, awscli)
+compatibility: Requires curl, python3, awscli
 metadata:
   hermes:
     tags: [recon, S3, MinIO, bucket, XSS, Content-Type, cloud, storage]

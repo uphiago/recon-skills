@@ -5,7 +5,7 @@ version: 1.0.0
 author: uphiago
 license: MIT
 platforms: [linux]
-compatibility: Requires agentiko worker (curl, nmap, python3)
+compatibility: Requires curl, nmap, python3
 metadata:
   hermes:
     tags: [recon, SCADA, Hikvision, ISAPI, IoT, camera, RTSP, ONVIF, industrial]
