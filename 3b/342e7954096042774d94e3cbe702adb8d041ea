@@ -1,0 +1,25 @@
+recon/s3-minio-content-type-xss/SKILL.md
+  s_fe52c8deaa2fe4::t_26bffaa296f724 1-170
+recon/scada-hikvision-isapi/SKILL.md
+  s_fe52c8deaa2fe4::t_716000af997a3d 1-219
+recon/hardcoded-credential-hunt/SKILL.md
+  s_fe52c8deaa2fe4::t_3c3564c596cb1d 1-167
+recon/unauth-api-flow-hijack/SKILL.md
+  s_fe52c8deaa2fe4::t_01b407eee6aef7 1-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "3b342e7954096042774d94e3cbe702adb8d041ea",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
