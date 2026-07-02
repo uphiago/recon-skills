@@ -1,0 +1,33 @@
+redteam/parallel-recon-triad/references/cron-template.md
+  s_fe52c8deaa2fe4::t_b3124133d0f0e8 118
+redteam/parallel-recon-triad/SKILL.md
+  s_fe52c8deaa2fe4::t_a4d89e058ee112 176
+  s_fe52c8deaa2fe4::t_314b01ec99bc57 152
+  s_fe52c8deaa2fe4::t_5c11204a6c32ec 564
+  s_fe52c8deaa2fe4::t_1c6dac251e6b7b 612
+meta/recon-playbook/SKILL.md
+  s_fe52c8deaa2fe4::t_9c557b165fe57c 34
+redteam/parallel-recon-triad/references/skill-catalog.md
+  s_fe52c8deaa2fe4::t_447c257d0bd4b3 230
+  s_fe52c8deaa2fe4::t_f9eb51982a2709 256
+  s_fe52c8deaa2fe4::t_d55a4c4c6b6003 245
+  s_fe52c8deaa2fe4::t_ddc0c84112a498 3
+  s_fe52c8deaa2fe4::t_69e644330bac1d 1
+  s_fe52c8deaa2fe4::t_a5492a21f48de3 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "cba62814c4feb548553cde82b6b68a5dd4790074",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
