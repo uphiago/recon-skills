@@ -1,0 +1,22 @@
+README.md
+  s_fe52c8deaa2fe4::t_f36d4d01e66a32 3
+  s_fe52c8deaa2fe4::t_90a6e971a2990f 48-51
+  s_fe52c8deaa2fe4::t_5afbe188d7b137 11
+  s_fe52c8deaa2fe4::t_765b5b565f065c 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "9522c656c604f51e05f52c88dfcaef63cd10f982",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
