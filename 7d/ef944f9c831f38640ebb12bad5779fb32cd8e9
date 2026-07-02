@@ -1,0 +1,21 @@
+README.md
+  s_fe52c8deaa2fe4::t_8c4487f4876d08 11
+  s_fe52c8deaa2fe4::t_0e46348feb20b7 17-18
+  s_fe52c8deaa2fe4::t_ed79c6ed303aca 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "7def944f9c831f38640ebb12bad5779fb32cd8e9",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
