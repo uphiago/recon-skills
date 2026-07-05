@@ -194,3 +194,49 @@ done | sort -t: -k2 -rn
 - Every `.git/config` leak MUST contain `[core]` section header.
 - Every SQL backup MUST contain DDL (`CREATE TABLE`) or DML (`INSERT INTO`) statements.
 - Log all verified leaks with timestamp and HTTP response size.
+
+### Phase 6 — Backup File Discovery
+
+```bash
+# bfac — multi-level backup file detection
+bfac --url https://target.com \
+  --detection-technique all \
+  --level 3 \
+  --exclude-status-codes 404,500
+
+# Wayback Machine — historical sensitive files
+waybackurls https://target.com | grep -iE \
+  "\.(xls|xlsx|csv|sql|db|bak|backup|old|tar\.gz|tgz|zip|7z|rar|pdf|pem|key|crt|env|json|yml|yaml|conf|config|git|htpasswd|log|dump|DS_Store)" \
+  | sort -u > sensitive_wayback.txt
+
+# Check which are still accessible
+cat sensitive_wayback.txt | httpx -silent -mc 200 -o accessible_sensitive.txt
+
+# Common backup patterns to probe
+for ext in bak old backup zip tar.gz tgz sql dump; do
+  curl -skI "https://target.com/backup.$ext" | head -1
+  curl -skI "https://target.com/site.$ext" | head -1
+  curl -skI "https://target.com/target.$ext" | head -1
+done
+```
+
+### Phase 7 — Google Services Leak Dorking
+
+```bash
+# Google Sheets — internal spreadsheets often left public
+# Manual search:
+# site:docs.google.com/spreadsheets "target.com"
+# site:docs.google.com/spreadsheets "@target.com"
+# site:docs.google.com/spreadsheets "password" "target.com"
+
+# Google Drive files
+# site:drive.google.com "target.com" "confidential"
+
+# Firebase/Firestore URLs in public search results
+# site:firebaseio.com "target.com"
+# site:firestore.googleapis.com "target-app"
+
+# GCP buckets
+# site:storage.googleapis.com "target"
+# site:storage.cloud.google.com "target"
+```

