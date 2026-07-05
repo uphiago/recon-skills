@@ -1,0 +1,29 @@
+redteam/hunt-race-condition/SKILL.md
+  s_fe52c8deaa2fe4::t_0fa3bc5cb9909f 708-745
+redteam/hunt-ssti/SKILL.md
+  s_fe52c8deaa2fe4::t_cdc25866bae81e 215-264
+redteam/hunt-idor/SKILL.md
+  s_fe52c8deaa2fe4::t_68fc387b1682c5 389-414
+redteam/hunt-ssrf/SKILL.md
+  s_fe52c8deaa2fe4::t_e8988318d3007d 453-486
+redteam/hunt-xss/SKILL.md
+  s_fe52c8deaa2fe4::t_88533cb98b76cb 430-461
+redteam/hunt-file-upload/SKILL.md
+  s_fe52c8deaa2fe4::t_5ccbf2b5298a83 153-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b1e0d7f5c6c3328f2b858135f6ec51c884505e77",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
