@@ -77,47 +77,6 @@ recon-skills/
 | High | 30 | CORS credential reflection, XMLRPC multicall, staging takeover, schema enumeration, metrics exposure |
 | Medium | 18 | WP user enum, WooCommerce API, plugin version disclosure |
 
-### Top Patterns by Sector
-
-| Sector | Vuln Rate | Top Finding |
-|--------|-----------|-------------|
-| Law Firms | ~25% | WP REST API user enumeration |
-| Landscaping | ~20% | CORS credential reflection |
-| Pool Services | ~20% | CORS + XMLRPC open |
-| Pest Control | ~20% | CORS credential reflection |
-| HVAC/Plumbing | ~14% | CORS + WP user enumeration |
-| Locksmiths | ~33% | WP REST API + XMLRPC |
-| Window Cleaning | ~25% | CORS + XMLRPC |
-| Bakeries | ~18% | Source leaks + CORS wildcard |
-| Septic Services | ~25% | Source leaks + CORS |
-
-## 🚀 Getting Started
-
-```bash
-git clone git@github.com:uphiago/recon-skills.git
-cd recon-skills
-cat SOUL.md          # Read the philosophy
-cat AGENTS.md        # Read the standards & catalog
-ls recon/            # Browse recon skills
-ls redteam/          # Browse hunt skills
-```
-
-Each skill directory has a `SKILL.md` with:
-- When to Use
-- Prerequisites
-- How to Run (copy-paste commands)
-- Procedure (numbered steps with exact commands)
-- Pitfalls
-- Verification
-
-## 🧠 Design Principles
-
-- **Terminal-native** — every command runs via curl, nmap, python3. No browser automation.
-- **Self-contained** — each SKILL.md is a complete operational package.
-- **Field-validated** — techniques confirmed on real targets before shipping.
-- **Chain everything** — one finding is Medium. Two chained is Critical.
-- **Cross-reference, don't duplicate** — hosting tables belong in one place.
-
 ## 📄 License
 
 MIT — Use freely, contribute back.
