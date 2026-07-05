@@ -360,3 +360,63 @@ except: pass" 2>/dev/null
 - Error log MUST contain real PHP errors (not be a generic HTML page).
 - Plugin CVEs MUST be verified against actual version numbers from readme.txt (not just namespace presence).
 - Port scan results MUST be confirmed with banner grab (`nmap -sV`).
+
+### Phase 6 — Nuclei Vulnerability Scanning
+
+Automated CVE and misconfiguration detection across all discovered hosts:
+
+```bash
+# Scan all alive subdomains for known CVEs
+nuclei -l alive_subs.txt \
+  -t nuclei-templates/http/ \
+  -severity critical,high,medium \
+  -H "X-Forwarded-For: 127.0.0.1" \
+  -mhe 4 -rl 30 -es info \
+  -o nuclei_results.txt
+
+# Target exposure templates specifically
+nuclei -l alive_subs.txt \
+  -t nuclei-templates/http/exposures/ \
+  -o nuclei_exposures.txt
+
+# Network-level scans on discovered IPs
+nuclei -l unique_ips.txt \
+  -t nuclei-templates/network/ \
+  -H "X-Forwarded-For: 127.0.0.1" \
+  -mhe 4 -rl 30 -es info
+
+# Scan specific vulnerability classes
+for template in cves exposures misconfiguration technologies takeovers; do
+  nuclei -l alive_subs.txt \
+    -t nuclei-templates/http/$template/ \
+    -severity critical,high \
+    -o nuclei_${template}.txt
+done
+```
+
+### Phase 7 — Tor Proxy Rotation
+
+Route all scanning through Tor to defeat IP-based rate limiting on aggressive targets:
+
+```bash
+# Start Tor service
+sudo systemctl start tor
+
+# Test Tor connectivity
+curl --socks5 127.0.0.1:9050 https://check.torproject.org/
+
+# nuclei through Tor — rotates IP every request
+nuclei -u https://target.com \
+  -p socks5://127.0.0.1:9050 \
+  -t nuclei-templates/http/
+
+# httpx through Tor  
+cat alive_subs.txt | httpx -silent -proxy socks5://127.0.0.1:9050
+
+# curl through Tor
+curl --socks5-hostname 127.0.0.1:9050 https://target.com
+
+# Use proxychains for any tool
+proxychains4 nmap -sT -Pn target.com
+proxychains4 ffuf -u https://target.com/FUZZ -w $WEB_WORDLIST
+```

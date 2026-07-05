@@ -196,3 +196,48 @@ curl -s "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIza..."
 # Test Supabase anon key
 curl -s "https://PROJECT.supabase.co/rest/v1/users?limit=1" -H "apikey: ANON_KEY" -H "Authorization: Bearer ANON_KEY"
 ```
+
+### Phase 5 — Source Map Exploitation
+
+Recover full pre-compiled source code when `.js.map` files are left in production:
+
+```bash
+# Find .map files via Wayback Machine
+curl -s "https://web.archive.org/cdx/search/cdx?url=*.target.com/*&collapse=urlkey&output=text&fl=original&filter=original:.*\.js\.map$" \
+  | sort -u > map_urls.txt
+
+# Download and extract source
+wget https://target.com/static/app.js.map
+node -e "
+const map = require('./app.js.map');
+map.sources.forEach((src, i) => {
+  const fs = require('fs');
+  fs.writeFileSync(src.split('/').pop(), map.sourcesContent[i]);
+});
+print('Extracted ' + map.sources.length + ' source files');
+"
+
+# Quick check: does a JS file have an available map?
+curl -skI "https://target.com/static/app.js.map" | grep "200\|Content-Type"
+```
+
+### Phase 6 — Deep JS Crawling
+
+Crawl JS files recursively for embedded URLs, APIs, and IPs:
+
+```bash
+# lazyegg — crawls JS files for links, APIs, IPs
+python3 lazyegg.py https://target.com
+python3 lazyegg.py https://target.com/js/auth.js
+
+# Combine with waybackurls for deep coverage
+waybackurls target.com \
+  | grep '\.js$' \
+  | awk -F '?' '{print $1}' \
+  | sort -u \
+  | xargs -I{} bash -c 'python3 lazyegg.py "{}" --js_urls --domains --ips' \
+  > lazyegg_output.txt
+
+# subjs — extract JS URLs from any URL list
+cat all_urls.txt | subjs | tee js_files_full.txt
+```
