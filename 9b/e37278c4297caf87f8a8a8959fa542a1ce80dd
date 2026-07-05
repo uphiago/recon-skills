@@ -1,0 +1,31 @@
+recon/visual-recon/SKILL.md
+  s_fe52c8deaa2fe4::t_c61cb5fa300fd8 1-179
+recon/web-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_9bfa3f26a20fa6 258-308
+recon/deep-invade/SKILL.md
+  s_fe52c8deaa2fe4::t_018972a304a4a3 423-457
+recon/cms-detection/SKILL.md
+  s_fe52c8deaa2fe4::t_ab18b0247c711f 1-214
+README.md
+  s_fe52c8deaa2fe4::t_f82b9219a75794 11
+  s_fe52c8deaa2fe4::t_2c8d56e62fe70b 3
+  s_fe52c8deaa2fe4::t_a541f8f827fcce 17
+recon/source-leak-hunt/SKILL.md
+  s_fe52c8deaa2fe4::t_6fb4b821aa80f1 197-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9be37278c4297caf87f8a8a8959fa542a1ce80dd",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
