@@ -64,10 +64,10 @@ for port in 443 8080 8081 8084; do
 done
 ```
 
-**Real-world case (patientportal.com, June 2026):**
+**Real-world case (target-health-saas.com, June 2026):**
 - Main SPA (port 443): 500KB bundle, no source map
 - Admin Portal (port 8080): 1.15MB bundle + **source map at `/static/js/main.a5a4e0fb.js.map`** (HTTP 200)
-- Source map revealed: 1,208 source files, API backend at `https://patientportal.com:8081`, auth services, dashboard APIs, pharmacy/drug/hospital components
+- Source map revealed: 1,208 source files, API backend at `https://target-health-saas.com:8081`, auth services, dashboard APIs, pharmacy/drug/hospital components
 
 ## Admin Portal JS Analysis Pattern
 

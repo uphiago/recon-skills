@@ -19,7 +19,7 @@ metadata:
 
 # Port & Service Discovery Skill
 
-Fast port scanning with nmap to discover exposed services (MySQL, FTP, SSH, SMTP, internal APIs, Redis, MongoDB) on WordPress and web targets. MySQL on port 3306 open to the internet is one of the rarest but most critical findings — confirmed on patientportal.com (healthcare SaaS). Port scanning reveals the infrastructure layer that HTTP-based recon misses.
+Fast port scanning with nmap to discover exposed services (MySQL, FTP, SSH, SMTP, internal APIs, Redis, MongoDB) on WordPress and web targets. MySQL on port 3306 open to the internet is one of the rarest but most critical findings — confirmed on target-health-saas.com (healthcare SaaS). Port scanning reveals the infrastructure layer that HTTP-based recon misses.
 
 ## When to Use
 

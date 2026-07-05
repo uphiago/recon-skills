@@ -17,7 +17,7 @@ metadata:
 
 # GitLab Public Recon Skill
 
-Enumerate publicly accessible GitLab repositories to extract source code, credentials, internal IPs, CI/CD tokens, deployment configurations, and environment files. GitLab instances with registration enabled or public visibility expose the entire development infrastructure. Confirmed on CGE-RJ (3 public repos, 461K CPFs, internal IP 10.11.82.75, CI/CD tokens), ScriptBees (GitLab with SSL private keys), and SMart Fit (Firebase SA keys in repos).
+Enumerate publicly accessible GitLab repositories to extract source code, credentials, internal IPs, CI/CD tokens, deployment configurations, and environment files. GitLab instances with registration enabled or public visibility expose the entire development infrastructure. Confirmed on gov-finance-portal (3 public repos, 461K CPFs, internal IP 10.11.82.75, CI/CD tokens), dev-agency (GitLab with SSL private keys), and fitness-chain (Firebase SA keys in repos).
 
 ## When to Use
 
@@ -222,7 +222,7 @@ fi
 
 ## Real Production Results
 
-### CGE-RJ (gitlab.cge.rj.gov.br)
+### gov-finance-portal (gitlab.cge.rj.gov.br)
 - **3 public repositories**: cge/hdi (Helpdesk system), cge/cnpj-sqlite, cge/exame-front-cge
 - **461,304 CPF records** in `servidores_sigrh.json` (state employee database)
 - `.env.example` with MongoDB host, LDAP config, email server credentials
@@ -231,9 +231,9 @@ fi
 - `.gitlab-ci.yml` with CI/CD tokens and runner configurations
 - Registration OPEN at `/users/sign_up`
 
-### ScriptBees (gitlab.scriptbees.com)
+### dev-agency (gitlab.dev-agency.com)
 - GitLab CE with SSL private keys exposed in repositories
-- Related to Thgroep compromise (same infrastructure)
+- Related to enterprise-portal compromise (same infrastructure)
 
 ### commit history analysis (optional depth)
 ```bash

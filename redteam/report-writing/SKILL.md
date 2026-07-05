@@ -563,7 +563,7 @@ GOOD: "e-commerce target had PHPInfo + XMLRPC -> RCE"
 BAD:  "info@toolking.com exposed via REST API"
 GOOD: "corporate email pattern exposed via REST API"
 
-BAD:  "patientportal.com MySQL 3306 OPEN"
+BAD:  "target-health-saas.com MySQL 3306 OPEN"
 GOOD: "healthcare SaaS target had MySQL 3306 exposed"
 ```
 

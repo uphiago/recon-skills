@@ -19,7 +19,7 @@ Field recon across 600+ domains revealed 8 distinct CORS misconfiguration variat
 |---|-----------|------|------|---------------|------------|
 | V1 | Origin Reflection + Credentials (Classic) | Reflected | true | yardcare.com, restonic.com | W1 |
 | V2 | Null Origin Reflection (Sandboxed Iframe Bypass) | null | true | familydental.com | W6 |
-| V3 | Wildcard (No Credentials) | * | false | patientportal.com, nothingbundtcakes.com | W5 |
+| V3 | Wildcard (No Credentials) | * | false | target-health-saas.com, nothingbundtcakes.com | W5 |
 | V4 | Credentialed Preflight (OPTIONS only) | Reflected on OPTIONS | true on OPTIONS | Multiple WP endpoints | W8 |
 | V5 | Auth-Required Endpoint Leak (401/403 still emit CORS) | Reflected | true | restonic.com gf/v2 | W7 |
 | V6 | Multi-Origin Reflection (any origin works) | Multiple | true | realpro.com | W6 |

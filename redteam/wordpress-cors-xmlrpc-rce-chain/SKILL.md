@@ -244,7 +244,7 @@ curl -sk "https://$TARGET/wp-content/uploads/2026/06/shell.php?cmd=id"
 7. **Chain blocked at upload step** — needs admin escalation or plugin CVE
 8. **Workaround:** ElementsKit CVE-2023-6853 (v2.9.2 installed) handler exists but requires valid nonce
 
-### Target: patientportal.com — No WordPress (Flask/React SPA)
+### Target: target-health-saas.com — No WordPress (Flask/React SPA)
 
 Healthcare SaaS platform — no WordPress present to chain against. Demonstrates that CORS + open API is a different class of target requiring Firebase/Flask exploitation rather than WordPress.
 

@@ -18,7 +18,7 @@ metadata:
 
 # API NoAuth Hunt Skill
 
-Discover and exploit APIs that lack authentication entirely. This is the most impactful vulnerability class confirmed across multiple targets: TSData (59 contracts, full CRUD), Thgroep (1,082 tax clients, 60+ endpoints, CVSS 10.0), SemaMart (34 hospitals, plaintext passwords), Core3 (126,303 clients, 448 employees, Efí Bank API), and CGE-RJ (389 AD users, 200 groups, 6 SQLi).
+Discover and exploit APIs that lack authentication entirely. This is the most impactful vulnerability class confirmed across multiple targets: TSData (59 contracts, full CRUD), enterprise-portal (1,082 tax clients, 60+ endpoints, CVSS 10.0), SemaMart (34 hospitals, plaintext passwords), fintech-processor (126,303 clients, 448 employees, Efí Bank API), and gov-finance-portal (389 AD users, 200 groups, 6 SQLi).
 
 ## When to Use
 
@@ -266,7 +266,7 @@ grep -oP '\b[0-9]{11}\b' "$OUTDIR"/*.json 2>/dev/null | head -5  # CPF (digits o
 - Full CRUD: CREATE new contracts, UPDATE values, DELETE
 - 3 hardcoded credentials in JS: `admin:Egb@2k26`, `linhares:131014`, `viewer:Viewer@2k26`
 
-### Thgroep — thgroep-adam.scriptbees.com
+### enterprise-portal — adam.dev-agency.com
 - Production tax accounting API without ANY authentication
 - 1,082 clients with PII, 479 active tax filings, internal work notes
 - 13 user accounts (bcrypt), 5 cracked passwords
@@ -279,7 +279,7 @@ grep -oP '\b[0-9]{11}\b' "$OUTDIR"/*.json 2>/dev/null | head -5  # CPF (digits o
 - Password reuse pattern: `[Name]7231@` across 15+ accounts
 - Password `password` (literal) used by 5+ accounts
 
-### Core3 — 187.87.34.114:8085
+### fintech-processor — 187.87.34.114:8085
 - Directory listing exposed 108 PHP files
 - IXC token in backup file → bypass IP whitelist via SSRF proxy
 - Login without password validation: any CPF grants full session

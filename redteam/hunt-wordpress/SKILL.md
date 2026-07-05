@@ -1082,7 +1082,7 @@ for path in "/" "/api" "/login" "/admin" "/health" "/swagger.json" "/graphql"; d
 done
 ```
 
-**Field evidence:** patientportal.com had MySQL 8.0.46-0ubuntu0.22.04.3 exposed on port 3306 with `caching_sha2_password` auth. Additionally, port 8084 had an HTTP service with OPTIONS→200 and POST→403 (Forbidden). Port 8082 was discovered via JS bundle (hardcoded `https://patientportal.com:8081` pattern in main.js).
+**Field evidence:** target-health-saas.com had MySQL 8.0.46-0ubuntu0.22.04.3 exposed on port 3306 with `caching_sha2_password` auth. Additionally, port 8084 had an HTTP service with OPTIONS→200 and POST→403 (Forbidden). Port 8082 was discovered via JS bundle (hardcoded `https://target-health-saas.com:8081` pattern in main.js).
 
 ### 12.9 SPA .git/HEAD False Positive — Always Verify Content
 
@@ -1133,7 +1133,7 @@ for js_url in $(grep -oP 'src="[^"]*\.js[^"]*"' /tmp/homepage.html | sed 's/src=
 done
 ```
 
-**Key insight from field recon:** JS bundles on React SPAs often contain hardcoded API backend URLs (e.g., `https://patientportal.com:8081` discovered in main.js bundle — led to a newly discovered API service on port 8081).
+**Key insight from field recon:** JS bundles on React SPAs often contain hardcoded API backend URLs (e.g., `https://target-health-saas.com:8081` discovered in main.js bundle — led to a newly discovered API service on port 8081).
 
 ### 12.7 Port Scan Followup
 

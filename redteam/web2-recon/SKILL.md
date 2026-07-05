@@ -408,7 +408,7 @@ for m in re.findall(r'apiUrl[\"\\']?\s*[:=]\s*[\"\\']([^\"\\']+)[\"\\']', conten
 " 2>/dev/null
 ```
 
-This technique discovered `apiUrl: https://patientportal.com:8081` from a React SPA bundle in field recon, revealing an internal API backend on a non-standard port.
+This technique discovered `apiUrl: https://target-health-saas.com:8081` from a React SPA bundle in field recon, revealing an internal API backend on a non-standard port.
 
 ## GITHUB DORKING FOR TARGET
 
@@ -1084,7 +1084,7 @@ This methodology revealed **12 new findings** across 7 targets in the 4-wave com
 - **realpro.com**: Exchange servers + SSH + VPN portals discovered (not in prior waves)
 - **restonic.com**: CORS credential reflection on ALL endpoints (missed in waves 6-8)
 - **biglots.com**: staging.biglots.com accessible + 20+ internal subdomains leaked
-- **patientportal.com**: Port 8081 open (new); MySQL 3306 still open (4-wave persistence)
+- **target-health-saas.com**: Port 8081 open (new); MySQL 3306 still open (4-wave persistence)
 
 The full comparison table lives in `references/wave9-seven-targets.md`.
 
