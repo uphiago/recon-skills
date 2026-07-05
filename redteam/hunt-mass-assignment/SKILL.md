@@ -1,6 +1,7 @@
 ---
 name: hunt-mass-assignment
 description: Hunt mass assignment via sensitive field injection and ORM framework exploitation.
+category: redteam
 version: 1.0.0
 author: uphiago
 license: MIT

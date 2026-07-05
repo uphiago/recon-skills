@@ -1,6 +1,7 @@
 ---
 name: hunt-broken-function-level-auth
 description: Hunt broken function-level authorization via verb drift, route shadowing, and transport gaps.
+category: redteam
 version: 1.0.0
 author: uphiago
 license: MIT

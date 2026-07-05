@@ -1,6 +1,7 @@
 ---
 name: hunt-information-disclosure
 description: Hunt error leakage, DVCS exposure, source maps, config files, and differential oracles.
+category: redteam
 version: 1.0.0
 author: uphiago
 license: MIT

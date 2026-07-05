@@ -1,6 +1,7 @@
 ---
 name: hunt-nestjs
 description: Hunt NestJS-specific vulnerabilities: guard bypass, decorator gaps, and microservice auth drift.
+category: redteam
 version: 1.0.0
 author: uphiago
 license: MIT

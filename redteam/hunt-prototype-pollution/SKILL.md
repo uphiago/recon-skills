@@ -1,6 +1,7 @@
 ---
 name: hunt-prototype-pollution
 description: Hunt client-side and server-side prototype pollution for XSS, auth bypass, and RCE.
+category: redteam
 version: 1.0.0
 author: uphiago
 license: MIT

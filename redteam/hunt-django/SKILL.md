@@ -1,6 +1,7 @@
 ---
 name: hunt-django
 description: Hunt Django-specific vulnerabilities: DRF permission gaps, ORM injection, and admin exploitation.
+category: redteam
 version: 1.0.0
 author: uphiago
 license: MIT
