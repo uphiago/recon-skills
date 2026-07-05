@@ -1,0 +1,35 @@
+recon/origin-ip-discovery/SKILL.md
+  s_fe52c8deaa2fe4::t_a141950ea25442 1-183
+recon/subdomain-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_09705cc0379feb 274-324
+recon/subdomain-takeover-hunt/SKILL.md
+  s_fe52c8deaa2fe4::t_0932211b1c2f40 1-149
+recon/web-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_7d331a1ed79c53 204-257
+recon/vhost-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_3c0b78187d5c2e 1-164
+recon/asn-infrastructure-mapping/SKILL.md
+  s_fe52c8deaa2fe4::t_12fe78753a820a 1-190
+recon/github-secret-hunting/SKILL.md
+  s_fe52c8deaa2fe4::t_b41dd26feb2fb9 1-194
+recon/deep-invade/SKILL.md
+  s_fe52c8deaa2fe4::t_4c84b92fe430ec 363-422
+recon/js-secrets-extraction/SKILL.md
+  s_fe52c8deaa2fe4::t_b58bc0fe7e9b32 199-243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c8485f806cbf48defaa1808874c04ecac408d8fd",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
