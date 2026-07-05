@@ -386,34 +386,14 @@ Cross-references:
 
 ## Related Skills & Chains
 
-### Phase X — Cross-Channel IDOR (GraphQL/WebSocket/gRPC)
-
-```bash
-# GraphQL IDOR — same mutation, different transport, no REST auth
-curl -sk -X POST "https://target.com/graphql" -H "Content-Type: application/json" \
-  -d '{"query":"mutation { updateUser(id: VICTIM_ID, input: {email: \"attacker@evil.com\"}) { success } }"}'
-
-# WebSocket IDOR — actions over WS may skip REST middleware
-echo '{"type":"UPDATE_ORDER","payload":{"orderId":"VICTIM_ORDER_ID","status":"cancelled"}}' \
-  | wscat -c "wss://target.com/ws"
-
-# gRPC IDOR — reflection exposes internal methods
-grpcurl -plaintext target.com:50051 list
-grpcurl -plaintext target.com:50051 user.UserService/UpdateEmail \
-  -d '{"user_id":"VICTIM_ID","email":"attacker@evil.com"}'
-```
-
-### Phase Y — Cache Key Confusion IDOR
-
-```bash
-# CDN may cache user-specific responses under shared keys
-# Request VICTIM's data → CDN caches under your session → you read cached VICTIM data
-curl -sk "https://target.com/api/profile" -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "X-Forwarded-Host: victim-cache-key"
-```
-
 - **`hunt-auth-bypass`** — Object-level authorization failure plus route-level auth absence is the canonical IDOR-amplifier. Chain primitive: missing `req.user.id` scoping in ORM query + missing middleware on legacy `/v1/` route = unauthenticated cross-tenant data read via direct ID substitution → bulk PII dump without any session at all.
 - **`hunt-ato`** — Profile-edit IDOR is the most direct path from "read someone's data" to "own their account." Chain primitive: `PATCH /api/users/{victim_uid}` accepts attacker's session + victim UID → set `email=attacker@evil.com` → trigger password reset → reset link arrives at attacker → full ATO without ever knowing victim credentials.
 - **`hunt-graphql`** — GraphQL resolvers without field-level authorization are IDOR-by-default; introspection hands you the schema. Chain primitive: `__schema` introspection → enumerate every mutation accepting `id:` argument → substitute victim IDs across `updateUser`, `deleteOrg`, `transferBilling` mutations → mass IDOR fan-out from one introspection query.
 - **`security-arsenal`** — Pull the IDOR Bypass Tables section for HTTP-parameter-pollution payloads (`?id=own&id=victim`), nested-JSON wrappers (`{"data":{"id":"VICTIM"}}`), and parameter-name variations (`uid`/`userId`/`user_id`/`account`) when the first direct substitution returns 403.
 - **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an IDOR that returns 200 but doesn't actually leak data (empty array, redacted fields, "access denied" in body with 200 status). The 200-but-no-data IDOR is the #1 N/A driver on H1/Bugcrowd.
+
+### Phase X — Cross-Channel IDOR
+
+GraphQL IDOR: `mutation { updateUser(id: VICTIM_ID) { success } }` — same action via different transport may skip REST middleware.
+WebSocket IDOR: actions sent over WS may bypass REST authorization entirely.
+Cache key confusion: CDN caches user-specific responses under shared key → cross-user data leak.

