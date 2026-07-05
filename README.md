@@ -118,16 +118,6 @@ Each skill directory has a `SKILL.md` with:
 - **Chain everything** — one finding is Medium. Two chained is Critical.
 - **Cross-reference, don't duplicate** — hosting tables belong in one place.
 
-## ⭐ Star History
-
-<a href="https://www.star-history.com/?type=date&repos=uphiago%2Frecon-skills">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=uphiago/recon-skills&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=uphiago/recon-skills&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=uphiago/recon-skills&type=date&legend=top-left" />
- </picture>
-</a>
-
 ## 📄 License
 
 MIT — Use freely, contribute back.
