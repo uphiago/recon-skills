@@ -1,6 +1,6 @@
 # 🛡️ Recon & Pentest Skill Pack
 
-**162 offensive security skills** for recon and pentest. Field-validated techniques from **600+ company targets** across **45+ sectors**. Updated with browser fingerprint evasion, anti-bot bypass, hardcoded credential hunting, SCADA/ICS enumeration.
+**169 offensive security skills** for recon and pentest. Field-validated techniques from **600+ company targets** across **45+ sectors**. Updated with browser fingerprint evasion, anti-bot bypass, hardcoded credential hunting, SCADA/ICS enumeration.
 
 > 📖 **Blog & research**: [hiago.sh](https://hiago.sh) — Pentest Playbook, field notes, and tooling.
 
@@ -8,14 +8,14 @@
 
 ---
 
-## 📦 What's Inside (162 skills)
+## 📦 What's Inside (169 skills)
 
 ```
 recon-skills/
 ├── SOUL.md                  — Philosophy & agent operating instructions
 ├── AGENTS.md                — Complete catalog + HARDLINE skill standards
 ├── recon/          (41)     — WordPress/CORS/XMLRPC recon, source leaks, JS secrets, web enum, email sec, staging hunt, port scans, hardcoded creds, S3/MinIO XSS, API flow hijack, SCADA Hikvision ISAPI, browser evasion, origin IP discovery, subdomain takeover, vhost enum, GitHub secrets, ASN mapping, visual recon, CMS detection
-├── redteam/        (109)    — 54 hunt-* (xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, schema-enum, write-gap, metrics, k8s, etc) + 24 sector recon + 29 methodology/ops
+├── redteam/        (116)    — 61 hunt-* (xss, sqli, ssrf, rce, ato, idor, cors, firebase, supabase, schema-enum, write-gap, metrics, k8s, mass-assignment, prototype-pollution, bfla, info-disclosure, django, fastapi, nestjs, etc) + 24 sector recon + 29 methodology/ops
 ├── meta/           (6)      — Recon playbook, sector methodology, attack patterns, wave delta, google dorks, pentest playbook
 ├── chains/         (2)      — Cross-attack chaining, WordPress full compromise
 ├── auth/           (1)      — SAML SSO attacks

