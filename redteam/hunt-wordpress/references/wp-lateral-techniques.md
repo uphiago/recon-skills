@@ -18,7 +18,7 @@ decoded = base64.urlsafe_b64decode(payload_enc)
 # Returns: {"user_id":"t_4c6b349d59dbbb7069d0b20edba8ed","exp":1782517304,"iss":"store-api","iat":1782344504}
 ```
 
-**Field finding (restonic.com):** Cart Token decoded to show temporary user ID (`t_*` prefix), 48h expiry, and `store-api` issuer. The token can be reused across requests to interact with cart/checkout endpoints.
+**Field finding (mattress-retailer.com):** Cart Token decoded to show temporary user ID (`t_*` prefix), 48h expiry, and `store-api` issuer. The token can be reused across requests to interact with cart/checkout endpoints.
 
 ## Cart Add-Item with Token
 
@@ -51,7 +51,7 @@ for ns in data.get('namespaces', []):
         print(f"[{ns}] (no route listing)")
 ```
 
-**Key namespaces found in field (restonic.com, 23 total):**
+**Key namespaces found in field (mattress-retailer.com, 23 total):**
 - `restonic/v1` — Custom plugin (retailers, cookie-consent)
 - `wc/store/v1` — 31 routes (cart, checkout, products, reviews, batch)
 - `wc/v3`, `wc/v2`, `wc/v1` — WooCommerce admin API
@@ -69,7 +69,7 @@ for ns in data.get('namespaces', []):
 
 ## Sitemap-Surface Enumeration
 
-page-sitemap.xml can be MASSIVE (43,981 URLs on restonic.com). Don't skip it:
+page-sitemap.xml can be MASSIVE (43,981 URLs on mattress-retailer.com). Don't skip it:
 
 ```python
 import requests, re
@@ -82,7 +82,7 @@ admin_paths = [u for u in urls if any(x in u.lower() for x in ['admin','api','ba
 
 ## Yoast SEO Route Dump (From Field)
 
-All 62 routes discovered from restonic.com's Yoast SEO Premium v27.8:
+All 62 routes discovered from mattress-retailer.com's Yoast SEO Premium v27.8:
 
 ```
 /yoast/v1/file_size

@@ -424,7 +424,7 @@ nuclei on target.com with medium and high severity templates, then summarize
 
 ```
 create a monitor script for these 7 targets:
-wines.com, restonic.com, realpro.com, toolking.com, target-health-saas.com, biglots.com, defy.com
+ecommerce-wine.com, mattress-retailer.com, realestate-platform.com, tools-retailer.com, target-health-saas.com, retail-chain.com, entertainment-franchise.com
 
 Check: HTTP status, WP users, XMLRPC, CORS every run
 Cron: every 1h, script-only

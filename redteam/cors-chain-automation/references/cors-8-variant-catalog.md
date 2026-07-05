@@ -16,7 +16,7 @@ curl -sk -I "https://TARGET/wp-json/wp/v2/users" -H "Origin: https://evil.com" |
 # Expect: ACAO: https://evil.com + ACAC: true
 ```
 **Frequency:** ~7-8% of WP sites | **First seen:** Wave1 | **Impact:** HIGH-CRITICAL
-**Examples:** yardcare.com, restonic.com, wines.com, realpro.com, defy.com, toolking.com, williambrown.com, zenfolio.com, windowmedics.com, completeheatandair.com, hillsong.com, septictank.com, greekmoving.com, leonsautobody.com
+**Examples:** landscaping-service.com, mattress-retailer.com, ecommerce-wine.com, realestate-platform.com, entertainment-franchise.com, tools-retailer.com, legal-firm.com, photography-platform.com, glass-repair.com, hvac-service.com, megachurch-site.com, septic-service.com, moving-service.com, auto-body-shop.com
 
 ### V2 — Null Origin Reflection (Sandboxed Iframe Bypass)
 **ACAO:** `null` | **ACAC:** `true`
@@ -56,7 +56,7 @@ curl -sk -I "https://TARGET/wp-json/gf/v2/forms" -H "Origin: https://evil.com" |
 # 401 HTTP status but CORS headers present = data exfiltratable when admin auth'd
 ```
 **Frequency:** ~100% of CORS-vulnerable sites | **First seen:** Wave7 | **Impact:** HIGH
-**Examples:** restonic.com (gf/v2, solidwp-mail/v1), toolking.com (elementor/v1)
+**Examples:** mattress-retailer.com (gf/v2, solidwp-mail/v1), tools-retailer.com (elementor/v1)
 
 ### V6 — Multi-Origin Reflection
 **ACAO:** Multiple reflected origins work | **ACAC:** `true`
@@ -67,7 +67,7 @@ for origin in "https://evil.com" "https://attacker.com" "https://not-trusted.com
 done
 ```
 **Frequency:** Common | **First seen:** Wave6 | **Impact:** HIGH
-**Examples:** realpro.com
+**Examples:** realestate-platform.com
 
 ### V7 — Plugin-Specific CORS
 **ACAO:** Reflected | **ACAC:** `true` (on plugin REST namespaces only)
@@ -78,7 +78,7 @@ for ep in /wp-json/wp/v2/users /wp-json/gravity-pdf/v1/ /wp-json/solidwp-mail/v1
 done
 ```
 **Frequency:** Varies by plugin | **First seen:** Wave5 | **Impact:** HIGH (plugin-specific data)
-**Examples:** defy.com (gravity-pdf/v1)
+**Examples:** entertainment-franchise.com (gravity-pdf/v1)
 
 ### V8 — Staging-Environment-Only CORS
 **ACAO:** Reflected | **ACAC:** `true` (on staging only, not production)
@@ -88,7 +88,7 @@ curl -sk -I "https://staging.TARGET/wp-json/wp/v2/users" -H "Origin: https://evi
 curl -sk -I "https://TARGET/wp-json/wp/v2/users" -H "Origin: https://evil.com" | grep -iE "access-control"
 ```
 **Frequency:** Unknown (under-tested) | **First seen:** Wave5 | **Impact:** HIGH (depending on staging data)
-**Examples:** staging.biglots.com
+**Examples:** staging.retail-chain.com
 
 ---
 

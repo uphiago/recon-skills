@@ -20,7 +20,7 @@ But: `curl -sI https://example.com/wp-json/wp/v2/users -H "Origin: https://evil.
 **Always test:** `/wp-json/wp/v2/users`, `/wp-json/`, `/wp-json/wp/v2/posts`, `/api/me`, `/api/tokens`
 
 ### 3. Never use `-L` (redirect follow) for probe endpoints
-Redirects hide real 200 responses. Example: `curl -sI -L https://restonic.com/xmlrpc.php` returned non-XML content, but `curl -sI https://restonic.com/xmlrpc.php` (no -L) returned `HTTP/1.1 200 OK` with real XMLRPC content.
+Redirects hide real 200 responses. Example: `curl -sI -L https://mattress-retailer.com/xmlrpc.php` returned non-XML content, but `curl -sI https://mattress-retailer.com/xmlrpc.php` (no -L) returned `HTTP/1.1 200 OK` with real XMLRPC content.
 
 ### 4. Security scanner may block `-k` flag
 Tirith/Ascot security scanners flag `curl -sk` as suspicious when piped to an interpreter. Use `curl -s` without `-k` for HTTPS, or save to file first and read with `head`.
@@ -131,11 +131,11 @@ if __name__ == "__main__":
 - All 15 targets either catch-all or non-WP e-commerce
 
 ### Critical Target Re-Test Deltas
-- **restonic.com:** CORS FIXED on root root (was reflecting), but STILL PRESENT on `/wp-json/` endpoints. XMLRPC still OPEN (80 methods). 3 WP users exposed.
-- **realpro.com:** Same pattern — CORS absent on root, PRESENT on WP REST API. 3 users exposed.
-- **biglots.com:** CORS on `/wp-json/`. XMLRPC was previously blocked but now OPEN again.
-- **wines.com:** CORS FIXED, XMLRPC FIXED, but 10 WP users still enumerable.
-- **toolking.com, defy.com:** All vectors now MITIGATED.
+- **mattress-retailer.com:** CORS FIXED on root root (was reflecting), but STILL PRESENT on `/wp-json/` endpoints. XMLRPC still OPEN (80 methods). 3 WP users exposed.
+- **realestate-platform.com:** Same pattern — CORS absent on root, PRESENT on WP REST API. 3 users exposed.
+- **retail-chain.com:** CORS on `/wp-json/`. XMLRPC was previously blocked but now OPEN again.
+- **ecommerce-wine.com:** CORS FIXED, XMLRPC FIXED, but 10 WP users still enumerable.
+- **tools-retailer.com, entertainment-franchise.com:** All vectors now MITIGATED.
 
 ### Corrected Delta Report
 Saved to: `/root/output/recon_us/deep/RETEST_DELTAS_CORRECTED_20260625T082729Z.md`

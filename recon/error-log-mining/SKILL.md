@@ -18,7 +18,7 @@ metadata:
 
 # Error Log Mining Skill
 
-Discover and mine exposed PHP `error_log` files for server paths, database credentials, SQL queries, API keys, email addresses, and internal IP addresses. Error logs on misconfigured WordPress sites routinely expose the full server directory structure, active database queries, and sometimes hardcoded credentials from stack traces. Confirmed on wines.com where a 1.7MB error_log revealed 47 server paths and 879 SQL queries.
+Discover and mine exposed PHP `error_log` files for server paths, database credentials, SQL queries, API keys, email addresses, and internal IP addresses. Error logs on misconfigured WordPress sites routinely expose the full server directory structure, active database queries, and sometimes hardcoded credentials from stack traces. Confirmed on ecommerce-wine.com where a 1.7MB error_log revealed 47 server paths and 879 SQL queries.
 
 ## When to Use
 
@@ -274,7 +274,7 @@ LFI_PATHS=$(grep -oP '(?:include|require|include_once|require_once)\s*\(\s*[\x27
 [[ -n "$LFI_PATHS" ]] && echo "Potential LFI paths:" && echo "$LFI_PATHS"
 ```
 
-## Production Miner (from wave6_invade.py — wines.com 1.7MB error_log)
+## Production Miner (from wave6_invade.py — ecommerce-wine.com 1.7MB error_log)
 
 ```python
 import re
@@ -329,7 +329,7 @@ def mine_error_log(txt):
     return results
 ```
 
-## Real Production Results (wines.com, Wave6)
+## Real Production Results (ecommerce-wine.com, Wave6)
 
 From a 1.7MB error_log at `/magical/error_log`:
 - **Server paths:** 47 unique `/home/wines/public_html/...` paths extracted
@@ -341,11 +341,11 @@ From a 1.7MB error_log at `/magical/error_log`:
 - **Error breakdown:** 1021 PHP Deprecated + 646 PHP Warnings + Fatal errors
 - **Date range:** 2013 to 2018 (log from legacy install, not current code)
 
-**Key insight:** Error logs from OLD WordPress installs (`/magical/` on wines.com) contain years of accumulated data. Always check subdirectory error logs, not just root.
+**Key insight:** Error logs from OLD WordPress installs (`/magical/` on ecommerce-wine.com) contain years of accumulated data. Always check subdirectory error logs, not just root.
 
 ## Pitfalls
 
-- **Error logs can be MASSIVE (multi-GB).** wines.com `/error_log` was 896MB in Wave8. Always check Content-Length first. Use `curl -r 0-5000000` for 5MB samples.
+- **Error logs can be MASSIVE (multi-GB).** ecommerce-wine.com `/error_log` was 896MB in Wave8. Always check Content-Length first. Use `curl -r 0-5000000` for 5MB samples.
 - **Logs may contain PII.** Email addresses, IPs, and usernames in error logs may constitute a data breach. Handle responsibly.
 - **Log rotation may truncate.** The visible error_log may only contain recent entries. Check for rotated logs (`error_log.1`, `error_log.old`, `error_log-YYYYMMDD`).
 - **Some hosts return garbage.** A 200 on `/error_log` might be a custom 404 page or SPA catch-all. Always check content for `PHP ` + error type pattern before analyzing.

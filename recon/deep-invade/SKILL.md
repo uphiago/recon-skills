@@ -68,11 +68,11 @@ Execute probes in order. Each phase builds on the previous:
 
 | Wave | New Capability | Key Discovery |
 |------|---------------|---------------|
-| 5 | Staging discovery, JS bundles, SliderRev REST | staging.biglots.com with 25 REST namespaces |
+| 5 | Staging discovery, JS bundles, SliderRev REST | staging.retail-chain.com with 25 REST namespaces |
 | 6 | SSRF confirmation, CORS matrix, plugin namespaces | 15 IMDS paths all faultCode 0 on staging |
 | 7 | IMDS role guessing, Yoast sitemap, JS secrets | Google API key found in target-health-saas JS |
-| 8 | WP install pages, Elementor 500, backup files | staging.biglots.com install.php HTTP 200 |
-| 9 | Pattern catalog, cross-wave synthesis, regression tracking | MySQL+FTP+IMAP opened on wines.com, Exchange+VPN on realpro.com |
+| 8 | WP install pages, Elementor 500, backup files | staging.retail-chain.com install.php HTTP 200 |
+| 9 | Pattern catalog, cross-wave synthesis, regression tracking | MySQL+FTP+IMAP opened on ecommerce-wine.com, Exchange+VPN on realestate-platform.com |
 
 ## Procedure
 

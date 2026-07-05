@@ -169,7 +169,7 @@ X-Cache headers revealing internal hostnames
        print(f"  {role}: {t:.3f}s -> {'FOUND' if t > baseline*1.15 else '404'}")
    ```
 
-   **Field evidence (biglots.com, June 2026):** IMDS `/meta-data/` = 344ms, `/iam/security-credentials/` = 435ms, `/instance-id` = 301ms. Timing varies proportionally to response size — enables blind extraction of IAM roles and metadata content.
+   **Field evidence (retail-chain.com, June 2026):** IMDS `/meta-data/` = 344ms, `/iam/security-credentials/` = 435ms, `/instance-id` = 301ms. Timing varies proportionally to response size — enables blind extraction of IAM roles and metadata content.
 
    **Pitfall:** Network jitter causes ±50ms variance. Run each test 3 times, use the median. Skip if baseline variance exceeds 20%.
 

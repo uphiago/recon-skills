@@ -49,7 +49,7 @@ Detailed descriptions, detections, frequencies, severities, exploitation paths, 
 **Detection:** Send pingback to your Collaborator URL. If callback received, SSRF confirmed.
 **Severity:** High (SSRF to internal network, IMDS).
 **Exploitation:** Probe AWS IMDS (`169.254.169.254`), internal IPs, localhost services.
-**Real Confirmation:** staging.biglots.com — 15 IMDS paths all returned faultCode 0 in Wave6.
+**Real Confirmation:** staging.retail-chain.com — 15 IMDS paths all returned faultCode 0 in Wave6.
 
 ## P-09: XMLRPC IMDS Role Guessing
 **Detection:** After confirming pingback SSRF, probe specific IAM role paths.
@@ -62,7 +62,7 @@ Detailed descriptions, detections, frequencies, severities, exploitation paths, 
 **Severity:** Critical (RCE chain).
 **Chain:** Open registration → get subscriber account → XMLRPC `wp.uploadFile` → upload PHP webshell → RCE.
 **Requirements:** Default WP role must allow uploads (Subscriber cannot by default; requires misconfigured roles).
-**Confirmed on:** wines.com.
+**Confirmed on:** ecommerce-wine.com.
 
 ## P-11: Plugin REST Namespace Brute Force
 **Detection:** Probe 40+ known plugin REST namespaces to identify installed plugins.
@@ -83,19 +83,19 @@ Detailed descriptions, detections, frequencies, severities, exploitation paths, 
 **Detection:** On staging subdomains, check `/wp-admin/install.php`, `/wp-admin/upgrade.php`, `/wp-admin/setup-config.php` for HTTP 200.
 **Severity:** Critical (site takeover).
 **Exploitation:** `install.php` with HTTP 200 means WordPress is not configured — you can set it up with your own admin account.
-**Confirmed on:** staging.biglots.com (Wave8).
+**Confirmed on:** staging.retail-chain.com (Wave8).
 
 ## P-15: Error Log Credential Mining
 **Detection:** `curl -sk "TARGET/error_log"` returns PHP errors (not SPA catch-all).
 **Severity:** High to Critical (depends on what's exposed).
 **Exploitation:** See `error-log-mining` for full extraction commands.
-**Confirmed on:** wines.com — 1.7MB error_log with 47 server paths, 879 SQL queries.
+**Confirmed on:** ecommerce-wine.com — 1.7MB error_log with 47 server paths, 879 SQL queries.
 
 ## P-16: PHPInfo Exec Function Check
 **Detection:** `curl -sk "TARGET/info.php"` returns PHP configuration.
 **Severity:** High (if exec functions available).
 **Exploitation:** See `phpinfo-to-rce` for the full chain.
-**Confirmed on:** wines.com — ALL exec functions available (exec, system, passthru, shell_exec, popen, proc_open).
+**Confirmed on:** ecommerce-wine.com — ALL exec functions available (exec, system, passthru, shell_exec, popen, proc_open).
 
 ## P-17: Source Leak Mass Scan
 **Detection:** Parallel curl for 20+ sensitive file paths with content verification.
@@ -129,7 +129,7 @@ Detailed descriptions, detections, frequencies, severities, exploitation paths, 
 **Detection:** Sending malformed request to `/wp-json/elementor/v1/globals` returns HTTP 500 with stack trace.
 **Severity:** Medium (server path disclosure).
 **Exploitation:** Stack trace reveals full server paths, plugin versions, and sometimes DB queries.
-**Confirmed on:** toolking.com (Wave8).
+**Confirmed on:** tools-retailer.com (Wave8).
 
 ## P-23: Same-Hosting Clustering
 **Detection:** Multiple target domains resolve to the same IP.
@@ -145,4 +145,4 @@ Detailed descriptions, detections, frequencies, severities, exploitation paths, 
 **Detection:** CORS confirmed on `/wp/v2/users` → test 10+ endpoints.
 **Severity:** Critical (full site data exfiltration).
 **Exploitation:** Every WP REST endpoint is accessible cross-origin: users, posts, pages, media, settings, plugins, themes.
-**Confirmed on:** restonic.com — CORS credential reflection on ALL 7 tested endpoints.
+**Confirmed on:** mattress-retailer.com — CORS credential reflection on ALL 7 tested endpoints.

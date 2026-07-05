@@ -94,14 +94,14 @@ Signal critical deltas: new port 3306 (MySQL), new CORS credential reflections, 
 
 | Target | Wave8 State | Wave9 Delta | Category |
 |--------|-------------|-------------|----------|
-| wines.com | XMLRPC 200 (76 methods) | 200->301 redirect | REGRESSION |
-| wines.com | No ports reported | MySQL 3306 + FTP 21 + IMAP 143 OPEN | **NEW** (6 ports) |
-| restonic.com | NOT documented as CORS target | ALL endpoints reflect | **NEW** (missed W6-8) |
-| realpro.com | CORS known | Exchange OWA + SSH 22 + VPN portal | **NEW** (10+ subdomains) |
-| toolking.com | SliderRev known | CORS on ALL endpoints | **NEW** (missed W6-8) |
+| ecommerce-wine.com | XMLRPC 200 (76 methods) | 200->301 redirect | REGRESSION |
+| ecommerce-wine.com | No ports reported | MySQL 3306 + FTP 21 + IMAP 143 OPEN | **NEW** (6 ports) |
+| mattress-retailer.com | NOT documented as CORS target | ALL endpoints reflect | **NEW** (missed W6-8) |
+| realestate-platform.com | CORS known | Exchange OWA + SSH 22 + VPN portal | **NEW** (10+ subdomains) |
+| tools-retailer.com | SliderRev known | CORS on ALL endpoints | **NEW** (missed W6-8) |
 | target-health-saas.com | MySQL 3306 open | Still OPEN (4 waves!) | PERSISTENT |
 
-**Key insight:** CORS was MISSED on restonic.com and toolking.com across 3 waves because only `/wp/v2/users` was tested. Always test ALL endpoints.
+**Key insight:** CORS was MISSED on mattress-retailer.com and tools-retailer.com across 3 waves because only `/wp/v2/users` was tested. Always test ALL endpoints.
 
 ## Pitfalls
 

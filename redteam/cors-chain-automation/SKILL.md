@@ -17,18 +17,18 @@ Field recon across 600+ domains revealed 8 distinct CORS misconfiguration variat
 
 | # | Variation | ACAO | ACAC | Example Target | Wave Found |
 |---|-----------|------|------|---------------|------------|
-| V1 | Origin Reflection + Credentials (Classic) | Reflected | true | yardcare.com, restonic.com | W1 |
+| V1 | Origin Reflection + Credentials (Classic) | Reflected | true | landscaping-service.com, mattress-retailer.com | W1 |
 | V2 | Null Origin Reflection (Sandboxed Iframe Bypass) | null | true | familydental.com | W6 |
 | V3 | Wildcard (No Credentials) | * | false | target-health-saas.com, nothingbundtcakes.com | W5 |
 | V4 | Credentialed Preflight (OPTIONS only) | Reflected on OPTIONS | true on OPTIONS | Multiple WP endpoints | W8 |
-| V5 | Auth-Required Endpoint Leak (401/403 still emit CORS) | Reflected | true | restonic.com gf/v2 | W7 |
-| V6 | Multi-Origin Reflection (any origin works) | Multiple | true | realpro.com | W6 |
-| V7 | Plugin-Specific CORS (only on plugin REST namespaces) | Reflected | true | defy.com (gravity-pdf/v1) | W5 |
-| V8 | Staging-Environment-Only CORS | Reflected | true | staging.biglots.com | W5 |
+| V5 | Auth-Required Endpoint Leak (401/403 still emit CORS) | Reflected | true | mattress-retailer.com gf/v2 | W7 |
+| V6 | Multi-Origin Reflection (any origin works) | Multiple | true | realestate-platform.com | W6 |
+| V7 | Plugin-Specific CORS (only on plugin REST namespaces) | Reflected | true | entertainment-franchise.com (gravity-pdf/v1) | W5 |
+| V8 | Staging-Environment-Only CORS | Reflected | true | staging.retail-chain.com | W5 |
 
 ### Critical Implementation Lesson — Test ALL Endpoints, Not Just /users
 
-**This is the #1 CORS detection mistake across all waves.** Earlier waves missed CORS on restonic.com and toolking.com because CORS was tested only on `/wp/v2/users`. CORS credential reflection on WordPress affects ALL REST endpoints, not just users:
+**This is the #1 CORS detection mistake across all waves.** Earlier waves missed CORS on mattress-retailer.com and tools-retailer.com because CORS was tested only on `/wp/v2/users`. CORS credential reflection on WordPress affects ALL REST endpoints, not just users:
 
 ```bash
 # WRONG — tests only /users:

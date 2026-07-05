@@ -120,14 +120,14 @@ Full descriptions, commands, and exploitation paths: [`references/p-patterns.md`
 
 | ID | Variant | Detection | Exploitability | Confirmed Target | Wave |
 |----|---------|-----------|----------------|-----------------|------|
-| V1 | Origin reflection + creds | `ACAO: evil.com` + `ACAC: true` | Critical — full credentialed cross-origin read | yardcare.com, restonic.com, toolking.com, wines.com | W1-W9 |
+| V1 | Origin reflection + creds | `ACAO: evil.com` + `ACAC: true` | Critical — full credentialed cross-origin read | landscaping-service.com, mattress-retailer.com, tools-retailer.com, ecommerce-wine.com | W1-W9 |
 | V2 | Null origin reflection | `ACAO: null` + `ACAC: true` | High — sandboxed iframe bypass | familydental.com | W6 |
 | V3 | Wildcard no creds | `ACAO: *` (no creds) | Info only — public data, no cookies | target-health-saas.com, nothingbundtcakes.com, autobell.com | W5 |
 | V4 | Credentialed preflight | OPTIONS returns ACAC + valid origin | High — GET bypass when OPTIONS works | Multiple WP endpoints | W8 |
-| V5 | Auth-endpoint CORS | CORS on endpoints returning 401/403 | Critical — cookie theft even from auth-gated APIs | restonic.com gf/v2 (401 but ACAO+ACAC reflect) | W7 |
-| V6 | Multi-origin reflection | Any origin reflected | Critical — broadest attack surface | realpro.com | W6 |
-| V7 | Plugin-specific CORS | CORS only on plugin namespace (not wp/v2) | Medium — plugin data only | defy.com gravity-pdf/v1 | W5 |
-| V8 | Staging-only CORS | Production no CORS, staging reflects | Medium — dependent on staging access | staging.biglots.com | W5 |
+| V5 | Auth-endpoint CORS | CORS on endpoints returning 401/403 | Critical — cookie theft even from auth-gated APIs | mattress-retailer.com gf/v2 (401 but ACAO+ACAC reflect) | W7 |
+| V6 | Multi-origin reflection | Any origin reflected | Critical — broadest attack surface | realestate-platform.com | W6 |
+| V7 | Plugin-specific CORS | CORS only on plugin namespace (not wp/v2) | Medium — plugin data only | entertainment-franchise.com gravity-pdf/v1 | W5 |
+| V8 | Staging-only CORS | Production no CORS, staging reflects | Medium — dependent on staging access | staging.retail-chain.com | W5 |
 
 ### Non-Standard Pattern: Third-Party CORS Reflection
 **moldmedics.com (Wave6):** ACAO reflects `https://octaneforms.com` — NOT evil.com. Indicates misconfigured third-party integration where the server hardcodes the wrong origin. Not directly exploitable but signals poor CORS hygiene and potential for exploitation of the third-party service instead.
@@ -199,9 +199,9 @@ Furniture retail: 11/15 major brands (Ashley, Wayfair, Crate&Barrel, Pottery Bar
 | CORS + User Enum → ATO | CORS → user list → spear-phish → admin hijack | HIGH-CRIT | 5 deep targets | Easy |
 | XMLRPC multicall BF | multicall → 1000x brute → WP admin | HIGH | 10+ targets | Easy |
 | SSRF → IMDS → AWS creds | pingback → IMDSv1 → IAM role → AWS takeover | CRITICAL | biglots staging, realpro | Medium |
-| Open Reg → Upload → RCE | register → wp.uploadFile → webshell → shell_exec | CRITICAL | wines.com | Medium |
-| CORS + Plugin CVE → RCE | CORS discover plugin → version detect → CVE exploit | CRITICAL | toolking.com SliderRev | Medium |
-| Error Log → Creds → Admin | error_log mine → DB creds → WP admin login | HIGH | wines.com | Medium |
+| Open Reg → Upload → RCE | register → wp.uploadFile → webshell → shell_exec | CRITICAL | ecommerce-wine.com | Medium |
+| CORS + Plugin CVE → RCE | CORS discover plugin → version detect → CVE exploit | CRITICAL | tools-retailer.com SliderRev | Medium |
+| Error Log → Creds → Admin | error_log mine → DB creds → WP admin login | HIGH | ecommerce-wine.com | Medium |
 | Staging Takeover | crt.sh subdomain → install.php 200 → site seize | CRITICAL | biglots staging | Medium |
 | MySQL Open + CORS | 3306 scan → brute MySQL → dump + API exfil | CRITICAL | target-health-saas.com | Easy |
 | Yoast Sitemap + XMLRPC | author-sitemap.xml → user enum → XMLRPC BF → admin | HIGH | multiple | Medium |
@@ -211,7 +211,7 @@ Furniture retail: 11/15 major brands (Ashley, Wayfair, Crate&Barrel, Pottery Bar
 1. **Default credential testing** — WordPress auto-generates random passwords since v5.0. admin:admin doesn't exist.
 2. **.git/HEAD on SPA sites** — catch-all routing returns HTML, not git data. Always verify with `.git/config` content.
 3. **CORS on non-WordPress sites** — ALL non-WP targets tested (Next.js, Shopify, Sitecore, Drupal, static) were CORS-SECURE. Don't waste time.
-4. **SliderRev v1 REST exploitation** — v6.x renamed all endpoints. ALL v1 paths returned 404 on toolking.com. Probe both `/sliderrevolution/v1/` AND `/revslider/v1/`.
+4. **SliderRev v1 REST exploitation** — v6.x renamed all endpoints. ALL v1 paths returned 404 on tools-retailer.com. Probe both `/sliderrevolution/v1/` AND `/revslider/v1/`.
 5. **Google API key exploitation** — Most JS bundle keys are restricted (all returned `REQUEST_DENIED` in Wave7). Only useful for footprinting, not exploitation.
 6. **Gravity Forms unauth access** — v2.8+ requires authentication. The days of public `/gf/v2/forms` returning entries are over.
 7. **IMDS data via pingback** — faultCode 0 confirms reachability but NEVER returns body data. Need OOB callback for proof.

@@ -17,7 +17,7 @@ metadata:
 
 # Exchange/OWA Attack Skill
 
-Exchange Outlook Web Access (OWA) reconnaissance — NTLM Type-2 challenge decoding for AD domain/computer name extraction, OWA endpoint mapping, password spray surface assessment, and version fingerprinting for known CVEs. Confirmed on Mairie Monaco (Exchange 2019 CU15, AD domain MAIRIE.local), ENACOM Argentina (Exchange 2016, domain CNC.INTER), realpro.com (OWA + Exchange servers), and Panco (ADFS + Office 365).
+Exchange Outlook Web Access (OWA) reconnaissance — NTLM Type-2 challenge decoding for AD domain/computer name extraction, OWA endpoint mapping, password spray surface assessment, and version fingerprinting for known CVEs. Confirmed on Mairie Monaco (Exchange 2019 CU15, AD domain MAIRIE.local), ENACOM Argentina (Exchange 2016, domain CNC.INTER), realestate-platform.com (OWA + Exchange servers), and Panco (ADFS + Office 365).
 
 ## When to Use
 

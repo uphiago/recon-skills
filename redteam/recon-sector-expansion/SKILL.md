@@ -301,7 +301,7 @@ nothingbundtcakes.com  panerabread.com  krispykreme.com
 ### Auto Body / Collision Repair
 ```
 abracollision.com  serviceking.com  sterlingautobody.com  crashchampions.com
-fixauto.com  true2form.com  leonsautobody.com
+fixauto.com  true2form.com  auto-body-shop.com
 calibercollision.com  carstar.com  gerbercollision.com  maaco.com
 ```
 

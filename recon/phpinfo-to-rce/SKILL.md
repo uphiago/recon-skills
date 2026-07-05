@@ -19,7 +19,7 @@ metadata:
 
 # PHPInfo → RCE Chain Skill
 
-Exploit chain that starts with an exposed `info.php`/`phpinfo.php` and escalates to remote code execution. When phpinfo reveals that `disable_functions` does NOT block exec functions (`exec`, `shell_exec`, `system`, `passthru`, `popen`, `proc_open`), the target is 1 upload away from full RCE. Confirmed on wines.com (PHP 7.3.29, all exec functions available).
+Exploit chain that starts with an exposed `info.php`/`phpinfo.php` and escalates to remote code execution. When phpinfo reveals that `disable_functions` does NOT block exec functions (`exec`, `shell_exec`, `system`, `passthru`, `popen`, `proc_open`), the target is 1 upload away from full RCE. Confirmed on ecommerce-wine.com (PHP 7.3.29, all exec functions available).
 
 ## When to Use
 

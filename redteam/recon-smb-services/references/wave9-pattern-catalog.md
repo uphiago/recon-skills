@@ -75,15 +75,15 @@ document.getElementById("out").innerText=o.join("\n---\n")})();
 | Rank | Sector | Vuln Rate | Top Target | Best Attack |
 |------|--------|-----------|------------|-------------|
 | 1 | Locksmiths | 66% | locksmiths.net | WP Users + CORS |
-| 2 | HVAC | 33% | completeheatandair.com | CORS + XMLRPC |
-| 3 | Property Mgmt | 15% | williambrown.com | CORS + User Enum |
-| 4 | Photography | 10% | zenfolio.com | CORS Reflection |
+| 2 | HVAC | 33% | hvac-service.com | CORS + XMLRPC |
+| 3 | Property Mgmt | 15% | legal-firm.com | CORS + User Enum |
+| 4 | Photography | 10% | photography-platform.com | CORS Reflection |
 | 5 | Dental | 15% | familydental.com | Null Origin CORS |
-| 6 | Church | 25% | hillsong.com | CORS + REST |
-| 7 | Pest Control | 20% | vikingpest.com | CORS Reflection |
-| 8 | Gyms | 15% | defy.com | CORS + Franchise Portal |
-| 9 | Window Cleaning | 25% | windowmedics.com | CORS + XMLRPC |
-| 10 | Septic | 25% | septictank.com | Source Leaks + CORS |
+| 6 | Church | 25% | megachurch-site.com | CORS + REST |
+| 7 | Pest Control | 20% | pest-control.com | CORS Reflection |
+| 8 | Gyms | 15% | entertainment-franchise.com | CORS + Franchise Portal |
+| 9 | Window Cleaning | 25% | glass-repair.com | CORS + XMLRPC |
+| 10 | Septic | 25% | septic-service.com | Source Leaks + CORS |
 | 11 | Car Washes | 20% src leaks | gocarwash.com | Source Leaks |
 | 12 | Bakeries | 18% | nothingbundtcakes.com | 28 Source Leaks |
 

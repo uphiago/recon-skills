@@ -1,6 +1,6 @@
 ---
 name: wordpress-cors-xmlrpc-rce-chain
-description: "Proven attack chain combining CORS credential reflection on WordPress REST API with XMLRPC methods (system.multicall, wp.uploadFile) and open registration for full RCE. Built from field experience across 58-company mass recon where 5/7 deep targets had CORS credential reflection on WP REST API — including wines.com where the full chain was demonstrated end-to-end."
+description: "Proven attack chain combining CORS credential reflection on WordPress REST API with XMLRPC methods (system.multicall, wp.uploadFile) and open registration for full RCE. Built from field experience across 58-company mass recon where 5/7 deep targets had CORS credential reflection on WP REST API — including ecommerce-wine.com where the full chain was demonstrated end-to-end."
 sources: field_recon, mass_recon_wave1_7, mass_recon_wave2_5
 report_count: 6
 ---
@@ -128,7 +128,7 @@ Staging environments commonly return HTTP 405 on GET `/xmlrpc.php` but **fully a
 curl -sk -X POST "https://staging.$TARGET/xmlrpc.php" \
   -H "Content-Type: text/xml" \
   -d '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>'
-# staging.biglots.com: GET → 405, POST with XML → 80+ methods with system.multicall
+# staging.retail-chain.com: GET → 405, POST with XML → 80+ methods with system.multicall
 ```
 
 Also check for WordPress install pages on staging — these can be a foothold vector:
@@ -233,7 +233,7 @@ curl -sk "https://$TARGET/wp-content/uploads/2026/06/shell.php?cmd=id"
 
 ## Real Examples
 
-### Target: wines.com — Partial chain (subscriber blocked upload)
+### Target: ecommerce-wine.com — Partial chain (subscriber blocked upload)
 
 1. CORS credential reflection on `/wp-json/wp/v2/users` — 11 users exposed including admins (jackie, randy-caparoso, admin)
 2. Yoast sitemap at `/author-sitemap.xml` — decoded emails from author slugs
@@ -280,7 +280,7 @@ s.post("https://$TARGET/wp-login.php?action=rp",
 
 **Pitfall:** The `rp_key` parameter is embedded in the email URL AND in the HTML form. Some WordPress versions auto-fill it, others require extracting it from the HTML form. Always extract from `r.text` using regex `name="rp_key"[^>]*value="([^"]+)"`.
 
-### Target: toolking.com — CORS + Slider Revolution RCE
+### Target: tools-retailer.com — CORS + Slider Revolution RCE
 
 1. CORS credential reflection — admin user exposed
 2. Slider Revolution plugin detected at `/wp-content/plugins/revslider/`
@@ -297,7 +297,7 @@ Senior living community website on nginx with full WordPress stack.
 4. **Attack surface**: CORS phishing + XMLRPC brute force amplification + SSRF via pingback + file upload if credentials obtained
 5. **Chain blocked at enumeration step** — REST users not enumerable without auth. Requires either: (a) authenticated admin visit to malicious page for CORS exfil, (b) brute force via system.multicall with known usernames, or (c) credential stuffing from prior breaches
 
-### Target: restonic.com — CORS + XMLRPC multicall
+### Target: mattress-retailer.com — CORS + XMLRPC multicall
 
 1. CORS credential reflection — REST API user + WooCommerce data exfiltratable
 2. XMLRPC with `system.multicall` — batch credential brute force possible

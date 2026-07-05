@@ -65,12 +65,12 @@
 |-------|--------|---------|------------|
 | WP Users + CORS + XMLRPC multicall | Full ATO | completeheatandair, restonic | Easy |
 | WP Users + CORS (alone) | Data exfiltration | 20+ targets | Trivial |
-| Open Reg + wp.uploadFile + exec | RCE | wines.com | Medium |
+| Open Reg + wp.uploadFile + exec | RCE | ecommerce-wine.com | Medium |
 | XMLRPC multicall brute (1000x) | Credential discovery | 10+ targets | Medium |
 | MySQL open + CORS | Full data breach | patientportal.com | Easy |
-| Error log credential mining | Credential discovery | wines.com | Medium |
+| Error log credential mining | Credential discovery | ecommerce-wine.com | Medium |
 | Staging install page | Staging takeover | biglots staging | Medium |
-| CORS + corporate email | Spear-phishing | defy.com, vikingpest | Medium |
+| CORS + corporate email | Spear-phishing | entertainment-franchise.com, vikingpest | Medium |
 
 ---
 
@@ -80,7 +80,7 @@
 |--------|--------|-------------|
 | maaco.com | Auto repair | 20 |
 | ridx.com | (unknown) | 20 |
-| septictank.com | Septic services | 20 |
+| septic-service.com | Septic services | 20 |
 | gerbercollision.com | Auto body | 18 |
 | fishwindowcleaning.com | Window cleaning | 17 |
 | windowcleaner.com | Window cleaning | 4 |
@@ -99,7 +99,7 @@
 | XMLRPC system.multicall brute | ✅ Working | 10+ confirmed |
 | XMLRPC pingback SSRF | ✅ Working (IMDS = WIP) | faultCode 0 but no body return |
 | Plugin REST namespace probe | ✅ Working (Wave8) | Confirms plugin even on 401/404 |
-| Error log deep mining | ✅ Working (Wave8) | PII+SQL from wines.com 896MB log |
+| Error log deep mining | ✅ Working (Wave8) | PII+SQL from ecommerce-wine.com 896MB log |
 | MySQL banner grab | ✅ Working (Wave8) | Version + OS from patientportal.com |
 | Staging install page check | ✅ Working (Wave8) | biglots staging install.php exposed |
 | JS API key extraction | ✅ Working (Wave7) | patientportal.com AIzaSy key |

@@ -1,6 +1,6 @@
 # Subscriber Escalation Recon — Field Notes
 
-From wines.com deep invasion (June 2026). WordPress 6.3.1, subdirectory installation at /magical/, GoDaddy shared hosting.
+From ecommerce-wine.com deep invasion (June 2026). WordPress 6.3.1, subdirectory installation at /magical/, GoDaddy shared hosting.
 
 ## What Worked as Subscriber
 

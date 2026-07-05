@@ -248,39 +248,39 @@ done
 - **Wildcard certs hide subdomains.** If `*.example.com` is the only cert, individual subdomains won't appear in crt.sh. Use subfinder DNS brute force as fallback.
 - **Staging may require VPN.** Some staging environments are IP-restricted. Try from the worker IP, then from a residential proxy.
 - **WordPress install.php on production.** Some poorly maintained production sites also have this accessible. It's not always staging-specific. Check for "Welcome to WordPress" title text to confirm it's a fresh install.
-- **CORS on staging but not production is common.** Wave9 discovered CORS on restonic.com and toolking.com that was MISSED in waves 6-8 because it was only tested on certain endpoints. Always test the full CORS matrix (10+ endpoints) on both production AND staging.
+- **CORS on staging but not production is common.** Wave9 discovered CORS on mattress-retailer.com and tools-retailer.com that was MISSED in waves 6-8 because it was only tested on certain endpoints. Always test the full CORS matrix (10+ endpoints) on both production AND staging.
 
 ## Wave9 Production Results — Massive Internal Subdomain Leaks
 
-### biglots.com — 20+ internal subdomains leaked via crt.sh
+### retail-chain.com — 20+ internal subdomains leaked via crt.sh
 ```
-sftp.biglots.com      — SFTP server
-blctx.biglots.com     — internal system
-eac.biglots.com       — Exchange Admin Center
-jss.biglots.com       — Jamf MDM
-vwsip.biglots.com     — internal service
+sftp.retail-chain.com      — SFTP server
+blctx.retail-chain.com     — internal system
+eac.retail-chain.com       — Exchange Admin Center
+jss.retail-chain.com       — Jamf MDM
+vwsip.retail-chain.com     — internal service
 731277-controller1    — infrastructure controller
-alweb.rfk.biglots.com — internal app server
+alweb.rfk.retail-chain.com — internal app server
 mobilebiqa            — mobile BI QA
-mta.em.biglots.com    — email transport
+mta.em.retail-chain.com    — email transport
 goedgertr02           — internal server
 agents03              — agent/management system
 smetrics              — analytics
-help.biglots.com      — helpdesk
+help.retail-chain.com      — helpdesk
 blcbusexpw02          — business system
 ```
 
 None of these were publicly known before crt.sh enumeration. Certificate transparency is the #1 source for internal infrastructure discovery.
 
-### realpro.com — Exchange + VPN + SSH surfaced via crt.sh
+### realestate-platform.com — Exchange + VPN + SSH surfaced via crt.sh
 ```
-owa.realpro.com       — Outlook Web Access (Exchange)
+owa.realestate-platform.com       — Outlook Web Access (Exchange)
 srvexch01/srvexch02   — Exchange servers
-vpn.realpro.com       — VPN portal
-remote.realpro.com    — Remote access
-link.realpro.com      — SMTP2GO dashboard (LIVE)
-portal.realpro.com    — Internal portal
-install.realpro.com   — Installer portal
+vpn.realestate-platform.com       — VPN portal
+remote.realestate-platform.com    — Remote access
+link.realestate-platform.com      — SMTP2GO dashboard (LIVE)
+portal.realestate-platform.com    — Internal portal
+install.realestate-platform.com   — Installer portal
 ```
 
 ## Verification

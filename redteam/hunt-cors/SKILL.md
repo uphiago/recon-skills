@@ -195,7 +195,7 @@ fetch("https://TARGET/api/me", {credentials: "include"})
 If you see `BLOCKED` / a TypeError, the browser refused the read — it is NOT a
 valid finding regardless of what curl showed (this is the `ACAO: *` + creds case).
 
-**5b. WordPress REST API multi-endpoint CORS exfiltration** (proven on 5 real targets — wines.com, restonic.com, realpro.com, toolking.com, defy.com):
+**5b. WordPress REST API multi-endpoint CORS exfiltration** (proven on 5 real targets — ecommerce-wine.com, mattress-retailer.com, realestate-platform.com, tools-retailer.com, entertainment-franchise.com):
 ```html
 <!doctype html><body><pre id="out"></pre>
 <script>
@@ -326,7 +326,7 @@ Every automated hit is a lead, not a finding. Reproduce 5a/5b in a browser.
 - Subdomain-takeover/XSS-assisted credentialed read: High/Critical
 - Reflects origin, no credentials / non-sensitive: Low–Informational
 - **`ACAO: *` only (no creds possible): Informational unless data is secret
-- **Endpoint-masking (high-signal trap):** CORS headers may be ABSENT on root `/` but PRESENT on API endpoints. Always test SPECIFIC authenticated endpoints (`/wp-json/wp/v2/*`, `/api/me`, `/api/tokens`) — not just the root. Confirmed on restonic.com, realpro.com, biglots.com where root showed no CORS but `/wp-json/` had full credential reflection.
+- **Endpoint-masking (high-signal trap):** CORS headers may be ABSENT on root `/` but PRESENT on API endpoints. Always test SPECIFIC authenticated endpoints (`/wp-json/wp/v2/*`, `/api/me`, `/api/tokens`) — not just the root. Confirmed on mattress-retailer.com, realestate-platform.com, retail-chain.com where root showed no CORS but `/wp-json/` had full credential reflection.
 
 ## Operator Notes
 

@@ -855,7 +855,7 @@ print(f'Total entries: {len(re.findall(r\"<tr><td class=.e.>\", content))}')
 "
 ```
 
-In Wave 9 field recon, `wines.com` had PHPInfo exposed at BOTH `/info.php` AND `/test.php` (839 config entries each).
+In Wave 9 field recon, `ecommerce-wine.com` had PHPInfo exposed at BOTH `/info.php` AND `/test.php` (839 config entries each).
 
 ### Cross-TLD pivot discipline
 
@@ -1080,10 +1080,10 @@ TABLE
 #### Example from Wave 9 field recon (7 targets, 4-wave comparison)
 
 This methodology revealed **12 new findings** across 7 targets in the 4-wave comparison:
-- **wines.com**: MySQL 3306 + FTP 21 newly open (never found in waves 6-8); XMLRPC regressed 200→301 (hardened)
-- **realpro.com**: Exchange servers + SSH + VPN portals discovered (not in prior waves)
-- **restonic.com**: CORS credential reflection on ALL endpoints (missed in waves 6-8)
-- **biglots.com**: staging.biglots.com accessible + 20+ internal subdomains leaked
+- **ecommerce-wine.com**: MySQL 3306 + FTP 21 newly open (never found in waves 6-8); XMLRPC regressed 200→301 (hardened)
+- **realestate-platform.com**: Exchange servers + SSH + VPN portals discovered (not in prior waves)
+- **mattress-retailer.com**: CORS credential reflection on ALL endpoints (missed in waves 6-8)
+- **retail-chain.com**: staging.retail-chain.com accessible + 20+ internal subdomains leaked
 - **target-health-saas.com**: Port 8081 open (new); MySQL 3306 still open (4-wave persistence)
 
 The full comparison table lives in `references/wave9-seven-targets.md`.

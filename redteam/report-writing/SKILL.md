@@ -557,10 +557,10 @@ Skills, README files, and any public-facing documentation must be **fully agnost
 Use agnostic patterns instead:
 
 ```
-BAD:  "wines.com had PHPInfo + XMLRPC -> RCE"
+BAD:  "ecommerce-wine.com had PHPInfo + XMLRPC -> RCE"
 GOOD: "e-commerce target had PHPInfo + XMLRPC -> RCE"
 
-BAD:  "info@toolking.com exposed via REST API"
+BAD:  "info@tools-retailer.com exposed via REST API"
 GOOD: "corporate email pattern exposed via REST API"
 
 BAD:  "target-health-saas.com MySQL 3306 OPEN"

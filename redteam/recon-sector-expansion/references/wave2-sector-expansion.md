@@ -21,10 +21,10 @@ Batch expansion into 10 fresh sectors: 25 domains tested via Python script with 
 
 ## HIGH Findings
 
-### greekmoving.com (Moving)
+### moving-service.com (Moving)
 **Credentialled CORS** — `Access-Control-Allow-Origin: https://evil.com` + `Access-Control-Allow-Credentials: true` on `/wp-json/wp/v2/users`. WordPress 7.0 with 5 users exposed (Corey Schuchman, Good Greek Moving & Storage, stggreekmoving, tcrivari@peakactivity.com, Will Lam). XMLRPC open. Ports 21/53/80/110/143/443 open.
 
-### leonsautobody.com (Auto Body)
+### auto-body-shop.com (Auto Body)
 **Credentialled CORS** — Same pattern. WordPress with 1 user (Gilmedia). Behind WP Engine + CloudFlare. Ports 80/443.
 
 ## MEDIUM Findings

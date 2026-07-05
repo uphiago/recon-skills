@@ -322,16 +322,16 @@ In the report body, reference each by filename:
 When publishing ANY output to public channels (GitHub README, blog posts, reports, shared dashboards):
 
 ### Rules — NEVER include:
-- **Company/domain names** with specific vulnerability details (e.g. "wines.com has PHPInfo exposed")
+- **Company/domain names** with specific vulnerability details (e.g. "ecommerce-wine.com has PHPInfo exposed")
 - **Person names** (employees, users, researchers)
 - **Email addresses** of real people
 - **Internal IPs, hostnames, or AD domains**
 - **Raw credentials** (even if expired)
 
 ### Safe alternatives:
-- Replace company names with sector labels: `e-commerce site` instead of `wines.com`
+- Replace company names with sector labels: `e-commerce site` instead of `ecommerce-wine.com`
 - Replace counts with ranges: `several users` instead of `11 users`
-- Describe patterns without PII: `CORS credential reflection on WP REST API` not `CORS on realpro.com`
+- Describe patterns without PII: `CORS credential reflection on WP REST API` not `CORS on realestate-platform.com`
 - Use agnostic tables: `| Critical | 8 | MySQL exposed, PHPInfo + exec |` not naming specific targets
 
 ### Checklist before public push:
@@ -344,7 +344,7 @@ When publishing ANY output to public channels (GitHub README, blog posts, report
 ```
 
 ### Real-world consequence:
-A README with `wines.com — PHPInfo + open reg → RCE` reveals to EVERYONE that this specific company is vulnerable. The data belongs to the client/engagement, not to public showcases. Pattern-based descriptions teach without exposing.
+A README with `ecommerce-wine.com — PHPInfo + open reg → RCE` reveals to EVERYONE that this specific company is vulnerable. The data belongs to the client/engagement, not to public showcases. Pattern-based descriptions teach without exposing.
 
 ---
 

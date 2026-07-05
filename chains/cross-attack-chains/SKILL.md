@@ -546,7 +546,7 @@ grep -oiP '(define\(|DB_PASSWORD|API_KEY|SECRET)[^)]+\)' error_log.txt | head -1
 **Severity:** High (Account Takeover, potentially Critical if admin credentials are stolen)
 **Impact:** Attacker registers on forum, posts XSS payload, moderator/admin views it, payload steals WP session cookie, attacker hijacks WP admin session.
 
-**The cross-platform vector:** Because both the forum and WordPress share the root domain (e.g., `wines.com`), JavaScript executing in the forum's origin can make credentialed fetch requests to WordPress endpoints at `/magical/wp-admin/` or `/wp-json/`.
+**The cross-platform vector:** Because both the forum and WordPress share the root domain (e.g., `ecommerce-wine.com`), JavaScript executing in the forum's origin can make credentialed fetch requests to WordPress endpoints at `/magical/wp-admin/` or `/wp-json/`.
 
 **Step-by-step:**
 ```bash

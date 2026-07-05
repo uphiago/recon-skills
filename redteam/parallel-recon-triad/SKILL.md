@@ -502,8 +502,8 @@ For targets that appear across multiple waves, produce a per-target delta table 
 
 | Target | WaveN-1 | WaveN | Delta | Impact |
 |--------|---------|-------|-------|--------|
-| wines.com | XMLRPC 200 (76 methods) | 200->301 REGRESSED, MySQL+FTP OPEN | Surface EXPANDED |
-| restonic.com | CORS not documented | CORS DISCOVERED (missed W6-8) | Major new vector |
+| ecommerce-wine.com | XMLRPC 200 (76 methods) | 200->301 REGRESSED, MySQL+FTP OPEN | Surface EXPANDED |
+| mattress-retailer.com | CORS not documented | CORS DISCOVERED (missed W6-8) | Major new vector |
 
 Key questions: What got PATCHED (regressions)? What stayed VULNERABLE (persistent)? What was MISSED?
 

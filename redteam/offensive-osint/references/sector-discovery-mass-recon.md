@@ -97,26 +97,26 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
 | Rank | Sector | Vuln Rate | Pattern | Best Target Type |
 |---|---|---|---|---|
 | 1 | **Tree Service** (independent) | **100%** | CORS credentialed + multicall | Small independent arborists — allabouttrees.com (4 users), firstchoicetree.com, treetech.net |
-| 2 | **Landscaping** (independent) | **100%** | CORS credentialed + multicall | Small independent lawn care — totalyard.com (2 users), progrounds.com (1 user), yardcare.com (2 users) |
+| 2 | **Landscaping** (independent) | **100%** | CORS credentialed + multicall | Small independent lawn care — totalyard.com (2 users), progrounds.com (1 user), landscaping-service.com (2 users) |
 | 3 | **Yoga Studios** | 50% | CORS + user enum | Independent studios — yogaworks.com (3 users) |
 | 2.5 | **Car Wash** (regional chains) | 20% | CORS credentialed + internal tool subdomains | Regional chains on WP Engine — gocarwash.com (32 subs, GitLab/Grafana/Prometheus behind WAF, CRITICAL CORS) |
 | 2.75 | **Locksmiths** (franchise) | 20% | CORS credentialed + admin user exposed | WordPress on Apache — locksmiths.net (admin user, 24 subs, CRITICAL CORS) |
 | 3.5 | **Pet Grooming** (franchise) | 20% | CORS credentialed + user enum | **NOTE: Pet grooming FRANCHISES CAN be vulnerable** despite Cloudflare+WP Engine — dogtopia.com (10 users, CRITICAL CORS, 39 subs including staging exposed, Express.js dashboard, S3 bucket) |
-| 4 | **Pest Control** | 50% | CORS + user enum | Independent exterminators — dodsonbros.com (4 users), vikingpest.com (7 users) |
+| 4 | **Pest Control** | 50% | CORS + user enum | Independent exterminators — dodsonbros.com (4 users), pest-control.com (7 users) |
 | 5 | **Laundromat** (independent) | 50% | CORS + multicall | Local laundromats — spincyclelaundry.com (1 user) |
 | 6 | **Coffee Shops** | 17-33% | CORS credentialed | Brand-name franchises — biggby.com |
 | 7 | **Pet Grooming** (independent) | 33% | CORS + multicall | Independent groomers — pawtropolis.com (1 user) |
 | 8 | **Pool Services** | 20-25% | CORS + user enum + XMLRPC | Pool service companies |
 | 9 | **Car Wash** | 17% | CORS + user enum | Regional chains — octoclean.com (10 users) |
 | 10 | **Roofing** | 15-18% | CORS + admin users | Independent roofers |
-| 11 | **HVAC/Plumbing** | 13-14% (franchise), **~50%** (indie) | CORS credentialed + multicall + users | Independent HVAC shops — completeheatandair.com (3 users, CORS+creds, multicall). Franchise chains (ARS, Benjamin Franklin) all behind WAF. |
+| 11 | **HVAC/Plumbing** | 13-14% (franchise), **~50%** (indie) | CORS credentialed + multicall + users | Independent HVAC shops — hvac-service.com (3 users, CORS+creds, multicall). Franchise chains (ARS, Benjamin Franklin) all behind WAF. |
 | 12 | **Accounting (SMB)** | 12-13% | CORS + CPA data | Small CPA firms |
 | 13 | **Auto Repair** | 11-12% | CORS + users | Independent repair shops |
 | 14 | **Property Management** | 11-15% | CORS credentialed | SMB property mgmt |
 | 15 | **Photography** | 10-11% | CORS + high user count | Independent photographers |
 | 16 | **Moving** | 6% | XMLRPC multicall | Moving companies |
 | 17 | **Bike Shop** | 0% | — | Small independent shops — 4 tested (jensonusa.com, performancebike.com), all non-WP |
-| 18 | **Churches/Religious** | 25% | CORS credentialed | Individual churches — hillsong.com (CORS+creds) |
+| 18 | **Churches/Religious** | 25% | CORS credentialed | Individual churches — megachurch-site.com (CORS+creds) |
 | 19 | **Non-profits (.org)** | 0% | — | Enterprise WP |
 | 20 | **Daycare** | 0% | — | Franchise groups |
 | 21 | **Retirement/Assisted Living** | 0% | — | Enterprise WP |
@@ -139,7 +139,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
 
 | Sector | Targets | Alive | Vuln | Vuln Rate | Top Findings |
 |--------|---------|-------|------|-----------|--------------|
-| Pest Control | 5 | 4 | 2 | 50% | dodsonbros.com (4 users + CORS), vikingpest.com (7 users + CORS) |
+| Pest Control | 5 | 4 | 2 | 50% | dodsonbros.com (4 users + CORS), pest-control.com (7 users + CORS) |
 | Car Wash | 6 | 6 | 1 | 17% | octoclean.com (10 users + CORS, Flywheel/5.1.0) |
 | Coffee Shops | 6 | 6 | 2 | 33% | biggby.com (CORS credentialed), thecoffeebean.com (WP) |
 | Pet Services | 5 | 5 | 0 | 0% | All behind Cloudflare or non-WP platforms |
@@ -173,7 +173,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
 
 | Sector | Targets | WP | Users Exp | CORS Critical | XMLRPC | Vuln Rate | Top Findings |
 |--------|---------|----|-----------|---------------|--------|-----------|--------------|
-| **Landscaping** | 8 | 8 | **6** | **8** | 4 | **100%** | **BREAKOUT: ALL 8 have CORS credential reflect** — totalyard.com (2 users, multicall, WP 6.9.4), progrounds.com (1 user, multicall, WP 6.1), yardcare.com (2 users, Cloudflare, WP 6.1.6), turfdoctor.com (1 user), greenleafservices.com (multicall), supremelawn.com, naturesturf.com, ecolawn.com |
+| **Landscaping** | 8 | 8 | **6** | **8** | 4 | **100%** | **BREAKOUT: ALL 8 have CORS credential reflect** — totalyard.com (2 users, multicall, WP 6.9.4), progrounds.com (1 user, multicall, WP 6.1), landscaping-service.com (2 users, Cloudflare, WP 6.1.6), turfdoctor.com (1 user), greenleafservices.com (multicall), supremelawn.com, naturesturf.com, ecolawn.com |
 | **Tree Service** | 4 | 4 | **5** | **4** | 2 | **100%** | **BREAKOUT: ALL 4 have CORS credential reflect** — allabouttrees.com (4 users: 1seodev, Allison Kandel, Cecile Parages, Jake Morell — behind Cloudflare), allstatetree.com (1 user: advancedbusinesssolutions), firstchoicetree.com (multicall, Cloudflare), treetech.net |
 | **Laundromat** | 2 | 2 | 1 | 1 | 1 | **50%** | spincyclelaundry.com (1 user: gtaje, CORS+creds, multicall, WP 6.8.1 on Apache). speedqueen.com secure — Shopify platform. |
 | **Pet Grooming** (indie) | 3 | 3 | 1 | 1 | 1 | **33%** | pawtropolis.com (1 user: athenspet, CORS+creds, multicall, WP 6.8.1 on Apache). aussiepetmobile.com and bentleyspetstuff.com were non-WP (Shopify/Wix) |
@@ -182,7 +182,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
 **Critical findings:**
 - **allabouttrees.com** (tree_service): 4 users exposed (1seodev, Allison Kandel, Cecile Parages, Jake Morell) + CORS credential reflection + behind Cloudflare. Attack chain: attacker-hosted page exfiltrates authed user data cross-origin.
 - **totalyard.com** (landscaping): 2 users exposed (bd, Brian Krogsgard) + CORS creds + XMLRPC multicall + WP 6.9.4 on Pagely-ARES.
-- **yardcare.com** (landscaping): 2 users (Rocket55DevAdmin, YardCare®) + CORS creds + Cloudflare.
+- **landscaping-service.com** (landscaping): 2 users (Rocket55DevAdmin, YardCare®) + CORS creds + Cloudflare.
 - **spincyclelaundry.com** (laundromat): 1 user + CORS creds + XMLRPC multicall + WP 6.8.1 on Apache.
 - **progrounds.com** (landscaping): 1 user (JWD) + CORS creds + XMLRPC multicall + WP 6.1 on Apache.
 - **pawtropolis.com** (pet_grooming): 1 user (athenspet) + CORS creds + XMLRPC multicall + WP 6.8.1 on Apache.
@@ -193,9 +193,9 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
 
 | Sector | Targets | Alive | WP | CORS+CREDS | Users Exp | XMLRPC Multicall | Vuln Rate | Top Findings |
 |--------|---------|-------|-----|------------|-----------|-----------------|-----------|--------------|
-| **HVAC** (indie) | 4 | 3 | 2 | **1** | **3** | **1** | **50%** | **completeheatandair.com** — CORS+creds + 3 users (Mediagistic x2, mgvendortemp) + multicall + WP Engine. **BREAKOUT: Independent HVAC matches landscaping/tree service vuln profile.** |
-| **Window Cleaning** | 7 | 5 | 1 | **1** | 0 | **1** | **20%** | **windowmedics.com** — CORS+creds + multicall + 80 methods on Apache (NO WAF). High-value independent sector. |
-| **Church** | 5 | 4 | 2 | **1** | 0 | 0 | **25%** | **hillsong.com** — CORS+creds + Cloudflare. Major megachurch with the classic reflection vuln. |
+| **HVAC** (indie) | 4 | 3 | 2 | **1** | **3** | **1** | **50%** | **hvac-service.com** — CORS+creds + 3 users (Mediagistic x2, mgvendortemp) + multicall + WP Engine. **BREAKOUT: Independent HVAC matches landscaping/tree service vuln profile.** |
+| **Window Cleaning** | 7 | 5 | 1 | **1** | 0 | **1** | **20%** | **glass-repair.com** — CORS+creds + multicall + 80 methods on Apache (NO WAF). High-value independent sector. |
+| **Church** | 5 | 4 | 2 | **1** | 0 | 0 | **25%** | **megachurch-site.com** — CORS+creds + Cloudflare. Major megachurch with the classic reflection vuln. |
 | **Septic Services** | 7 | 4 | 1 | 0 | 0 | 0 | 0% | allinseptic.com WP but no vulns. Most domains were non-WP landing pages. |
 | **Locksmith** | 5 | 3 | 1 | 0 | 0 | 0 | 0% | citylocksmith.com WP, secure. popalock.com was non-WP. |
 | **Bike Shops** | 4 | 3 | 0 | 0 | 0 | 0 | 0% | jensonusa.com non-WP, performancebike.com non-WP. |
@@ -203,11 +203,11 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
 | **Nonprofit** | 4 | 3 | 0 | 0 | 0 | 0 | 0% | All enterprise sites (habitat.org, stjude.org) on non-WP platforms. |
 
 **Critical Wave 4 findings:**
-- **completeheatandair.com** (hvac): 3 WP users exposed (Mediagistic x2, mgvendortemp), CORS credential reflection (ACAO: evil.com, ACAC: true), XMLRPC 80 methods + system.multicall, WP Engine + Cloudflare.
-- **windowmedics.com** (window_cleaning): CORS+creds + XMLRPC multicall on bare Apache — no WAF protecting it.
-- **hillsong.com** (church): CORS credential reflection on major megachurch behind Cloudflare.
+- **hvac-service.com** (hvac): 3 WP users exposed (Mediagistic x2, mgvendortemp), CORS credential reflection (ACAO: evil.com, ACAC: true), XMLRPC 80 methods + system.multicall, WP Engine + Cloudflare.
+- **glass-repair.com** (window_cleaning): CORS+creds + XMLRPC multicall on bare Apache — no WAF protecting it.
+- **megachurch-site.com** (church): CORS credential reflection on major megachurch behind Cloudflare.
 
-**Takeaway:** Independent HVAC shops match the 100% CORS vuln profile of landscaping/tree services — **completeheatandair.com** is the trifecta (CORS+creds + 3 users + multicall). Window cleaning is a promising new sector — **windowmedics.com** on bare Apache is the highest practical exploit target in this wave. Churches (hillsong.com) show the same reflection pattern but behind Cloudflare.
+**Takeaway:** Independent HVAC shops match the 100% CORS vuln profile of landscaping/tree services — **hvac-service.com** is the trifecta (CORS+creds + 3 users + multicall). Window cleaning is a promising new sector — **glass-repair.com** on bare Apache is the highest practical exploit target in this wave. Churches (megachurch-site.com) show the same reflection pattern but behind Cloudflare.
 
 **New sectors still untested** (recommended for Wave 6+): pool cleaning (individual operators), dry cleaners (independent), laundromats (independent), funeral homes (independent).
 
