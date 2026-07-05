@@ -1,0 +1,31 @@
+redteam/hunt-mass-assignment/SKILL.md
+  s_fe52c8deaa2fe4::t_cb41f4dd77fb6a 1-178
+redteam/hunt-django/SKILL.md
+  s_fe52c8deaa2fe4::t_ae50575846a8ad 1-147
+redteam/hunt-fastapi/SKILL.md
+  s_fe52c8deaa2fe4::t_439beb62c356df 1-163
+redteam/hunt-information-disclosure/SKILL.md
+  s_fe52c8deaa2fe4::t_fa78fdca94ac5d 1-177
+redteam/hunt-nestjs/SKILL.md
+  s_fe52c8deaa2fe4::t_572a358ce6b5a8 1-172
+redteam/hunt-prototype-pollution/SKILL.md
+  s_fe52c8deaa2fe4::t_300d68d059b890 1-158
+redteam/hunt-broken-function-level-auth/SKILL.md
+  s_fe52c8deaa2fe4::t_5c8ecccba11b74 1-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6d9168ccd0573c01716d2ff733320f762946f0c1",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
