@@ -175,7 +175,7 @@ cat shard*.json | jq -s '.[]' > merged.json
 
 ## Real Production Results
 
-### PRODERJ Network (/24 subnet, 187.62.129.0/24)
+### government-network (/24 subnet, 192.0.2.0/24)
 - 40+ IPs with active services across 18 government agencies
 - Systems mapped: SEEDUC (Matricula Facil on .4,.6,.7,.8), AGENERSA (Joomla on .46), GLPI (.40), ITERJ (.47), DETRO (.57,.58), VOX (.69), Tomcat (.73), IIS 6.0 (.53)
 - PHP 5.2.11 on Windows 2008R2 exposed at .128.54
@@ -188,8 +188,8 @@ cat shard*.json | jq -s '.[]' > merged.json
 
 ### Camera Hunting (Brazil, Shodan + Masscan)
 - 99,428 RTSP (port 554) devices in Brazil (Shodan stats)
-- Axis P1378-LE at 187.141.142.149:8010 — config dump of 988 parameters unauthenticated
-- Intelbras RX 1500 at 45.187.140.96
+- Axis P1378-LE at 192.0.2.20:8010 — config dump of 988 parameters unauthenticated
+- Intelbras RX 1500 at 192.0.2.30
 
 ## Pitfalls
 

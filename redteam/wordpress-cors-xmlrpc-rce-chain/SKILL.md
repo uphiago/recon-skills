@@ -287,7 +287,7 @@ s.post("https://$TARGET/wp-login.php?action=rp",
 3. CVE-2024-2534 (Revslider RCE) — authenticated exploit chain
 4. **Chain**: CORS admin session + plugin CVE → RCE
 
-### Target: seniorlifestyle.com — CORS Credential Reflection + XMLRPC 80 Methods (June 2026)
+### Target: senior-living-platform.com — CORS Credential Reflection + XMLRPC 80 Methods (June 2026)
 
 Senior living community website on nginx with full WordPress stack.
 

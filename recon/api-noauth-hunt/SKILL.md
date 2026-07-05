@@ -260,7 +260,7 @@ grep -oP '\b[0-9]{11}\b' "$OUTDIR"/*.json 2>/dev/null | head -5  # CPF (digits o
 
 ## Real Production Results
 
-### TSData (Engebras) — 177.54.22.74:3001
+### energy-monitoring-platform — 192.0.2.40:3001
 - ZERO authentication on Express API
 - 59 contracts with client names, cities, AWS costs ($32K/month)
 - Full CRUD: CREATE new contracts, UPDATE values, DELETE
@@ -279,7 +279,7 @@ grep -oP '\b[0-9]{11}\b' "$OUTDIR"/*.json 2>/dev/null | head -5  # CPF (digits o
 - Password reuse pattern: `[Name]7231@` across 15+ accounts
 - Password `password` (literal) used by 5+ accounts
 
-### fintech-processor — 187.87.34.114:8085
+### fintech-processor — 192.0.2.50:8085
 - Directory listing exposed 108 PHP files
 - IXC token in backup file → bypass IP whitelist via SSRF proxy
 - Login without password validation: any CPF grants full session

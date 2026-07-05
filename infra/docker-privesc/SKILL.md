@@ -191,7 +191,7 @@ done
 
 ### fitness-chain — Docker Container Extraction
 - 12 Docker image layers extracted from `.git` exposed repository
-- Docker containers running on OVH infrastructure (51.222.42.163)
+- Docker containers running on OVH infrastructure (192.0.2.10)
 - `.env` exposed with MySQL, Redis, SendGrid, OVH S3 credentials
 - 21 credentials for rotation across 5 Firebase projects + OVH + AWS
 

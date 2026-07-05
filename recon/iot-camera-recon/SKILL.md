@@ -239,7 +239,7 @@ done
 
 ## Real Production Results
 
-### Axis P1378-LE (187.141.142.149)
+### Axis P1378-LE (192.0.2.20)
 - Snapshot accessible without authentication
 - Full config dump: 988 parameters including serial number, firmware version (July 2020), Camstreamer license key
 - All endpoints unauthenticated: snapshot, config, MJPG stream, admin params
