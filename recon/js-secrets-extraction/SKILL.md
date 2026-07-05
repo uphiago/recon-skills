@@ -64,10 +64,10 @@ for port in 443 8080 8081 8084; do
 done
 ```
 
-**Real-world case (patientportal.com, June 2026):**
+**Real-world case (target-health-saas.com, June 2026):**
 - Main SPA (port 443): 500KB bundle, no source map
 - Admin Portal (port 8080): 1.15MB bundle + **source map at `/static/js/main.a5a4e0fb.js.map`** (HTTP 200)
-- Source map revealed: 1,208 source files, API backend at `https://patientportal.com:8081`, auth services, dashboard APIs, pharmacy/drug/hospital components
+- Source map revealed: 1,208 source files, API backend at `https://target-health-saas.com:8081`, auth services, dashboard APIs, pharmacy/drug/hospital components
 
 ## Admin Portal JS Analysis Pattern
 
@@ -195,4 +195,49 @@ grep -oP '["\x60]/api/v1/[a-zA-Z0-9_\-/]+["\x60]' /tmp/*.js
 curl -s "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIza..."
 # Test Supabase anon key
 curl -s "https://PROJECT.supabase.co/rest/v1/users?limit=1" -H "apikey: ANON_KEY" -H "Authorization: Bearer ANON_KEY"
+```
+
+### Phase 5 — Source Map Exploitation
+
+Recover full pre-compiled source code when `.js.map` files are left in production:
+
+```bash
+# Find .map files via Wayback Machine
+curl -s "https://web.archive.org/cdx/search/cdx?url=*.target.com/*&collapse=urlkey&output=text&fl=original&filter=original:.*\.js\.map$" \
+  | sort -u > map_urls.txt
+
+# Download and extract source
+wget https://target.com/static/app.js.map
+node -e "
+const map = require('./app.js.map');
+map.sources.forEach((src, i) => {
+  const fs = require('fs');
+  fs.writeFileSync(src.split('/').pop(), map.sourcesContent[i]);
+});
+print('Extracted ' + map.sources.length + ' source files');
+"
+
+# Quick check: does a JS file have an available map?
+curl -skI "https://target.com/static/app.js.map" | grep "200\|Content-Type"
+```
+
+### Phase 6 — Deep JS Crawling
+
+Crawl JS files recursively for embedded URLs, APIs, and IPs:
+
+```bash
+# lazyegg — crawls JS files for links, APIs, IPs
+python3 lazyegg.py https://target.com
+python3 lazyegg.py https://target.com/js/auth.js
+
+# Combine with waybackurls for deep coverage
+waybackurls target.com \
+  | grep '\.js$' \
+  | awk -F '?' '{print $1}' \
+  | sort -u \
+  | xargs -I{} bash -c 'python3 lazyegg.py "{}" --js_urls --domains --ips' \
+  > lazyegg_output.txt
+
+# subjs — extract JS URLs from any URL list
+cat all_urls.txt | subjs | tee js_files_full.txt
 ```

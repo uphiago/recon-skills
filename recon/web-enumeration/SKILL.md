@@ -201,3 +201,108 @@ curl -sk "https://target.com/.git/HEAD"
 # git-dumper: https://github.com/arthaud/git-dumper
 ./git_dumper.py http://target.com/.git/ /tmp/repo/
 ```
+
+### Phase 6 — Parameter Discovery
+
+Find hidden parameters on known endpoints:
+
+```bash
+# paramspider — finds parameters from Wayback data
+paramspider -d target.com -o params.txt
+
+# arjun — discovers hidden parameters via HTTP response comparison
+arjun -i backend_urls.txt -o arjun_params.json
+arjun -u https://target.com/endpoint -m POST
+
+# x8 — hidden parameter discovery
+x8 -u "https://target.com/endpoint" -o x8_params.txt
+
+# Prepare URLs for parameter fuzzing
+cat all_urls.txt | grep "=" | qsreplace "FUZZ" | anew param_fuzz.txt
+# Deduplicate by parameter name
+cat all_urls.txt | grep "=" | sed "s/=[^&]*/=/g" | sort -u > params_clean.txt
+```
+
+### Phase 7 — URL Category Extraction
+
+Categorize discovered URLs by sensitivity to prioritize testing:
+
+```bash
+# JavaScript files (for secret hunting)
+cat all_urls.txt | grep -iE '\.js(\?|$)' | grep -iv '\.json' | sort -u > js_urls.txt
+
+# API endpoints
+cat all_urls.txt | grep -Ei '\.(json|xml|graphql)(\?|$)' > api_urls.txt
+
+# Backend scripts
+cat all_urls.txt | grep -Ei '\.(php|asp|aspx|jsp|cfm|cgi)(\?|$)' > backend_urls.txt
+
+# Auth/login flows
+cat all_urls.txt | grep -Ei "login|signin|auth|oauth|reset|password" > auth_urls.txt
+
+# Admin panels
+cat all_urls.txt | grep -Ei "admin|dashboard|internal|manage|panel" > admin_urls.txt
+
+# File upload/download
+cat all_urls.txt | grep -Ei "upload|file|download|image|media" > upload_urls.txt
+
+# IDOR candidates
+cat all_urls.txt | grep -Ei "[0-9]{3,}" > idor_candidates.txt
+
+# Open redirect candidates
+cat all_urls.txt | grep -Ei "redirect|callback|goto|return|dest=|r=|u=|url=" > redirect_urls.txt
+
+# Everything interesting in one shot
+cat all_urls.txt | urinteresting
+```
+
+### Phase 8 — WAF & 403 Bypass
+
+```bash
+# IP header spoofing
+ffuf -u https://target.com/blocked-path \
+  -w 403_bypass_headers.txt \
+  -H "FUZZ" \
+  -mc 200,301,302
+
+# Common bypass headers
+curl -sk "https://target.com/admin" \
+  -H "X-Forwarded-For: 127.0.0.1" \
+  -H "X-Forwarded-Host: 127.0.0.1" \
+  -H "X-Custom-IP-Authorization: 127.0.0.1" \
+  -H "X-Original-URL: /admin" \
+  -H "X-Rewrite-URL: /admin"
+
+# HTTP method switching
+for method in GET POST PUT PATCH DELETE OPTIONS HEAD TRACE; do
+  echo -n "$method: "
+  curl -sk -X "$method" "https://target.com/admin" -o /dev/null -w "%{http_code}"
+  echo
+done
+
+# Path override techniques
+curl -sk "https://target.com/anything" -H "X-Original-URL: /admin"
+curl -sk "https://target.com/anything" -H "X-Rewrite-URL: /admin"
+```
+
+### Phase 9 — Historical Page Recovery & Robots.txt History
+
+```bash
+# Robots.txt history via roboxtractor
+cat alive_subs.txt | roboxtractor -m 1 -wb
+
+# Recover 404 pages via Wayback Machine
+waybackurls https://target.com | grep "webstat\|/old/\|/v1/\|/deprecated" > old_pages.txt
+
+# For each old page, re-crawl linked resources
+gospider -s https://target.com -a -r \
+  | grep -oE 'https?://[^[:space:]"]+' \
+  | grep "/old-path/"
+
+# Google Sheets leak hunting
+# site:*.target.com intext:"docs.google.com/spreadsheets"
+# site:docs.google.com/spreadsheets "target.com" "password"
+
+# GitHub endpoints: find internal API paths in repos
+github-endpoints -q -k -d target.com -t $GITHUB_TOKEN
+```

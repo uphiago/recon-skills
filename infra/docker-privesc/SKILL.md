@@ -17,7 +17,7 @@ metadata:
 
 # Docker Privilege Escalation Skill
 
-Docker container escape and privilege escalation — Docker socket abuse, volume mount host takeover, docker group root-equivalence, and prior-privilege-escalation detection. Docker group membership = instant root on the host via 5 distinct techniques. Confirmed on Smart Fit (Docker containers extracted, 12 image layers, privileged mode) and CGE-RJ (Dockerfile + docker-compose.prod.yml exposed in GitLab).
+Docker container escape and privilege escalation — Docker socket abuse, volume mount host takeover, docker group root-equivalence, and prior-privilege-escalation detection. Docker group membership = instant root on the host via 5 distinct techniques. Confirmed on fitness-chain (Docker containers extracted, 12 image layers, privileged mode) and gov-finance-portal (Dockerfile + docker-compose.prod.yml exposed in GitLab).
 
 ## When to Use
 
@@ -189,13 +189,13 @@ done
 
 ## Real Production Results
 
-### Smart Fit — Docker Container Extraction
+### fitness-chain — Docker Container Extraction
 - 12 Docker image layers extracted from `.git` exposed repository
 - Docker containers running on OVH infrastructure (51.222.42.163)
 - `.env` exposed with MySQL, Redis, SendGrid, OVH S3 credentials
 - 21 credentials for rotation across 5 Firebase projects + OVH + AWS
 
-### CGE-RJ — Docker Compose in GitLab
+### gov-finance-portal — Docker Compose in GitLab
 - `docker-compose.prod.yml` exposed in public GitLab repository
 - Blue/green deployment architecture mapped
 - Internal IP 10.11.82.75 discovered in deploy scripts

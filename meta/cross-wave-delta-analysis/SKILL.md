@@ -99,7 +99,7 @@ Signal critical deltas: new port 3306 (MySQL), new CORS credential reflections, 
 | restonic.com | NOT documented as CORS target | ALL endpoints reflect | **NEW** (missed W6-8) |
 | realpro.com | CORS known | Exchange OWA + SSH 22 + VPN portal | **NEW** (10+ subdomains) |
 | toolking.com | SliderRev known | CORS on ALL endpoints | **NEW** (missed W6-8) |
-| patientportal.com | MySQL 3306 open | Still OPEN (4 waves!) | PERSISTENT |
+| target-health-saas.com | MySQL 3306 open | Still OPEN (4 waves!) | PERSISTENT |
 
 **Key insight:** CORS was MISSED on restonic.com and toolking.com across 3 waves because only `/wp/v2/users` was tested. Always test ALL endpoints.
 

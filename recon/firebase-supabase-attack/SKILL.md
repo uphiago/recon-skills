@@ -17,7 +17,7 @@ metadata:
 
 # Firebase & Supabase Attack Skill
 
-Exploit misconfigured Firebase (Firestore, Storage, Auth) and Supabase (REST API, Storage, Auth) backends. These BaaS platforms are the #1 source of massive data breaches in modern web apps when Row Level Security (RLS) is missing and API keys leak in JavaScript bundles. Confirmed on Brendi (204K WhatsApp conversations, 173K phone numbers), Visafy (64K users, 46K reports), Smart Fit (39K users, 5 Firebase projects, 21 credentials), agendadentista (9 clinics, 1,749 leads).
+Exploit misconfigured Firebase (Firestore, Storage, Auth) and Supabase (REST API, Storage, Auth) backends. These BaaS platforms are the #1 source of massive data breaches in modern web apps when Row Level Security (RLS) is missing and API keys leak in JavaScript bundles. Confirmed on delivery-platform (204K WhatsApp conversations, 173K phone numbers), visa-processing-platform (64K users, 46K reports), fitness-chain (39K users, 5 Firebase projects, 21 credentials), dental-booking (9 clinics, 1,749 leads).
 
 ## When to Use
 
@@ -52,13 +52,13 @@ curl -sk -X POST "https://PROJECT.supabase.co/auth/v1/signup" \
 
 | Platform | What to Find | Exploit Path | Real Example |
 |----------|-------------|-------------|--------------|
-| Firebase Firestore | Public database rules | Direct REST API access, list all collections | Brendi: 204K conversations public |
-| Firebase Storage | Public bucket rules | Download all files via REST API | Brendi: 1,000+ WhatsApp audio files public |
-| Firebase Auth | Open signup | Create accounts, access protected resources | Smart Fit: Firebase Auth signup open |
-| Firebase SA Key | Service account JSON | GCP IAM escalation, access all GCP resources | Smart Fit: 5 SA keys → full GCP access |
-| Supabase REST | Missing RLS | SELECT/INSERT/UPDATE/DELETE on any table | Visafy: 64K users, 46K reports, DELETE confirmed |
-| Supabase Storage | Public buckets | Download all files, upload malicious content | Visafy: public PDF reports bucket |
-| Supabase Auth | Open signup | Create accounts, bypass access controls | agendadentista: open signup + auto-confirm |
+| Firebase Firestore | Public database rules | Direct REST API access, list all collections | delivery-platform: 204K conversations public |
+| Firebase Storage | Public bucket rules | Download all files via REST API | delivery-platform: 1,000+ WhatsApp audio files public |
+| Firebase Auth | Open signup | Create accounts, access protected resources | fitness-chain: Firebase Auth signup open |
+| Firebase SA Key | Service account JSON | GCP IAM escalation, access all GCP resources | fitness-chain: 5 SA keys → full GCP access |
+| Supabase REST | Missing RLS | SELECT/INSERT/UPDATE/DELETE on any table | visa-processing-platform: 64K users, 46K reports, DELETE confirmed |
+| Supabase Storage | Public buckets | Download all files, upload malicious content | visa-processing-platform: public PDF reports bucket |
+| Supabase Auth | Open signup | Create accounts, bypass access controls | dental-booking: open signup + auto-confirm |
 
 ## Procedure
 
@@ -88,7 +88,7 @@ grep -oP 'supabase\.co[^"'\'' ]+|supabaseUrl["\s:]+["][^"]+["]|supabaseKey["\s:]
 ### Phase 2 — Firebase Firestore Exploitation
 
 ```bash
-PROJECT_ID="$1"  # e.g., brendi-whatsapp-bot
+PROJECT_ID="$1"  # e.g., delivery-bot-platform
 
 echo "[*] Firestore enumeration for $PROJECT_ID"
 
@@ -312,20 +312,20 @@ fi
 
 ## Real Production Results
 
-### Brendi (Firebase)
+### delivery-platform (Firebase)
 - **Firestore `conversationsV3`**: 204K WhatsApp conversations, 173K unique phone numbers, 497 stores — PUBLICLY READABLE
 - **Firestore `stores`**: 4,000 stores with CNPJ, phone, GPS, menu — PATCH write confirmed
 - **Firebase Auth**: signup open, anyone can create accounts
 - **Storage**: 1,000+ MP3 audio files (WhatsApp voice messages) publicly accessible
 - **Impact**: Full customer communication data, store management access
 
-### Visafy (Supabase)
+### visa-processing-platform (Supabase)
 - **REST API**: Anon key grants full SELECT on users (64,105 records), relatorios (46,717), purchase (676)
 - **CRUD**: DELETE confirmed on relatorio_completo, UPDATE confirmed on etapa
 - **Auth**: signup open, email auto-confirmed
 - **Storage**: relatorios and videos buckets public
 
-### Smart Fit (Firebase — 5 projects, multi-cloud)
+### fitness-chain (Firebase — 5 projects, multi-cloud)
 - 5 Firebase projects, 21 hardcoded credentials (MySQL, SendGrid, OVH S3, Algolia, ChatSkills, Redis, reCAPTCHA)
 - Service Account keys → GCP IAM escalation (storage.admin, firebaseappcheck.admin, iam.serviceAccountTokenCreator)
 - 16,179 files in Firebase Storage

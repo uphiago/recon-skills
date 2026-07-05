@@ -122,7 +122,7 @@ Full descriptions, commands, and exploitation paths: [`references/p-patterns.md`
 |----|---------|-----------|----------------|-----------------|------|
 | V1 | Origin reflection + creds | `ACAO: evil.com` + `ACAC: true` | Critical — full credentialed cross-origin read | yardcare.com, restonic.com, toolking.com, wines.com | W1-W9 |
 | V2 | Null origin reflection | `ACAO: null` + `ACAC: true` | High — sandboxed iframe bypass | familydental.com | W6 |
-| V3 | Wildcard no creds | `ACAO: *` (no creds) | Info only — public data, no cookies | patientportal.com, nothingbundtcakes.com, autobell.com | W5 |
+| V3 | Wildcard no creds | `ACAO: *` (no creds) | Info only — public data, no cookies | target-health-saas.com, nothingbundtcakes.com, autobell.com | W5 |
 | V4 | Credentialed preflight | OPTIONS returns ACAC + valid origin | High — GET bypass when OPTIONS works | Multiple WP endpoints | W8 |
 | V5 | Auth-endpoint CORS | CORS on endpoints returning 401/403 | Critical — cookie theft even from auth-gated APIs | restonic.com gf/v2 (401 but ACAO+ACAC reflect) | W7 |
 | V6 | Multi-origin reflection | Any origin reflected | Critical — broadest attack surface | realpro.com | W6 |
@@ -203,7 +203,7 @@ Furniture retail: 11/15 major brands (Ashley, Wayfair, Crate&Barrel, Pottery Bar
 | CORS + Plugin CVE → RCE | CORS discover plugin → version detect → CVE exploit | CRITICAL | toolking.com SliderRev | Medium |
 | Error Log → Creds → Admin | error_log mine → DB creds → WP admin login | HIGH | wines.com | Medium |
 | Staging Takeover | crt.sh subdomain → install.php 200 → site seize | CRITICAL | biglots staging | Medium |
-| MySQL Open + CORS | 3306 scan → brute MySQL → dump + API exfil | CRITICAL | patientportal.com | Easy |
+| MySQL Open + CORS | 3306 scan → brute MySQL → dump + API exfil | CRITICAL | target-health-saas.com | Easy |
 | Yoast Sitemap + XMLRPC | author-sitemap.xml → user enum → XMLRPC BF → admin | HIGH | multiple | Medium |
 
 ## Failed/Saturated Patterns (8 — do NOT invest time on these)

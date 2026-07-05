@@ -17,7 +17,7 @@ metadata:
 
 # Zimbra Attack Skill
 
-Zimbra Collaboration Suite attack surface — SOAP API user enumeration without authentication, version fingerprinting, UploadServlet path traversal (CVE-2022-37042), `/service/proxy` internal SSRF, and Admin console access. Confirmed on IGN Argentina (Zimbra 8.8.11, admin user confirmed, UploadServlet active), CGE-RJ (Zimbra webmail, SOAP auth functional), and ITERJ (Zimbra webmail active).
+Zimbra Collaboration Suite attack surface — SOAP API user enumeration without authentication, version fingerprinting, UploadServlet path traversal (CVE-2022-37042), `/service/proxy` internal SSRF, and Admin console access. Confirmed on IGN Argentina (Zimbra 8.8.11, admin user confirmed, UploadServlet active), gov-finance-portal (Zimbra webmail, SOAP auth functional), and ITERJ (Zimbra webmail active).
 
 ## When to Use
 
@@ -214,7 +214,7 @@ ADMIN_PORT=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 5 "https://$TARG
 - Admin console at `/zimbraAdmin/` returns HTTP 500 (partial exposure)
 - SOAP endpoints: `/service/soap/` and `/service/soap/LoginRequest` active
 
-### CGE-RJ (cge.webmail.rj.gov.br)
+### gov-finance-portal (cge.webmail.rj.gov.br)
 - Zimbra webmail — SOAP auth functional
 - Combined with WordPress CORS + XML-RPC on same domain
 
