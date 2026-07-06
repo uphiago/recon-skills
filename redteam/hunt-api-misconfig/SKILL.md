@@ -362,6 +362,24 @@ done
 
 ## Related Skills & Chains
 
+### Phase X — PDO Emulated Prepares Risk
+
+PHP's PDO driver mode `PDO::ATTR_EMULATE_PREPARES => true` forces client-side query rewriting instead of native DBMS prepared statements. While sometimes required (PgBouncer compatibility, legacy DB drivers), this mode:
+
+1. Passes untrusted input through C-level string functions (`strncat`, `strcpy`) that truncate on NUL bytes
+2. Relies on driver-side escaping (not server-side parameter binding) — single quoting bug = SQLi
+3. Can crash the PHP process on malformed multibyte input (NULL pointer deref, CVE-2025-14180)
+
+```bash
+# Detect emulated prepares: force an invalid multibyte sequence
+curl -sk -X POST "https://target.com/api/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{"product_id":101,"notes":"alice\x99"}'
+# If server returns 502/connection-reset instead of 400 → likely emulated prepares crash
+```
+
+When emulated prepares are active, treat ALL user input as potentially binary-unsafe. Even `PDO::quote()` + `PDO::prepare()` is not safe on drivers with `strncat()` internals.
+
 - **`hunt-ato`** — Mass assignment on signup/profile is the fastest path to admin. Chain primitive: API mass assignment + `hunt-ato` → `role=admin` set on signup → ATO via privileged role on first login.
 - **`hunt-auth-bypass`** — JWT flaws collapse the entire auth layer. Chain primitive: JWT `alg=none` + `hunt-auth-bypass` → impersonate any user by setting `sub` to victim ID, no signature required.
 - **`hunt-rce`** — Prototype pollution gadgets in Node.js dependencies (lodash, mongoose, jQuery) reach `child_process.spawn`. Chain primitive: Prototype pollution (`__proto__.shell=true`) + `hunt-rce` (Node.js gadget chain) → RCE on the API node.
