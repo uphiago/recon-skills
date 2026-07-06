@@ -1,0 +1,22 @@
+redteam/hunt-sqli/SKILL.md
+  s_fe52c8deaa2fe4::t_a403e62f194c15 398-419,421
+  s_fe52c8deaa2fe4::t_3edb13ed13f2be 420
+redteam/hunt-api-misconfig/SKILL.md
+  s_fe52c8deaa2fe4::t_c128100f3abb85 365-382
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0bd2c3cdfbab6ee56c50969a9a072e9271285015",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
