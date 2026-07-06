@@ -1,5 +1,9 @@
 # 🛡️ Recon & Pentest Skill Pack
 
+<p align="center">
+  <img src="banner.png" alt="Recon & Pentest Skill Pack" width="800">
+</p>
+
 **169 offensive security skills** for recon and pentest. Field-validated techniques from **600+ company targets** across **45+ sectors**. Updated with browser fingerprint evasion, anti-bot bypass, hardcoded credential hunting, SCADA/ICS enumeration.
 
 > 📖 **Blog & research**: [hiago.sh](https://hiago.sh) — Pentest Playbook, field notes, and tooling.
