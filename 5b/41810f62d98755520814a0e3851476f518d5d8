@@ -1,0 +1,21 @@
+redteam/hunt-mcp-security/SKILL.md
+  s_fe52c8deaa2fe4::t_4ffa997726aada 1-172
+redteam/hunt-llm-ai/SKILL.md
+  s_fe52c8deaa2fe4::t_11984ef7cbe0ba 421-511
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5b41810f62d98755520814a0e3851476f518d5d8",
+  "prompts": {},
+  "sessions": {
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
