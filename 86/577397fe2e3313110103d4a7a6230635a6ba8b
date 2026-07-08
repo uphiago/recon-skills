@@ -1,0 +1,47 @@
+redteam/hunt-sharepoint/SKILL.md
+  s_e84356542997d6::t_934da879a6982b 438
+redteam/hunt-brute-force/SKILL.md
+  s_e84356542997d6::t_390506dff9fd41 285
+redteam/mid-engagement-ir-detection/SKILL.md
+  s_e84356542997d6::t_474252554fa506 354
+redteam/hunt-ldap/SKILL.md
+  s_e84356542997d6::t_113e26843c57e4 308-311
+redteam/hunt-ntlm-info/SKILL.md
+  s_e84356542997d6::t_1c43e5294e5b9c 271
+redteam/hunt-wordpress/SKILL.md
+  s_e84356542997d6::t_5ea02cd78f20ca 371-375
+redteam/password-spray-methodology/SKILL.md
+  s_fe52c8deaa2fe4::t_fce7796a01d55c 1-403
+redteam/m365-entra-attack/SKILL.md
+  s_e84356542997d6::t_4e8b46701a4584 383
+redteam/okta-attack/SKILL.md
+  s_e84356542997d6::t_fb8b13bd278619 398
+recon/js-secrets-extraction/SKILL.md
+  s_fe52c8deaa2fe4::t_d621189208ce6f 244-278
+recon/exchange-owa-attack/SKILL.md
+  s_e84356542997d6::t_c1889cf30b6a6d 284-287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "86577397fe2e3313110103d4a7a6230635a6ba8b",
+  "prompts": {},
+  "sessions": {
+    "s_e84356542997d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0bde6a628ffe04k45Wi3W0LacZ",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    },
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
