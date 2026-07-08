@@ -305,3 +305,7 @@ WAF-block, and length-jitter explanations.
 - `userPassword` hash exfil (non-AD) or `description`-field credential read: **High**
 - AD user/group enumeration only: **Medium-High**
 - Blind boolean oracle confirmed but no useful attribute reachable: **Medium**
+
+## Related Skills
+
+- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials

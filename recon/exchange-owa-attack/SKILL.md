@@ -281,3 +281,7 @@ passwords = [f"{n.capitalize()}{s}!" for n in names for s in suffixes]
 - Password spray surface: confirm NO rate limiting (5 rapid attempts all return the same HTTP code).
 - Autodiscover MUST return internal server names (not just external URLs).
 - Document: Exchange version, AD domain, NetBIOS name, computer names, rate limiting status.
+
+## Related Skills
+
+- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials

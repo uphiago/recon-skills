@@ -492,4 +492,8 @@ After impersonating a privileged user, check if group/role management is availab
 # 2. Register new attacker account
 # 3. As admin, add attacker to ADMINISTRATORS group via UCP (no password needed)
 # 4. Login as attacker → full ACP access with known password
+
+## Related Skills
+
+- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials
 ```

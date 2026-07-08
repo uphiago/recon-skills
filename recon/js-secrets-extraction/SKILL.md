@@ -241,3 +241,38 @@ waybackurls target.com \
 # subjs — extract JS URLs from any URL list
 cat all_urls.txt | subjs | tee js_files_full.txt
 ```
+
+### Phase 7 — Per-File AI-Assisted Code Review
+
+JS bundles are source code — even minified. A disciplined per-file (per-chunk) review finds what autonomous agents miss:
+
+```bash
+# 1. Download all JS chunks
+curl -sk "https://target.com" | grep -oP 'src="[^"]+\.js[^"]*"' | \
+  cut -d'"' -f2 | while read js; do
+    curl -sk "$js" -o "chunks/$(basename $js)"
+  done
+
+# 2. Per-chunk pattern review for dangerous sinks
+for chunk in chunks/*.js; do
+  echo "=== $chunk ==="
+  # eval / new Function (arbitrary code execution)
+  grep -oPn 'eval\s*\(|new\s+Function\s*\(' "$chunk"
+  # Hardcoded API keys/secrets
+  grep -oPn '(?:api[_-]?key|secret|token|password|bearer)\s*[:=]\s*["\x27][^"\x27]{8,}' "$chunk"
+  # postMessage without origin check
+  grep -oPn 'postMessage\s*\(' "$chunk"
+  # Prototype pollution patterns
+  grep -oPn '__proto__|constructor\.prototype' "$chunk"
+  # Debug/test code in production
+  grep -oPin 'debug|test|staging|localhost' "$chunk"
+  # Client-trusted flags
+  grep -oPn '(?:isAdmin|isVip|isPremium|isModerator|role)\s*[=:]\s*true' "$chunk"
+done > ai_review_findings.txt
+
+# 3. Review findings — each is a CANDIDATE, not confirmed
+grep -c "===" ai_review_findings.txt  # files reviewed
+grep -c ":" ai_review_findings.txt     # candidate findings
+```
+
+Key insight: autonomous agents told "find bugs" in a whole codebase burn budget and miss things. A guaranteed per-file pass with fixed output structure produces repeatable hits. Each finding still needs manual PoC verification.

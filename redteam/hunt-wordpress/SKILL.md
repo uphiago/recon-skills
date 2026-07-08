@@ -368,7 +368,11 @@ for path in /info.php /test.php /phpinfo.php /p.php /php_info.php; do
           echo "  [!!!] $fn IS AVAILABLE — RCE PRIMITIVE"
         fi
       fi
-    done
+done
+
+## Related Skills
+
+- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials
   fi
 done
 ```
