@@ -21,7 +21,7 @@ Use when the target has any state-changing endpoint that a logged-in user can tr
 | `Sec-Fetch-Site: cross-site` | curl doesn't send | Server can reject cross-site requests via this header |
 
 **CSRF verification checklist:**
-1. ✅ Endpoint changes state (POST/PUT/DELETE) && 
+1. ✅ Endpoint changes state (POST/PUT/DELETE)
 2. ✅ Cookie has `SameSite=None` OR `SameSite=Lax` with GET-based action
 3. ✅ No custom CSRF token/header required
 4. ✅ PoC works from a **different origin in a real browser**
