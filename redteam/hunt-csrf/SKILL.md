@@ -21,12 +21,16 @@ Use when the target has any state-changing endpoint that a logged-in user can tr
 | `Sec-Fetch-Site: cross-site` | curl doesn't send | Server can reject cross-site requests via this header |
 
 **CSRF verification checklist:**
-1. ✅ Endpoint changes state (POST/PUT/DELETE)
+1. ✅ Endpoint changes state (POST/PUT/DELETE) && 
 2. ✅ Cookie has `SameSite=None` OR `SameSite=Lax` with GET-based action
 3. ✅ No custom CSRF token/header required
 4. ✅ PoC works from a **different origin in a real browser**
 
 **If step 2 fails (SameSite=Lax on POST endpoint) → NOT exploitable CSRF via curl alone.** SameSite=Lax allows cookies on top-level navigation GET, not cross-site POST. A curl POST succeeding with the cookie is a **false positive** — the browser would block it.
+
+**CSRF Middleware Protection Bypass**:
+- Many modern web frameworks (for example, those with CSRF protection enabled by default) reject state-changing requests such as POST, PUT, or DELETE with a `403 Forbidden` response when the CSRF token is missing or invalid.
+- In some applications, if the `PATCH` method is not covered by the same CSRF middleware or is handled differently, it may be possible to perform the same state-changing action using PATCH instead. This can result in a CSRF protection bypass if the server accepts the request without validating a CSRF token.
 
 **SameSite cheat sheet:**
 | Cookie Attribute | Browser sends cookie on... |
