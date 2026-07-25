@@ -1,0 +1,100 @@
+meta/sector-recon-methodology/scripts/parallel_sector_probe.py
+  s_7f910ca5a6437e::t_f1aae4e926a732 112
+  s_7f910ca5a6437e::t_df8da1ac409bc5 116
+  s_7f910ca5a6437e::t_7c67dcfca1c030 146-152,154
+.gitignore
+  s_7f910ca5a6437e::t_4c59bf50ca4190 5
+README.md
+  s_7f910ca5a6437e::t_e66de9b87ae6ac 50
+  s_7f910ca5a6437e::t_66b72399133982 23,25
+  s_7f910ca5a6437e::t_c44613d27045cc 30-31
+  s_7f910ca5a6437e::t_84bbeb5e576014 7
+  s_7f910ca5a6437e::t_c10ee51a8fe050 9
+  s_7f910ca5a6437e::t_7078c94c3120d7 8
+redteam/parallel-recon-triad/references/skill-catalog.md
+  s_7f910ca5a6437e::t_d017d6ba3cafae 72,74,76
+SOUL.md
+  s_7f910ca5a6437e::t_2e0a42f8378d5b 1
+  s_7f910ca5a6437e::t_274dbe655a5967 72
+  s_7f910ca5a6437e::t_4630bbf16e6602 5
+  s_7f910ca5a6437e::t_332f8cf0ac7838 127
+  s_7f910ca5a6437e::t_6c272131a3d510 54
+  s_7f910ca5a6437e::t_49f533c4d44baf 3
+  s_7f910ca5a6437e::t_c4c6d29f40bfcc 4
+chains/cross-attack-chains/SKILL.md
+  s_7f910ca5a6437e::t_9334ab5cc814b5 44-46
+redteam/recon-sector/SKILL.md
+  s_7f910ca5a6437e::t_7fe7d382b295b6 1-188
+redteam/recon-sector-expansion/SKILL.md
+  s_7f910ca5a6437e::t_b522290dc811de 12
+  s_7f910ca5a6437e::t_29dfc58aeaca87 390
+recon/port-mass-scan/SKILL.md
+  s_7f910ca5a6437e::t_3dd902e8007387 20,24,27
+meta/recon-playbook/SKILL.md
+  s_7f910ca5a6437e::t_a6a90868c88c8f 23
+  s_7f910ca5a6437e::t_1e2af22cef5dc8 35
+controller/SKILL.md
+  s_7f910ca5a6437e::t_87b8737995e116 15
+  s_7f910ca5a6437e::t_a82f3cb8397409 3
+  s_7f910ca5a6437e::t_8722988013ab69 43
+  s_7f910ca5a6437e::t_dc73e3fc80df2d 389
+  s_7f910ca5a6437e::t_9cca97809f6d73 9
+  s_7f910ca5a6437e::t_8a69f0db0a6f43 2
+  s_7f910ca5a6437e::t_3fb3c083ab9a49 41-42
+  s_7f910ca5a6437e::t_5ac72ef081ad28 44-46
+redteam/wp-plugin-cve-hunt/SKILL.md
+  s_7f910ca5a6437e::t_8fc476d2e89436 300
+AGENTS.md
+  s_7f910ca5a6437e::t_61c3e74061567c 7,9
+  s_7f910ca5a6437e::t_6ac5dc84ef3e3f 123
+  s_7f910ca5a6437e::t_5dd9f290531993 219
+  s_7f910ca5a6437e::t_4fa3e72c5664ce 227
+  s_7f910ca5a6437e::t_2723b65ea1f547 374
+  s_7f910ca5a6437e::t_40fa33c275a522 74
+  s_7f910ca5a6437e::t_aa5ddf36301fe9 1,3
+worker/SKILL.md
+  s_7f910ca5a6437e::t_6166002cab0b84 6
+  s_7f910ca5a6437e::t_bee28a804d61f8 22
+  s_7f910ca5a6437e::t_ace659a2850722 241
+  s_7f910ca5a6437e::t_9f36649823ad4b 19-21
+redteam/wp-plugin-automation/SKILL.md
+  s_7f910ca5a6437e::t_62aab096b0eaad 178
+redteam/recon-sector/references/sectors.yaml
+  s_7f910ca5a6437e::t_3d58d226aaead9 1-321
+recon/wp-mass-recon/SKILL.md
+  s_7f910ca5a6437e::t_b5bd95b4763f75 30-31
+meta/sector-recon-methodology/SKILL.md
+  s_7f910ca5a6437e::t_1f247f01f85a7e 23
+  s_7f910ca5a6437e::t_d74abf76b2451b 76
+redteam/parallel-recon-triad/references/cron-template.md
+  s_7f910ca5a6437e::t_7f2ab451700bb4 1
+  s_7f910ca5a6437e::t_fffcdae2b1eb67 9
+meta/cross-wave-delta-analysis/SKILL.md
+  s_7f910ca5a6437e::t_02e992aeb2e74b 123
+STYLE.md
+  s_7f910ca5a6437e::t_85cdcc626a2475 1-115
+redteam/parallel-recon-triad/SKILL.md
+  s_7f910ca5a6437e::t_78cd289be46e73 7-12
+  s_7f910ca5a6437e::t_f2af1d8676fc5c 31-32
+  s_7f910ca5a6437e::t_195ba720fca4b4 15,20-22,24
+  s_7f910ca5a6437e::t_1fc5b77b6b09a1 134
+  s_7f910ca5a6437e::t_6644013c023544 3,6
+  s_7f910ca5a6437e::t_889152fa31a3be 148
+  s_7f910ca5a6437e::t_a9293736e08592 195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "becae4257fa92e6bf2b8c30e52e64a38c961a0c1",
+  "prompts": {},
+  "sessions": {
+    "s_7f910ca5a6437e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0caa4e880ffec6N0giTZ5u2Rjf",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
