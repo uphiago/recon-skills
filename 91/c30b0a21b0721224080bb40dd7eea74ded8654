@@ -1,0 +1,268 @@
+recon/llm-prompt-injection/SKILL.md
+  s_fe52c8deaa2fe4::t_398b932c9e877a 1-2,6-7,17-18,20,24-26,32-35,38,40,42,54,56,58,67,78-80,88-90,99,101,110,114-116,125,127,129-131,136,138,140,142,150,152,154,156,201-203,210,212,214,222,224,226,241,247-249,251,253,262,264,268,271,276,279,281-283,285,299-300,324-325,346-348,350,352,365-367,369-375,377-378,382-384,390,392,409-411,417-422,424-425,427-428,430,433-434,439,442-444,446-450,452-455,461,474-478,482-483
+  s_fe52c8deaa2fe4::t_722cdf296c230a 3-4,19,21-23,27-29,31,36-37,39,41,43-53,55,57,59-63,65-68,70-77,81-87,91-98,100,102-111,113,117-124,126,128,132-135,137,139,141,143-149,151,153,155-196,198-200,204-209,211,213,215-221,223,225,227,229-246,250,252,254-256,258-260,263,265-267,269-270,272-275,277-278,280,284,286-298,301-323,326-345,349,351,353-364,368,376,379-381,385-389,391,393-408,412-416,423,426,429,431-432,435-438,440-441,445,451,456,458-473,479-481
+recon/wp-plugin-rest-auth-bypass/SKILL.md
+  s_fe52c8deaa2fe4::t_5d2861a7301e74 1-3,6-8,16-38,40-184,186,188,190-205
+  s_fe52c8deaa2fe4::t_7193aae7e4c2fa 185,187,189
+README.md
+  s_9d6b26015d42f7::t_40cacf31b08f45 3,5-6
+  s_9d6b26015d42f7::t_d1350ab95f95c0 16
+  s_9d6b26015d42f7::t_7d537229696ae6 77,79
+  s_fe52c8deaa2fe4::t_a8b37605e222c4 3-6
+  s_7f910ca5a6437e::t_7078c94c3120d7 8
+recon/js-secrets-extraction/SKILL.md
+  s_6fa4023c79443c::t_fa9cadc1d0641f 165-172,175-176,178-179,181-183,193
+  s_6fa4023c79443c::t_34fb8de8c7685e 184-192
+  s_fe52c8deaa2fe4::t_b58bc0fe7e9b32 202-208,210-223,225-246
+  s_fe52c8deaa2fe4::t_d621189208ce6f 247-253,255,257-262,264,266,268,270,272,274-281
+redteam/hunt-business-logic/SKILL.md
+  s_6fa4023c79443c::t_14cfb1edc3bbe3 275-286,288-292,294-297,299-315
+redteam/hunt-supabase/SKILL.md
+  s_6fa4023c79443c::t_ea93608e5e706f 395-415,417-426
+redteam/hunt-metrics-exposure/SKILL.md
+  s_6fa4023c79443c::t_f4c26c3b48ad87 1-2,9-25,27-64,68-69,72-73,75-106
+  s_6fa4023c79443c::t_c52c3481b2aa08 3
+redteam/hunt-write-gap/SKILL.md
+  s_6fa4023c79443c::t_803b20a1301e1f 1-2,9-29,31-50,52-56,58-62,64-67,69-80,82-116
+  s_6fa4023c79443c::t_77c12b8203412e 3
+redteam/hunt-schema-enumeration/SKILL.md
+  s_6fa4023c79443c::t_51d02a135bb318 3
+  s_6fa4023c79443c::t_1100d716b60738 1-2,9-29,31-63,65-71,73-82,84-98,100-107,109-129
+redteam/hunt-xss/SKILL.md
+  s_6fa4023c79443c::t_c1c50c639ffb3a 15-37,39-43
+  s_fe52c8deaa2fe4::t_88533cb98b76cb 434,440,445,450,452,454,461,465
+redteam/hunt-csrf/SKILL.md
+  s_6fa4023c79443c::t_73a1369818463b 15-33,38-47
+recon/s3-minio-content-type-xss/SKILL.md
+  s_fe52c8deaa2fe4::t_26bffaa296f724 1-2,6-7,16-31,33-39,41-54,56-58,60-69,71-93,95-168
+recon/scada-hikvision-isapi/SKILL.md
+  s_fe52c8deaa2fe4::t_716000af997a3d 1-2,6-7,16-31,33-39,41-42,46-56,58-102,104-111,113-129,131-139,141-145,147-159,161-165,167-168,170-181,183,185-186,188-189,191-192,194-217
+recon/hardcoded-credential-hunt/SKILL.md
+  s_fe52c8deaa2fe4::t_3c3564c596cb1d 1-2,6-7,15-30,32-38,40-41,43-52,54-63,65-82,84-110,112-134,136-165
+recon/unauth-api-flow-hijack/SKILL.md
+  s_fe52c8deaa2fe4::t_01b407eee6aef7 1-2,6-7,16-31,33-41,43-106,108-120,122-125,127-137,139-143,145-154,156-187
+recon/stealth-browser-launch/SKILL.md
+  s_fe52c8deaa2fe4::t_fa3b342fa92128 1-2,6-7,16-31,33-235
+recon/http2-header-impersonation/SKILL.md
+  s_fe52c8deaa2fe4::t_825203affe1937 1-2,6-7,14-29,31-48,50-90,93-98,100-115,117-135,137-148,150-237
+recon/tls-fingerprint-impersonation/SKILL.md
+  s_fe52c8deaa2fe4::t_282e75ea585d78 1-2,6-7,15-30,32-39,41-122,124-237
+recon/humanize-automation/SKILL.md
+  s_fe52c8deaa2fe4::t_4ca3a8371258f3 1-2,6-7,14-29,31-229
+redteam/parallel-recon-triad/references/cron-template.md
+  s_fe52c8deaa2fe4::t_b3124133d0f0e8 118
+  s_7f910ca5a6437e::t_7f2ab451700bb4 1
+  s_7f910ca5a6437e::t_fffcdae2b1eb67 9
+redteam/parallel-recon-triad/SKILL.md
+  s_fe52c8deaa2fe4::t_a4d89e058ee112 185
+  s_fe52c8deaa2fe4::t_314b01ec99bc57 161
+  s_fe52c8deaa2fe4::t_5c11204a6c32ec 596
+  s_fe52c8deaa2fe4::t_1c6dac251e6b7b 644
+  s_7f910ca5a6437e::t_f2af1d8676fc5c 32-33
+  s_7f910ca5a6437e::t_195ba720fca4b4 16,21-23,25
+  s_7f910ca5a6437e::t_1fc5b77b6b09a1 135
+  s_7f910ca5a6437e::t_6644013c023544 3,8
+  s_7f910ca5a6437e::t_889152fa31a3be 149
+  s_7f910ca5a6437e::t_a9293736e08592 196
+meta/recon-playbook/SKILL.md
+  s_fe52c8deaa2fe4::t_9c557b165fe57c 35
+  s_7f910ca5a6437e::t_1e2af22cef5dc8 34
+redteam/parallel-recon-triad/references/skill-catalog.md
+  s_fe52c8deaa2fe4::t_447c257d0bd4b3 198
+  s_fe52c8deaa2fe4::t_f9eb51982a2709 224
+  s_fe52c8deaa2fe4::t_d55a4c4c6b6003 213
+  s_fe52c8deaa2fe4::t_ddc0c84112a498 3
+  s_fe52c8deaa2fe4::t_69e644330bac1d 1
+  s_fe52c8deaa2fe4::t_a5492a21f48de3 7
+  s_7f910ca5a6437e::t_d017d6ba3cafae 72,74,76
+recon/origin-ip-discovery/SKILL.md
+  s_fe52c8deaa2fe4::t_a141950ea25442 1-3,6-7,15-30,32-38,40-41,43-51,53-69,71-78,80-83,85-86,88-95,97-112,114-115,118-126,128-136,138-144,146-152,154-155,157-182
+recon/subdomain-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_09705cc0379feb 277-306,308-327
+recon/subdomain-takeover-hunt/SKILL.md
+  s_fe52c8deaa2fe4::t_0932211b1c2f40 1-3,6-8,15-29,31-82,84-102,104-139,141-148
+recon/web-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_7d331a1ed79c53 207-260
+  s_fe52c8deaa2fe4::t_9bfa3f26a20fa6 261-271,273-281,283-286,289-311
+recon/vhost-enumeration/SKILL.md
+  s_fe52c8deaa2fe4::t_3c0b78187d5c2e 1-3,6-8,15-22,24-30,32-69,71-84,86-92,94-108,110-114,117-126,128-140,143-166
+recon/asn-infrastructure-mapping/SKILL.md
+  s_fe52c8deaa2fe4::t_12fe78753a820a 1-3,6-7,16-31,33-60,62-189
+recon/github-secret-hunting/SKILL.md
+  s_fe52c8deaa2fe4::t_b41dd26feb2fb9 1-3,6-7,15-30,32-39,41-115,117-127,129-134,136,138-145,147-148,150,152-168,170-193
+recon/deep-invade/SKILL.md
+  s_fe52c8deaa2fe4::t_4c84b92fe430ec 370-412,414-423,425,427-429
+  s_fe52c8deaa2fe4::t_018972a304a4a3 430-459,461-464
+recon/visual-recon/SKILL.md
+  s_fe52c8deaa2fe4::t_c61cb5fa300fd8 1-3,6-7,16-31,33-75,77-178
+recon/cms-detection/SKILL.md
+  s_fe52c8deaa2fe4::t_ab18b0247c711f 1-3,6-7,16-31,34-72,74-75,77-78,80-81,83-88,90-91,94-99,102-103,105-110,112,114-119,121,123-130,132,134-214
+recon/source-leak-hunt/SKILL.md
+  s_fe52c8deaa2fe4::t_6fb4b821aa80f1 198-217,222-244
+redteam/hunt-mass-assignment/SKILL.md
+  s_fe52c8deaa2fe4::t_cb41f4dd77fb6a 1-3,7-9,15-31,33-67,69-78,80-83,85-88,90-93,95-128,130-133,135-138,140-177
+redteam/hunt-django/SKILL.md
+  s_fe52c8deaa2fe4::t_ae50575846a8ad 1-2,7-9,16-23,25-33,36-43,47-51,53-76,80-91,93-102,104-105,107-146
+redteam/hunt-fastapi/SKILL.md
+  s_fe52c8deaa2fe4::t_439beb62c356df 1-2,7-9,16-33,37-44,46-47,49-60,63-67,69-72,74-81,83-86,88-91,93-100,102-105,107-109,111-133,135-138,140-162
+redteam/hunt-information-disclosure/SKILL.md
+  s_fe52c8deaa2fe4::t_fa78fdca94ac5d 1-3,7-9,16-34,36-44,48-57,59-66,68-73,75-79,81-87,89-106,108-111,113-117,119-122,124-131,134-135,139-176
+redteam/hunt-nestjs/SKILL.md
+  s_fe52c8deaa2fe4::t_572a358ce6b5a8 1-2,7-9,16-33,35-37,40-52,54-57,60-69,71-72,74-76,78-85,87-91,93-97,99-109,111-144,150-171
+redteam/hunt-prototype-pollution/SKILL.md
+  s_fe52c8deaa2fe4::t_300d68d059b890 1-3,7-8,15-32,34-35,37-50,52-55,57-59,61-68,70-75,77-82,84-89,91-102,104-106,108-130,132-157
+redteam/hunt-broken-function-level-auth/SKILL.md
+  s_fe52c8deaa2fe4::t_5c8ecccba11b74 1-3,7-9,15-33,35-52,54-56,59-67,69-81,83-85,87-95,97-101,103-109,111-126,128-131,133-155
+redteam/hunt-race-condition/SKILL.md
+  s_fe52c8deaa2fe4::t_0fa3bc5cb9909f 712,718,723,728,730,732,742
+redteam/hunt-ssti/SKILL.md
+  s_fe52c8deaa2fe4::t_cdc25866bae81e 218-267
+redteam/hunt-idor/SKILL.md
+  s_fe52c8deaa2fe4::t_68fc387b1682c5 393,399,404,424
+redteam/hunt-ssrf/SKILL.md
+  s_fe52c8deaa2fe4::t_e8988318d3007d 457,463,468,473,475,477,484,488
+redteam/hunt-file-upload/SKILL.md
+  s_fe52c8deaa2fe4::t_5ccbf2b5298a83 157,163,168,173,175,188
+redteam/hunt-sqli/SKILL.md
+  s_fe52c8deaa2fe4::t_a403e62f194c15 434-439,441-442,444-447,449-455,457
+  s_fe52c8deaa2fe4::t_3edb13ed13f2be 456
+redteam/hunt-api-misconfig/SKILL.md
+  s_fe52c8deaa2fe4::t_c128100f3abb85 420-429,431-437
+redteam/hunt-mcp-security/SKILL.md
+  s_fe52c8deaa2fe4::t_4ffa997726aada 1-3,6-8,15-32,35-45,47-49,53,55-56,58-65,67-70,72-74,77-79,81-91,93-95,97-102,105-108,110-116,118-119,121,123-129,131-133,135-143,145-147,149-151,179-182,184-188,190-195,198
+redteam/hunt-llm-ai/SKILL.md
+  s_fe52c8deaa2fe4::t_11984ef7cbe0ba 457-464,467-469,471-476,478-483,485,487-496,498-499,501-503,505-514,516-521,523-536,538-540,542-544,546-547
+redteam/hunt-sharepoint/SKILL.md
+  s_e84356542997d6::t_934da879a6982b 474
+redteam/hunt-brute-force/SKILL.md
+  s_e84356542997d6::t_390506dff9fd41 316
+redteam/mid-engagement-ir-detection/SKILL.md
+  s_e84356542997d6::t_474252554fa506 381
+redteam/hunt-ldap/SKILL.md
+  s_e84356542997d6::t_113e26843c57e4 311,344-346
+redteam/hunt-ntlm-info/SKILL.md
+  s_e84356542997d6::t_1c43e5294e5b9c 306
+redteam/hunt-wordpress/SKILL.md
+  s_e84356542997d6::t_5ea02cd78f20ca 374,411-414
+redteam/password-spray-methodology/SKILL.md
+  s_fe52c8deaa2fe4::t_fce7796a01d55c 1-3,9-103,105-130,132-386,388-391,413-427
+redteam/m365-entra-attack/SKILL.md
+  s_e84356542997d6::t_4e8b46701a4584 411
+redteam/okta-attack/SKILL.md
+  s_e84356542997d6::t_fb8b13bd278619 430
+recon/exchange-owa-attack/SKILL.md
+  s_e84356542997d6::t_c1889cf30b6a6d 283-286
+meta/sector-recon-methodology/scripts/parallel_sector_probe.py
+  s_7f910ca5a6437e::t_f1aae4e926a732 112
+  s_7f910ca5a6437e::t_df8da1ac409bc5 116
+  s_7f910ca5a6437e::t_7c67dcfca1c030 146-152,154
+.gitignore
+  s_7f910ca5a6437e::t_4c59bf50ca4190 5
+SOUL.md
+  s_7f910ca5a6437e::t_2e0a42f8378d5b 1
+  s_7f910ca5a6437e::t_274dbe655a5967 72
+  s_7f910ca5a6437e::t_4630bbf16e6602 5
+  s_7f910ca5a6437e::t_332f8cf0ac7838 127
+  s_7f910ca5a6437e::t_6c272131a3d510 54
+  s_7f910ca5a6437e::t_49f533c4d44baf 3
+  s_7f910ca5a6437e::t_c4c6d29f40bfcc 4
+chains/cross-attack-chains/SKILL.md
+  s_7f910ca5a6437e::t_9334ab5cc814b5 43-45
+redteam/recon-sector/SKILL.md
+  s_7f910ca5a6437e::t_7fe7d382b295b6 1-4,6-7,19-81,83-92,94-107,109-122,124,127-146,148-187
+redteam/recon-sector-expansion/SKILL.md
+  s_7f910ca5a6437e::t_b522290dc811de 15
+  s_7f910ca5a6437e::t_29dfc58aeaca87 411
+recon/port-mass-scan/SKILL.md
+  s_7f910ca5a6437e::t_3dd902e8007387 19,23,26
+controller/SKILL.md
+  s_7f910ca5a6437e::t_87b8737995e116 20
+  s_7f910ca5a6437e::t_8722988013ab69 48
+  s_7f910ca5a6437e::t_dc73e3fc80df2d 394
+  s_7f910ca5a6437e::t_9cca97809f6d73 14
+  s_7f910ca5a6437e::t_8a69f0db0a6f43 2
+  s_7f910ca5a6437e::t_3fb3c083ab9a49 46-47
+  s_7f910ca5a6437e::t_5ac72ef081ad28 49-51
+redteam/wp-plugin-cve-hunt/SKILL.md
+  s_7f910ca5a6437e::t_8fc476d2e89436 327
+AGENTS.md
+  s_7f910ca5a6437e::t_61c3e74061567c 7
+  s_7f910ca5a6437e::t_2723b65ea1f547 366
+  s_7f910ca5a6437e::t_40fa33c275a522 66
+  s_7f910ca5a6437e::t_aa5ddf36301fe9 1,3
+worker/SKILL.md
+  s_7f910ca5a6437e::t_6166002cab0b84 11
+  s_7f910ca5a6437e::t_bee28a804d61f8 27
+  s_7f910ca5a6437e::t_ace659a2850722 246
+  s_7f910ca5a6437e::t_9f36649823ad4b 24-26
+redteam/wp-plugin-automation/SKILL.md
+  s_7f910ca5a6437e::t_62aab096b0eaad 205
+redteam/recon-sector/references/sectors.yaml
+  s_7f910ca5a6437e::t_3d58d226aaead9 1-321
+recon/wp-mass-recon/SKILL.md
+  s_7f910ca5a6437e::t_b5bd95b4763f75 29-30
+meta/sector-recon-methodology/SKILL.md
+  s_7f910ca5a6437e::t_1f247f01f85a7e 22
+meta/cross-wave-delta-analysis/SKILL.md
+  s_7f910ca5a6437e::t_02e992aeb2e74b 125
+STYLE.md
+  s_7f910ca5a6437e::t_85cdcc626a2475 1-115
+docs/superpowers/specs/2026-07-29-runtime-decoupling-and-pentest-article-design.md
+  s_bb929435059764::t_7abfffab569f46 1-158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "91c30b0a21b0721224080bb40dd7eea74ded8654",
+  "prompts": {},
+  "sessions": {
+    "s_6fa4023c79443c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_10f1a4587ffeP9P7ChjJ3uRRjC",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    },
+    "s_7f910ca5a6437e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0caa4e880ffec6N0giTZ5u2Rjf",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    },
+    "s_9d6b26015d42f7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1060f9af0ffe5fAaIQRtSwckUQ",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "agentiko <hiago@agentiko>"
+    },
+    "s_bb929435059764": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019faf4f-811e-7140-a83c-a7757cca713b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    },
+    "s_e84356542997d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0bde6a628ffe04k45Wi3W0LacZ",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    },
+    "s_fe52c8deaa2fe4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ffa9bb10ffextaZeEdgKA6vXA",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
