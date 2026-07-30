@@ -1,0 +1,96 @@
+redteam/recon-sector-expansion/SKILL.md
+  s_bb929435059764::t_073cb196271201 30-31,38,43,183
+redteam/report-writing/SKILL.md
+  s_bb929435059764::t_073cb196271201 591,598-600
+  s_bb929435059764::t_0b3f0d3e5c7e2d 588,594
+recon/phpinfo-to-rce/SKILL.md
+  s_bb929435059764::t_77732b2137e753 21-23
+redteam/evidence-hygiene/SKILL.md
+  s_bb929435059764::t_77732b2137e753 328,335,337,350-352
+recon/error-log-mining/SKILL.md
+  s_bb929435059764::t_77732b2137e753 20-23
+  s_bb929435059764::t_7d16c6b6e7664e 57,282,339-340
+recon/js-secrets-extraction/SKILL.md
+  s_bb929435059764::t_77732b2137e753 70-72
+.gitignore
+  s_bb929435059764::t_aebf3c7b0cb996 6
+recon/exchange-owa-attack/SKILL.md
+  s_bb929435059764::t_77732b2137e753 19-21
+meta/attack-patterns-reference/references/p-patterns.md
+  s_bb929435059764::t_3b37df88792206 1-48
+scripts/validate_skills.py
+  s_bb929435059764::t_45386ecc9476f7 29-43,186-191
+  s_bb929435059764::t_b99670c383ea9f 192
+recon/iot-camera-recon/SKILL.md
+  s_bb929435059764::t_073cb196271201 18-20
+redteam/wordpress-cors-xmlrpc-rce-chain/SKILL.md
+  s_bb929435059764::t_68640ee22e9834 3-4,6-8,10-15,18,20-23,27-31,33,35-40,42,44,46-52,55,57,59,61-63,65-67,69,72-74,76-81,84-85,87,89-91,93-94,96,98,100-103,105,107,109-111,113-115,117,119-126,129-130,134-140,142,144-150
+redteam/web2-recon/SKILL.md
+  s_bb929435059764::t_77732b2137e753 414-415
+STYLE.md
+  s_bb929435059764::t_8aedf34788f096 76-80
+redteam/llm-prompt-injection/SKILL.md
+  s_bb929435059764::t_42f498ae584abd 3
+recon/port-service-discovery/SKILL.md
+  s_bb929435059764::t_77732b2137e753 21-24
+meta/recon-playbook/SKILL.md
+  s_bb929435059764::t_30296cfec680ee 3-4,6-8,12-17,19,22-37,41-47,51-56,61-68,71-72,76,78,80-85,88-89,91,94-108,111-112,114,117-132,135-136,138,141-156,159-160,162,164,166-170,172-173,175,177-178,180-199,202-203,205,207,209-214,216,220-227,231-236
+recon/xmlrpc-exploitation/SKILL.md
+  s_bb929435059764::t_cee4b9091fc876 302,304-308,315-316,318-321
+meta/attack-patterns-reference/SKILL.md
+  s_bb929435059764::t_9d06bcd54c99f6 3-4,8,14,17,20-21,24,26-28,32-35,37-38,42-44,46,48-53,57-103,107-113,117-124
+recon/wordpress-plugin-hunt/SKILL.md
+  s_bb929435059764::t_7d16c6b6e7664e 282-284,286-288
+recon/wp-mass-recon/SKILL.md
+  s_bb929435059764::t_073cb196271201 48
+  s_bb929435059764::t_77732b2137e753 245-247
+.github/workflows/validate.yml
+  s_bb929435059764::t_aebf3c7b0cb996 1-25
+recon/deep-invade/SKILL.md
+  s_bb929435059764::t_7d16c6b6e7664e 26-29,36,59-67
+recon/api-noauth-hunt/SKILL.md
+  s_bb929435059764::t_0de58b877f80a8 3,18,20-23,54-55,58-59,148-152,156-158,160-162,165,167-172,174-178,180-182,184-188,190-193,195,197-200,202-205,207-208,215-220,224-231
+recon/web-enumeration/SKILL.md
+  s_bb929435059764::t_1d21654b585474 185-187
+chains/cross-attack-chains/SKILL.md
+  s_bb929435059764::t_0849ca39f053fe 3-4,6-8,12-15,18,20-22,26-30,34-37,41,44-46,48-49,52,54-59,61,63,65,67-72,74-75,77,79-82,84-86,89,91,93-94,96,98,100-104,106-107,109,111,113-116,118-119,121,123-125,129-135,139-144
+recon/staging-subdomain-hunt/SKILL.md
+  s_bb929435059764::t_cee4b9091fc876 251-252,260-262
+redteam/hunt-wordpress/SKILL.md
+  s_bb929435059764::t_b00ced69c89b90 3-4,6-8,10-17,20,22-25,27,29-32,34,36-41,43,45,48-50,52-62,67,69,71,74-76,78-79,81-83,86-87,89,92,94-95,98-100,102,104,108-117,122,124-129,131-132,134,137-141,144,146-150,152,154,157-162,164-166,169-173,175,177-178,180-184,186-187,189,191-192,194-200,202-203,205,207,209-214,217-219,221,223-231,233,235-243
+  s_bb929435059764::t_72bf2c8caf5bd7 93
+recon/web-enumeration/references/batch-probe-methodology.md
+  s_bb929435059764::t_1d21654b585474 3-4,23-25,130-132
+chains/wordpress-full-compromise/SKILL.md
+  s_bb929435059764::t_0849ca39f053fe 3-4,6-8,12-14,16,19,21-23,27-30,34-39,43,45-52,55,57,59,61,63-67,69,71,73-75,77-78,80,82,84-88,90,92,94-95,97-101,103,105,107-110,112,114-116,120-125,129-134
+redteam/wp-plugin-cve-hunt/SKILL.md
+  s_bb929435059764::t_a7a9f66b0a7a87 172,175-183
+CHANGELOG.md
+  s_bb929435059764::t_aebf3c7b0cb996 3-14
+  s_bb929435059764::t_8aedf34788f096 26-30
+redteam/cors-chain-automation/SKILL.md
+  s_bb929435059764::t_ceac7ed6f2a714 3,11,17,19-28,32-33
+meta/cross-wave-delta-analysis/SKILL.md
+  s_bb929435059764::t_073cb196271201 33-34,81-82
+README.md
+  s_bb929435059764::t_8aedf34788f096 1,7-9,17,19,21-26,28-33,45,47,49-51,53-54,57-60,70-71,91-93
+redteam/hunt-cors/SKILL.md
+  s_bb929435059764::t_77732b2137e753 332-334
+  s_bb929435059764::t_073cb196271201 201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "699bfc3cd2f39e9fcce27d1f5e0544664f80a53c",
+  "prompts": {},
+  "sessions": {
+    "s_bb929435059764": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019faf4f-811e-7140-a83c-a7757cca713b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
