@@ -1,0 +1,19 @@
+redteam/wstg-web-pentest/SKILL.md
+  s_b289a61e8ec1ec::t_7b2fedb8f8c59d 1-1407
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "1db898cec0ce8775a5c5ce12e97632fce858f6a1",
+  "prompts": {},
+  "sessions": {
+    "s_b289a61e8ec1ec": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04b0da549ffeJ8Ig7pf6lfBde6",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
