@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-08-31-401-403-skill-restoration.md
+  s_a0aa8b9d51d069::t_0efdf044f2973d 1-313
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1ed403d43d19dcc80b651c62bd84fbafd83fa1a6",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
