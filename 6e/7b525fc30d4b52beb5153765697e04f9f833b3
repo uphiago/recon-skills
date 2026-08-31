@@ -1,0 +1,19 @@
+.gitignore
+  s_a0aa8b9d51d069::t_146ab50b15ea94 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "6e7b525fc30d4b52beb5153765697e04f9f833b3",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
