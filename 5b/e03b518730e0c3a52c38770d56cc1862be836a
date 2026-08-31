@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-08-31-401-403-skill-restoration-design.md
+  s_a0aa8b9d51d069::t_21cb8094e4f980 1-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "5be03b518730e0c3a52c38770d56cc1862be836a",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
