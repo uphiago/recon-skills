@@ -1,0 +1,19 @@
+recon/subdomain-enumeration/SKILL.md
+  s_a0aa8b9d51d069::t_bde2de1dd8bb62 33,71,141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "66320660e19f08bdc96b03c63ada6c301d4192e2",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
