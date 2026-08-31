@@ -1,0 +1,21 @@
+recon/401-403-bypass/SKILL.md
+  s_a0aa8b9d51d069::t_bcab7b046409ce 20-24,58-59,72-75,528-529,532-533
+  s_a0aa8b9d51d069::t_b86457983a0334 3,9-15,56-57,60-62,70,77,82,103,115,130,142,150,157,165,173,179,196,209,226,228,248,270,286,288,303,344,361,363,372,382,396,412,433,445,455,468
+  s_a0aa8b9d51d069::t_f33b01f7971bba 71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9a975df04dbdd94321fe55cbc38c9b49851206e1",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
