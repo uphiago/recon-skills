@@ -1,0 +1,25 @@
+docs/superpowers/plans/2026-08-31-401-403-skill-restoration.md
+  s_a0aa8b9d51d069::t_ce5e0072f2a1de 301
+recon/401-403-bypass/SKILL.md
+  s_a0aa8b9d51d069::t_809b70663d1627 330-336,389-403
+  s_a0aa8b9d51d069::t_b8d962b1f31459 190-191,209-210
+  s_a0aa8b9d51d069::t_9d313c24d6ad0f 3,10,19,21-25,29-33,37-40,44,47-49,55-171,174-175,177-179,185-189,192-205,208,211-329,337-356,359,362-365,367,369-375,377-387,404-428,430-452,454-456,458-459,461-513,517-524,528-534,536-539
+  s_a0aa8b9d51d069::t_5a8c2ba976850f 172-173,176,180-184,206-207
+  s_a0aa8b9d51d069::t_5c8c803e632af7 368
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9b6e0b9074bd5b2e24e7231070a7538cd3d344e2",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
