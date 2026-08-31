@@ -1,0 +1,26 @@
+redteam/hunt-xss/SKILL.md
+  s_a0aa8b9d51d069::t_715e6d87f9f081 148,150,191-194,197-200,202,205-206,348
+recon/401-403-bypass/SKILL.md
+  s_a0aa8b9d51d069::t_2887aa8f9072a2 3-16,19,21-24,26,28-30,32-33,35,37-40,42,44,47-87,89-90,93,95-101,103,105-144
+recon/subdomain-enumeration/SKILL.md
+  s_a0aa8b9d51d069::t_9a0f6c33a4bc8a 33,38-40,42-47,49-54,56-73,76,79-81,84-85
+  s_a0aa8b9d51d069::t_3608c71b296546 296-297
+  s_a0aa8b9d51d069::t_0cf55b45894263 105-112,119,128-147,149,161,175-176,208-209,251-252
+  s_a0aa8b9d51d069::t_55ce95a449b6c9 93,334
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "cd5010346d44a5ee924a123f13d48be32028be8a",
+  "prompts": {},
+  "sessions": {
+    "s_a0aa8b9d51d069": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057b7-4089-77a0-95b4-a6e4cdc36586",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
