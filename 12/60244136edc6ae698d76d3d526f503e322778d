@@ -1,0 +1,20 @@
+redteam/hunt-xss/SKILL.md
+  s_3c9ca0b2131c2b::t_b9ca322fd74612 194,196-199,202-204
+  s_3c9ca0b2131c2b::t_bec02420863905 347
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1260244136edc6ae698d76d3d526f503e322778d",
+  "prompts": {},
+  "sessions": {
+    "s_3c9ca0b2131c2b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa67a8516ffev6F7KOP1d0tv6I",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
