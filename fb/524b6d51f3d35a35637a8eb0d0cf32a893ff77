@@ -1,0 +1,23 @@
+recon/subdomain-enumeration/SKILL.md
+  s_3c9ca0b2131c2b::t_c0001efb9df553 107,109-114
+  s_3c9ca0b2131c2b::t_8f6f491049cf22 135-140
+  s_3c9ca0b2131c2b::t_cbf42057486c91 121-123
+  s_3c9ca0b2131c2b::t_c1d03c0dfc3262 58
+  s_3c9ca0b2131c2b::t_db927a0fed4610 49-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "fb524b6d51f3d35a35637a8eb0d0cf32a893ff77",
+  "prompts": {},
+  "sessions": {
+    "s_3c9ca0b2131c2b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa67a8516ffev6F7KOP1d0tv6I",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "Hiago <hfelipe.sh@gmail.com>"
+    }
+  }
+}
