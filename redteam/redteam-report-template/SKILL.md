@@ -4,7 +4,7 @@ description: Client-facing red-team deliverable format — codifies the Subject 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [report, template, redteam]
   category: redteam
@@ -27,19 +27,23 @@ metadata:
 ```bash
 # Prerequisite: pandoc installed (apt/dnf/brew install pandoc)
 
-# Convert
+# Convert (add --reference-doc=/path/to/reference.docx for a branded template)
 pandoc REPORT_FINAL.md \
   -o REPORT_FINAL.docx \
   --resource-path=engagement_log/poc \
   --toc \
-  # Optional: add --reference-doc=/path/to/your/reference.docx for a branded style template \
   --toc-depth=2 \
   --highlight-style=tango
 
 # Verify image count
-python3 -c "
+python3 - <<'PY'
 from docx import Document
-# ... (continues in Procedure)
+d = Document('REPORT_FINAL.docx')
+imgs = [r for r in d.part.rels.values() if 'image' in r.target_ref]
+print(f'Embedded images: {len(imgs)}')
+print(f'Paragraphs: {len(d.paragraphs)}')
+print(f'Headings: {sum(1 for p in d.paragraphs if p.style.name.startswith("Heading"))}')
+PY
 ```
 
 ## Procedure
@@ -207,24 +211,23 @@ Each finding MUST have reproducible steps. The PoC section is what proves the fi
 ```bash
 # Prerequisite: pandoc installed (apt/dnf/brew install pandoc)
 
-# Convert
+# Convert (add --reference-doc=/path/to/reference.docx for a branded template)
 pandoc REPORT_FINAL.md \
   -o REPORT_FINAL.docx \
   --resource-path=engagement_log/poc \
   --toc \
-  # Optional: add --reference-doc=/path/to/your/reference.docx for a branded style template \
   --toc-depth=2 \
   --highlight-style=tango
 
 # Verify image count
-python3 -c "
+python3 - <<'PY'
 from docx import Document
 d = Document('REPORT_FINAL.docx')
 imgs = [r for r in d.part.rels.values() if 'image' in r.target_ref]
 print(f'Embedded images: {len(imgs)}')
 print(f'Paragraphs: {len(d.paragraphs)}')
-print(f'Headings: {sum(1 for p in d.paragraphs if p.style.name.startswith(\"Heading\"))}')
-"
+print(f'Headings: {sum(1 for p in d.paragraphs if p.style.name.startswith("Heading"))}')
+PY
 ```
 
 ### Image filename convention
@@ -378,20 +381,6 @@ These numbers are typical for a 1-week external red-team engagement on a mid-siz
 
 ---
 
-## Verification
-
-1. **CVSS calculator** — confirm CVSS 3.1 awareness:
-   ```bash
-   grep -q "CVSS\|cvss\|3.1" SKILL.md && echo "PASS: CVSS scoring documented" || echo "FAIL"
-   ```
-2. **Template structure** — confirm report sections are documented:
-   ```bash
-   grep -q "Executive Summary\|Findings\|Remediation" SKILL.md && echo "PASS: report structure present" || echo "FAIL"
-   ```
-All tests verify report template readiness.
-
----
-
 ## Pitfalls
 - **Over-technical language** — executives read the executive summary. Make the first paragraph impact-focused: "An attacker can steal all customer PII by..."
 - **Missing CVSS score** — red-team reports without CVSS scores are dismissed by compliance teams. Always include CVSS 3.1 with vector string.
@@ -400,6 +389,12 @@ All tests verify report template readiness.
 - **Redacted screenshots without unredacted availability** — offer the unredacted version privately. Triagers need it for verification.
 - **No CVE cross-references** — if the finding matches a CVE, cite it. It adds credibility and helps the client understand the risk.
 
+---
+
+## Verification
+- Every finding follows Subject / Observations / Description / Impact / Recommendation / PoC and the PoC reproduces in under five minutes.
+- The CVSS score matches the demonstrated impact and the DOCX embeds every referenced image.
+- The rendered document and source markdown are stored beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

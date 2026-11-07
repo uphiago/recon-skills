@@ -42,7 +42,7 @@ d=json.load(sys.stdin)
 hint=d.get('hint','')
 if hint: print(f'  -> {hint}')
 "
-# ... (continues in Procedure)
+done
 ```
 
 ## Procedure
@@ -145,6 +145,14 @@ done
 
 ---
 
+## Pitfalls
+- **Schema enumeration without sensitive fields** — knowing the API schema is recon. Need to demonstrate exploitable fields/mutations.
+- **GraphQL schema via introspection** — introspection is a feature, not a bug (unless explicitly disabled in production).
+- **Database schema via error messages** — SQL errors revealing table names is information disclosure, not schema-specific. Rate based on what's disclosed.
+- **OpenAPI spec publicly accessible** — `/swagger.json` or `/openapi.json` is intentionally public for API consumers. Rate based on exposed admin/internal endpoints.
+
+---
+
 ## Verification
 
 - **PostgREST hit confirmed**: Response is `[]` (empty array = table exists, RLS blocks read) or data returned
@@ -162,9 +170,3 @@ done
 - Schema enumeration always leads to the next attack — never the final step
 
 ---
-
-## Pitfalls
-- **Schema enumeration without sensitive fields** — knowing the API schema is recon. Need to demonstrate exploitable fields/mutations.
-- **GraphQL schema via introspection** — introspection is a feature, not a bug (unless explicitly disabled in production).
-- **Database schema via error messages** — SQL errors revealing table names is information disclosure, not schema-specific. Rate based on what's disclosed.
-- **OpenAPI spec publicly accessible** — `/swagger.json` or `/openapi.json` is intentionally public for API consumers. Rate based on exposed admin/internal endpoints.

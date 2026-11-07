@@ -22,7 +22,8 @@ One wrong answer = STOP **this finding**. Kill **the finding**. Move on **to the
 
 ## When to Use
 
-- The target surface matches this skill's scope (`triage-validation`) and you need a focused procedure for it.
+- A candidate finding exists and must be proven or killed before writing the report.
+- You need the 7-question gate, pre-severity gate, always-rejected list, or a retraction template.
 
 ## Prerequisites
 
@@ -34,10 +35,12 @@ One wrong answer = STOP **this finding**. Kill **the finding**. Move on **to the
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="example.com"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+mkdir -p "$OUTPUT_DIR/triage"
+
+# Answer the 7-question gate in writing before promoting a candidate
+$EDITOR "$OUTPUT_DIR/triage/finding-01.md"
 ```
 
 ## Procedure
@@ -333,20 +336,6 @@ When a previously-claimed finding fails reproduction — **never silently drop i
 
 ---
 
-## Verification
-
-1. **7-Question Gate** — confirm all 7 questions are documented:
-   ```bash
-   grep -c "Question [1-7]" SKILL.md && echo "PASS: all 7 questions present" || echo "FAIL"
-   ```
-2. **OOB Gate** — confirm OOB validation is required:
-   ```bash
-   grep -q "OOB\|out-of-band\|Collaborator\|interactsh" SKILL.md && echo "PASS: OOB validation documented" || echo "FAIL"
-   ```
-All tests verify triage validation readiness.
-
----
-
 ## Pitfalls
 - **Skipping the 7-Question Gate** — the #1 cause of rejected findings. If you can't answer all 7 questions confidently, don't file.
 - **Question 1 failure: "Can an attacker do this RIGHT NOW?"** — if the answer requires "if," "could," "might," or "theoretically," it's not a finding.
@@ -355,6 +344,12 @@ All tests verify triage validation readiness.
 - **Severity inflation** — calling every IDOR "Critical" damages credibility. Match severity to demonstrated impact, not bug class.
 - **Premature reporting** — filing before confirming the bug still works at time of submission. Always re-test hours before hitting submit.
 
+---
+
+## Verification
+- All seven gate answers are written per candidate, including the negative control that kills it.
+- OOB claims attach the callback log; killed findings record the reason and are not silently deleted.
+- The completed gate is stored beneath `${OUTPUT_DIR:-./output}/triage/`.
 
 ---
 

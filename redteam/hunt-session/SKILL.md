@@ -14,7 +14,8 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`hunt-session`) and you need a focused procedure for it.
+- You hold two approved sessions and need to test fixation, invalidation, entropy, refresh rotation, or cookie attributes.
+- A session or token survives logout, password change, or email change, or appears predictable.
 
 ## Prerequisites
 
@@ -26,6 +27,22 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+JAR_A=$(mktemp); JAR_B=$(mktemp)
+
+# Robust session-cookie extractor: handles #HttpOnly_ prefix lines and any
+# cookie name (sid/JSESSIONID/connect.sid/PHPSESSID/...). Prints name=value.
+get_cookie () {  # $1=jar  $2=name-regex (default: common session names)
+  local jar="$1" re="${2:-session|sid|sess|JSESSIONID|connect\.sid|PHPSESSID|laravel_session}"
+  awk -v re="$re" '
+    /^#HttpOnly_/ { sub(/^#HttpOnly_/,""); }   # strip jar HttpOnly marker
+    /^#/ { next }                              # skip remaining comments
+    NF>=7 && $6 ~ re { print $6"="$7 }         # field6=name field7=value
+  ' "$jar" | tail -1
+}
+
 # Step 1: grab a pre-auth session the SERVER hands an anonymous client.
 curl --max-time 30 --connect-timeout 10 -s -L -c "$JAR_A" "https://$TARGET/login" -o /dev/null
 PRE=$(get_cookie "$JAR_A"); echo "pre-auth: $PRE"
@@ -38,9 +55,8 @@ curl --max-time 30 --connect-timeout 10 -s -L -c "$JAR_A" -b "$JAR_A" -X POST "h
   -d "username=attacker@example.com&password=CorrectHorse1" -o /dev/null
 POST=$(get_cookie "$JAR_A"); echo "post-auth: $POST"
 
-# DECISION:
-#  - If $POST == $PRE (value unchanged across the auth boundary) AND that value
-# ... (continues in Procedure)
+# DECISION: if $POST == $PRE the server did not rotate the session on login.
+# Stronger proof: pre-plant FIX, then have the victim authenticate with that jar.
 ```
 
 ## Procedure
@@ -98,23 +114,7 @@ Sec-Session-Registration: ...                   # DBSC in play → test downgrad
 
 ## Step-by-Step Hunting Methodology
 
-> **Two-session rule.** Every invalidation/fixation claim is proven with TWO concrete sessions captured by a real flow — attacker **A** and victim **B** — never with hardcoded placeholder strings. Helpers below capture real cookies from `curl`'s Netscape jar.
-
-```bash
-TARGET=target.com
-JAR_A=$(mktemp); JAR_B=$(mktemp)
-
-# Robust session-cookie extractor: handles #HttpOnly_ prefix lines and any
-# cookie name (sid/JSESSIONID/connect.sid/PHPSESSID/...). Prints name=value.
-get_cookie () {  # $1=jar  $2=name-regex (default: common session names)
-  local jar="$1" re="${2:-session|sid|sess|JSESSIONID|connect\.sid|PHPSESSID|laravel_session}"
-  awk -v re="$re" '
-    /^#HttpOnly_/ { sub(/^#HttpOnly_/,""); }   # strip jar HttpOnly marker
-    /^#/ { next }                              # skip remaining comments
-    NF>=7 && $6 ~ re { print $6"="$7 }         # field6=name field7=value
-  ' "$jar" | tail -1
-}
-```
+> **Two-session rule.** Every invalidation/fixation claim is proven with TWO concrete sessions captured by a real flow — attacker **A** and victim **B** — never with hardcoded placeholder strings. `JAR_A`, `JAR_B`, and `get_cookie` are defined in How to Run.
 
 ### Phase 1 — Session Fixation (regeneration-on-login)
 ```bash
@@ -311,6 +311,14 @@ Before claiming ANY session finding:
 
 ---
 
+## Pitfalls
+- **Session fixation without pre-login session** — if the app issues a new session ID after login, fixation is not possible. Test pre/post-login session ID behavior.
+- **Session ID in URL** — `?sessionid=xxx` leaks via Referer header. Demonstrate Referer leakage to a third-party domain.
+- **Missing HttpOnly without XSS** — HttpOnly missing is a defense-in-depth issue, not a vulnerability without demonstrated XSS.
+- **Session timeout too long** — long session timeout is a policy issue, not a bug (unless combined with physical access or shared device scenario).
+
+---
+
 ## Verification
 
 - Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
@@ -318,9 +326,3 @@ Before claiming ANY session finding:
 - Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
-
-## Pitfalls
-- **Session fixation without pre-login session** — if the app issues a new session ID after login, fixation is not possible. Test pre/post-login session ID behavior.
-- **Session ID in URL** — `?sessionid=xxx` leaks via Referer header. Demonstrate Referer leakage to a third-party domain.
-- **Missing HttpOnly without XSS** — HttpOnly missing is a defense-in-depth issue, not a vulnerability without demonstrated XSS.
-- **Session timeout too long** — long session timeout is a policy issue, not a bug (unless combined with physical access or shared device scenario).

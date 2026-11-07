@@ -27,6 +27,12 @@ Detect credentials baked into client-side code or HTML responses. Targets includ
 - An unauthenticated API endpoint returns data that controls authentication (reset, exit registration, admin actions).
 - JavaScript bundles contain string assignments matching password patterns.
 
+## Prerequisites
+
+- `terminal` with curl and python3.
+- A target serving HTML, JSON, or JavaScript without proper authentication on configuration/settings endpoints.
+- Access to at least one public page, form, or API endpoint.
+
 ## How to Run
 
 ```bash
@@ -44,14 +50,7 @@ try:
 except: pass
 "
 
-# ... (continues in Procedure)
 ```
-
-## Prerequisites
-
-- `terminal` with curl and python3.
-- A target serving HTML, JSON, or JavaScript without proper authentication on configuration/settings endpoints.
-- Access to at least one public page, form, or API endpoint.
 
 ## Quick Detection
 
@@ -129,19 +128,20 @@ Werkzeug, Django, and Express debug pages often leak secrets in inline JavaScrip
 
 ```bash
 # Trigger an error and check for credential leaks
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/ERROR_TRIGGER_PATH" | python3 -c "
-import sys, re
-html = sys.stdin.read()
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com:5000/ERROR_TRIGGER_PATH" -o /tmp/error.html
+python3 - <<'PY'
+import re
+html = open('/tmp/error.html').read()
 # Werkzeug debugger SECRET
-match = re.search(r'SECRET\s*=\s*[\"]([^\"\']+)[\"]', html)
+match = re.search(r'SECRET\s*=\s*["]([^"\']+)["]', html)
 if match: print(f'WERKZEUG_SECRET: {match.group(1)}')
 # Django settings
-for m in re.finditer(r'SECRET_KEY\s*=\s*[\"]([^\"\']+)[\"]', html):
+for m in re.finditer(r'SECRET_KEY\s*=\s*["]([^"\']+)["]', html):
     print(f'DJANGO_SECRET: {m.group(1)}')
 # Generic credential patterns
-for m in re.finditer(r'(?:PASSWORD|PASS|TOKEN|API_KEY)\s*=\s*[\"]([^\"\']{6,})[\"']", html, re.I):
+for m in re.finditer(r'(?:PASSWORD|PASS|TOKEN|API_KEY)\s*=\s*["]([^"\']{6,})["]', html, re.I):
     print(f'LEAKED: {m.group(0)}')
-"
+PY
 ```
 
 ### Phase 4 — Authentication Bypass Testing
@@ -177,6 +177,8 @@ done
 2. **Confirm it grants access:** use the credential at the intended endpoint and compare against a known-failed attempt with a random wrong credential. A bare 200/302 is not proof — catch-all apps return 200 on failure. Require a body diff: session token issued, redirect to an authenticated area, or account-specific content absent from the failed attempt.
 3. **Map the privilege level:** test the credential against other endpoints to determine scope (read-only, write, admin, reset).
 4. **Check for audit trail:** repeat the access with a unique identifier in the request to verify the action appears in logs (confirms real impact).
+
+---
 
 ## Related Skills
 

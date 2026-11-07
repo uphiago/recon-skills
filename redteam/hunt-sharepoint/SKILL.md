@@ -467,20 +467,20 @@ Same target. Feeding `Microsoft.SharePoint.WebPartPages.DataFormWebPart` (the ca
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **SharePoint version disclosure without CVE** — knowing the SP version is informational. Need a matching exploitable CVE.
 - **/_layouts/ accessible but no anonymous operations** — path reachability is recon. Need anonymous read/write/execute.
 - **EoL SharePoint without exploitation** — "SharePoint 2013 is EoL" is a hygiene finding, not a vulnerability. Need demonstrated exploit.
 - **FormDigest anonymous issuance** — `_api/contextinfo` returning FormDigest anonymously is a precondition for ToolShell, not a standalone bug.
 - **Modern vs Classic auth** — SharePoint Online uses Modern Auth (OAuth). On-prem SP may use Classic (NTLM/Kerberos). Different attack surfaces.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

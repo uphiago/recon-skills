@@ -428,14 +428,6 @@ The following real, verified bug-bounty / CVE / coordinated-disclosure cases ext
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Error-based SQLi without data extraction** — 500 errors with SQL fragments prove injection but not exploitability. Need data extraction, not just errors.
 - **Blind SQLi without data extraction** — boolean/time-based blind is harder to exploit but still valid. Demonstrate at least table name extraction.
@@ -466,6 +458,14 @@ Key indicators:
 - Target uses Firebird, PostgreSQL with `PDO::ATTR_EMULATE_PREPARES`, or legacy ODBC
 - Application calls `PDO::quote()` before `PDO::prepare()` (pattern: quote-then-prepare)
 - NUL byte in parameter causes query corruption even when quoting is "correct"
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

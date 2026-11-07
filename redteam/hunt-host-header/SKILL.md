@@ -14,7 +14,8 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`hunt-host-header`) and you need a focused procedure for it.
+- The application reflects or routes on `Host`, `X-Forwarded-Host`, or `X-Original-URL`.
+- Password reset, cache, OAuth issuer, or routing behavior could be influenced by a header.
 
 ## Prerequisites
 
@@ -26,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # 1a. Override Host directly
 curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/forgot-password \
   -H "Host: evil.com" \
@@ -40,7 +45,8 @@ curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/forgot-passwo
 
 # 1c. Host + X-Forwarded-Host combo, and X-Host
 curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/forgot-password \
-# ... (continues in Procedure)
+  -H "Host: $TARGET" -H "X-Host: evil.com" \
+  -d "email=your-test-account@target.com"
 ```
 
 ## Procedure
@@ -306,6 +312,14 @@ not merely reflected.
 
 ---
 
+## Pitfalls
+- **Host header reflection without impact** — the header being echoed in the page is not a vulnerability. Need cache poisoning, password reset poisoning, or SSRF.
+- **Password reset poisoning without email confirmation** — reflected host in response doesn't prove the reset link was poisoned. Read the actual email.
+- **Absolute URL generation vs relative** — if the app uses relative URLs, host header injection has no impact.
+- **X-Forwarded-Host accepted but not used for link generation** — the header may be logged but not used in application logic. Test what the app actually does with it.
+
+---
+
 ## Verification
 
 - Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
@@ -313,9 +327,3 @@ not merely reflected.
 - Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
-
-## Pitfalls
-- **Host header reflection without impact** — the header being echoed in the page is not a vulnerability. Need cache poisoning, password reset poisoning, or SSRF.
-- **Password reset poisoning without email confirmation** — reflected host in response doesn't prove the reset link was poisoned. Read the actual email.
-- **Absolute URL generation vs relative** — if the app uses relative URLs, host header injection has no impact.
-- **X-Forwarded-Host accepted but not used for link generation** — the header may be logged but not used in application logic. Test what the app actually does with it.

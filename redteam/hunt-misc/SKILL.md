@@ -357,19 +357,19 @@ When you confirm a misc primitive at A, **immediately** ask: what state-machine,
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Testing too broadly** — "misc" is a catch-all, not a methodology. Pick a specific bug class and go deep.
 - **Reporting informational findings as Medium** — missing security headers (CSP, HSTS), cookie flags (HttpOnly, Secure), and directory listing are informational.
 - **Version disclosure without CVE** — knowing the server version without a matching CVE is not a vulnerability.
 - **HTTP methods enabled without impact** — OPTIONS, TRACE, PUT, DELETE enabled but restricted to harmless endpoints are informational.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

@@ -27,6 +27,12 @@ Scan public GitHub repositories for leaked API keys, tokens, passwords, and inte
 - The target uses CI/CD systems that may leak tokens in build logs or workflow files.
 - Want real-time monitoring for new secret leaks from the target org.
 
+## Prerequisites
+
+- `terminal` with python3, curl, git.
+- GitHub Personal Access Token (only `public_repo` scope needed).
+- Tool dependencies: TruffleHog, GitDorker, gitleaks.
+
 ## How to Run
 
 ```bash
@@ -37,12 +43,6 @@ echo "target.com" | while read domain; do
     | jq '.items[]?.html_url'
 done
 ```
-
-## Prerequisites
-
-- `terminal` with python3, curl, git.
-- GitHub Personal Access Token (only `public_repo` scope needed).
-- Tool dependencies: TruffleHog, GitDorker, gitleaks.
 
 ## Quick Detection
 
@@ -197,6 +197,8 @@ exiftool doc.pdf | grep -i "author\|creator\|producer"
 3. Confirm the secret was committed recently (check commit date) — stale secrets are lower priority.
 4. Check if the repo is public and the secret grants meaningful access (admin vs read-only).
 5. Document the exact file path, commit hash, and line number for the report.
+
+---
 
 ## Related Skills
 

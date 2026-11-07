@@ -4,7 +4,7 @@ description: "Evidence-capture and PoC-redaction discipline for bug-bounty submi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [evidence, hygiene, reporting, redteam]
   category: redteam
@@ -20,7 +20,8 @@ The core principle: **Bug-bounty evidence is meant to convince a triager. Anythi
 
 ## When to Use
 
-- The target surface matches this skill's scope (`evidence-hygiene`) and you need a focused procedure for it.
+- You are about to capture screenshots, HAR files, or Burp history for a report or bounty submission.
+- A PoC contains cookies, tokens, PII, or internal identifiers that must be redacted before sharing.
 
 ## Prerequisites
 
@@ -32,10 +33,19 @@ The core principle: **Bug-bounty evidence is meant to convince a triager. Anythi
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="example.com"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+mkdir -p "$OUTPUT_DIR/evidence"
+
+# Sanitize every exported HAR before attaching; raw copies stay private
+for f in "$OUTPUT_DIR"/evidence/*.har; do
+  jq '.log.entries |= map(
+        (.request.headers |= map(if (.name|ascii_downcase|IN("cookie","authorization","x-csrf-token")) then .value="<REDACTED>" else . end)) |
+        (.response.headers |= map(if (.name|ascii_downcase)=="set-cookie" then .value="<REDACTED>" else . end)) |
+        (.request.cookies |= map(.value="<REDACTED>")) |
+        (.response.cookies |= map(.value="<REDACTED>")))' \
+    "$f" > "${f%.har}.sanitized.har"
+done
 ```
 
 ## Procedure
@@ -405,6 +415,23 @@ Quarterly, sweep your `~/security-research/` and `~/Downloads/` for stale HARs /
 
 ---
 
+## Pitfalls
+
+- **Capturing cookies in screenshots** — the #1 evidence-hygiene mistake. Always collapse the Network tab Headers panel, hide the Burp Request panel, and never screenshot "Copy as cURL" output.
+- **Leaving victim PII unredacted** — IDOR PoCs that show real names, emails, and phone numbers violate responsible disclosure. Black-bar all other-user PII even in private platform attachments.
+- **HAR files with live cookies** — exported HARs contain full cookie values unless sanitized with jq. Always run the sanitize_har function before attaching.
+- **Console.log echoing cookies** — DevTools Console PoCs must use `credentials: 'include'`, never hardcode cookie values in fetch calls.
+- **Forgetting "allow pasting"** — Chrome blocks paste into Console by default. Type `allow pasting` before any PoC to prevent the warning text from appearing in screenshots.
+- **Not clearing Console between steps** — multi-step PoCs with overlapping console output confuse triagers. Clear Console (Cmd+K / Ctrl+L) between each call.
+- **Screenshotting Proxy HTTP history** — shows entire request/response with cookies. Use Repeater instead and hide the request panel.
+- **Post-submission cookie not rotated** — cookies visible in submitted screenshots are dead only after logout/login rotation. Rotate immediately after submission.
+- **Inconsistent screenshot dimensions** — different browser sizes across PoC steps look sloppy. Take all screenshots in one sitting with consistent window size.
+- **Not saving unredacted originals** — triagers may request the unredacted version. Keep originals in a local encrypted folder; never share via email.
+- **Public output with real domains** — any README/blog/report with "target.example.com — vuln detail" exposes the client. Use sector labels and pattern-based descriptions.
+- **Stale artifacts accumulating** — HARs and screenshots from old engagements pile up. Quarterly audit: archive or delete stale evidence files.
+
+---
+
 ## Verification
 
 Run this self-test to confirm evidence-hygiene readiness:
@@ -438,24 +465,6 @@ Run this self-test to confirm evidence-hygiene readiness:
    ```
 
 All 5 tests verify the critical evidence-hygiene safeguards are present.
-
-
----
-
-## Pitfalls
-
-- **Capturing cookies in screenshots** — the #1 evidence-hygiene mistake. Always collapse the Network tab Headers panel, hide the Burp Request panel, and never screenshot "Copy as cURL" output.
-- **Leaving victim PII unredacted** — IDOR PoCs that show real names, emails, and phone numbers violate responsible disclosure. Black-bar all other-user PII even in private platform attachments.
-- **HAR files with live cookies** — exported HARs contain full cookie values unless sanitized with jq. Always run the sanitize_har function before attaching.
-- **Console.log echoing cookies** — DevTools Console PoCs must use `credentials: 'include'`, never hardcode cookie values in fetch calls.
-- **Forgetting "allow pasting"** — Chrome blocks paste into Console by default. Type `allow pasting` before any PoC to prevent the warning text from appearing in screenshots.
-- **Not clearing Console between steps** — multi-step PoCs with overlapping console output confuse triagers. Clear Console (Cmd+K / Ctrl+L) between each call.
-- **Screenshotting Proxy HTTP history** — shows entire request/response with cookies. Use Repeater instead and hide the request panel.
-- **Post-submission cookie not rotated** — cookies visible in submitted screenshots are dead only after logout/login rotation. Rotate immediately after submission.
-- **Inconsistent screenshot dimensions** — different browser sizes across PoC steps look sloppy. Take all screenshots in one sitting with consistent window size.
-- **Not saving unredacted originals** — triagers may request the unredacted version. Keep originals in a local encrypted folder; never share via email.
-- **Public output with real domains** — any README/blog/report with "target.example.com — vuln detail" exposes the client. Use sector labels and pattern-based descriptions.
-- **Stale artifacts accumulating** — HARs and screenshots from old engagements pile up. Quarterly audit: archive or delete stale evidence files.
 
 ---
 

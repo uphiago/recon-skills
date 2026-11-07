@@ -261,6 +261,17 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
+## Pitfalls
+
+- **Assuming business logic bugs are low-impact** — price manipulation, coupon abuse, and refund fraud are among the highest-paid bugs. Don't dismiss them as "just logic."
+- **Testing only happy path** — the bug is in the edge case. Test: negative quantities, zero prices, race conditions on redemptions, expired coupons, concurrent requests.
+- **Single-step testing** — business logic bugs often require multi-step sequences (add to cart + apply coupon + change quantity + checkout). Test the full flow.
+- **Ignoring error handling** — 500 errors on edge cases often reveal unhandled states that lead to inconsistent data (partial order, double charge, free items).
+- **Not comparing frontend vs API** — the frontend may enforce limits that the API doesn't. Test all constraints via direct API calls.
+- **Currency/rounding issues** — fractional currency handling (e.g., 0.001 USD) can produce rounding errors that accumulate across bulk operations.
+
+---
+
 ## Verification
 
 Run this self-test to confirm business logic readiness:
@@ -281,19 +292,6 @@ Run this self-test to confirm business logic readiness:
    ```
 
 All 3 tests verify business logic probing readiness.
-
-
----
-
-## Pitfalls
-
-- **Assuming business logic bugs are low-impact** — price manipulation, coupon abuse, and refund fraud are among the highest-paid bugs. Don't dismiss them as "just logic."
-- **Testing only happy path** — the bug is in the edge case. Test: negative quantities, zero prices, race conditions on redemptions, expired coupons, concurrent requests.
-- **Single-step testing** — business logic bugs often require multi-step sequences (add to cart + apply coupon + change quantity + checkout). Test the full flow.
-- **Ignoring error handling** — 500 errors on edge cases often reveal unhandled states that lead to inconsistent data (partial order, double charge, free items).
-- **Not comparing frontend vs API** — the frontend may enforce limits that the API doesn't. Test all constraints via direct API calls.
-- **Currency/rounding issues** — fractional currency handling (e.g., 0.001 USD) can produce rounding errors that accumulate across bulk operations.
-
 
 ---
 

@@ -389,6 +389,19 @@ done
 
 ---
 
+## Pitfalls
+
+- **Mass assignment without side effects** — sending `{is_admin:true}` and getting 200 doesn't prove the field was applied. Verify by reading back the profile and confirming the escalated value persists.
+- **JWT alg:none only on test servers** — many production JWKS endpoints enforce algorithm validation. Test with the actual production token endpoint, not localhost.
+- **Prototype pollution without a sink** — polluting `__proto__` proves nothing unless you can reach a gadget (RCE sink, XSS sink, or auth bypass via polluted comparison). Map the pollution to a specific exploitable side effect.
+- **HTTP verb tampering on read-only endpoints** — bypassing CSRF via GET on a read endpoint is not exploitable. Need a state-changing action (POST/PUT/DELETE) that accepts GET.
+- **CORS confusion** — `Access-Control-Allow-Origin: *` without credentials is NOT exploitable. Only origin-reflection + credentials matters.
+- **Rate limit bypass via header aliases** — `X-Forwarded-For: 127.0.0.1` may bypass rate limits but also bypass geo-restrictions and IP-based auth. Test both outcomes.
+- **Shadow APIs on different port/base path** — the production API at `/api/v2/` may be guarded while `/api/` on the same host isn't. Always probe for legacy/unversioned paths.
+- **PDO emulated prepares crash != RCE** — a 502 on malformed multibyte input confirms emulated prepares but not exploitability. Need a full deserialization/injection chain.
+
+---
+
 ## Verification
 
 Run this self-test to confirm API misconfig hunting readiness:
@@ -426,20 +439,6 @@ Run this self-test to confirm API misconfig hunting readiness:
 
 All 4 tests verify the core API misconfig probing capability.
 
-
----
-
-## Pitfalls
-
-- **Mass assignment without side effects** — sending `{is_admin:true}` and getting 200 doesn't prove the field was applied. Verify by reading back the profile and confirming the escalated value persists.
-- **JWT alg:none only on test servers** — many production JWKS endpoints enforce algorithm validation. Test with the actual production token endpoint, not localhost.
-- **Prototype pollution without a sink** — polluting `__proto__` proves nothing unless you can reach a gadget (RCE sink, XSS sink, or auth bypass via polluted comparison). Map the pollution to a specific exploitable side effect.
-- **HTTP verb tampering on read-only endpoints** — bypassing CSRF via GET on a read endpoint is not exploitable. Need a state-changing action (POST/PUT/DELETE) that accepts GET.
-- **CORS confusion** — `Access-Control-Allow-Origin: *` without credentials is NOT exploitable. Only origin-reflection + credentials matters.
-- **Rate limit bypass via header aliases** — `X-Forwarded-For: 127.0.0.1` may bypass rate limits but also bypass geo-restrictions and IP-based auth. Test both outcomes.
-- **Shadow APIs on different port/base path** — the production API at `/api/v2/` may be guarded while `/api/` on the same host isn't. Always probe for legacy/unversioned paths.
-- **PDO emulated prepares crash != RCE** — a 502 on malformed multibyte input confirms emulated prepares but not exploitability. Need a full deserialization/injection chain.
-
 ---
 
 ## Related Skills & Chains
@@ -468,4 +467,3 @@ When emulated prepares are active, treat ALL user input as potentially binary-un
 - **`hunt-subdomain`** — CORS regex with wildcard subdomain trusts a takeoverable host. Chain primitive: CORS allowlist `*.target.com` + subdomain takeover → attacker-controlled origin reads credentialed API responses.
 - **`security-arsenal`** — Load the JWT Attack Payloads section (alg=none, kid path traversal, JWK injection, embedded JWK) and the Mass-Assignment Field Wordlist (`is_admin`, `role`, `verified`, `permissions`, `org_id`, `tenant_id`).
 - **`triage-validation`** — Apply the Server-Policy-vs-State gate: a permissive CORS header alone is informational; demonstrate actual cross-origin credentialed read of sensitive data before reporting.
-

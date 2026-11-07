@@ -28,6 +28,12 @@ Enumerate Hikvision ISAPI (Intelligent Security Application Programming Interfac
 - A target has industrial/energy/infrastructure context where SCADA systems are likely.
 - The web client loads `Common/common.js`, `Common/components.js`, or `Common/vendorGraph.js` from a relative path.
 
+## Prerequisites
+
+- `terminal` with curl, python3, and nmap.
+- Access to the web interface (even without authentication).
+- The target serves JavaScript bundles — download them for endpoint extraction.
+
 ## How to Run
 
 ```bash
@@ -40,12 +46,6 @@ curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/" | grep -Eo 's
   [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Po '/ISAPI/[^"'\''\s]{5,80}' | sort -u
 done
 ```
-
-## Prerequisites
-
-- `terminal` with curl, python3, and nmap.
-- Access to the web interface (even without authentication).
-- The target serves JavaScript bundles — download them for endpoint extraction.
 
 ## Quick Detection
 
@@ -222,6 +222,8 @@ curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/ISAPI/Bumblebee
 3. Test each endpoint with and without Basic auth credentials.
 4. If any endpoint returns data without authentication, document the exposed information.
 5. Map the attack surface: cameras, streaming, storage, permissions, remote sites.
+
+---
 
 ## Related Skills
 

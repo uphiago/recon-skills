@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Spring Boot indicators
 curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-application-context\|x-content-type"
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/nonexistent" | grep -i "Whitelabel Error Page\|Spring Boot\|org.springframework"
@@ -246,6 +250,15 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/jolokia/exec/com.sun
 
 ---
 
+## Pitfalls
+- **Actuator endpoints without sensitive data** — `/actuator/health` or `/actuator/info` are intentionally public. Need `/actuator/env`, `/actuator/heapdump`, or `/actuator/mappings`.
+- **/actuator/env with sanitized values** — Spring Boot 2.x+ sanitizes env values by default. Need unsanitized secrets.
+- **/actuator/heapdump download** — heapdump analysis requires Eclipse MAT or similar. The finding is the dump is accessible, not what it contains (prove with actual extracted secrets).
+- **/actuator/loggers modification** — changing log level to DEBUG can leak sensitive data. Demonstrate the leaked data.
+- **Spring Boot version without CVE** — version disclosure is informational unless paired with a CVE affecting that specific version.
+
+---
+
 ## Verification
 ✅ Heap dump: strings command extracts readable passwords/tokens from .hprof file
 ✅ Actuator/env: secrets visible in JSON response
@@ -260,10 +273,3 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/jolokia/exec/com.sun
 - Mappings disclosure only: Low-Medium
 
 ---
-
-## Pitfalls
-- **Actuator endpoints without sensitive data** — `/actuator/health` or `/actuator/info` are intentionally public. Need `/actuator/env`, `/actuator/heapdump`, or `/actuator/mappings`.
-- **/actuator/env with sanitized values** — Spring Boot 2.x+ sanitizes env values by default. Need unsanitized secrets.
-- **/actuator/heapdump download** — heapdump analysis requires Eclipse MAT or similar. The finding is the dump is accessible, not what it contains (prove with actual extracted secrets).
-- **/actuator/loggers modification** — changing log level to DEBUG can leak sensitive data. Demonstrate the leaked data.
-- **Spring Boot version without CVE** — version disclosure is informational unless paired with a CVE affecting that specific version.

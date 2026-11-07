@@ -479,20 +479,20 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **SSRF with DNS-only callback** — DNS pingback from the target server proves SSRF but not impact. Need HTTP response data, cloud metadata access, or internal service interaction.
 - **Blind SSRF without confirmation** — sending a request without reading the response is blind SSRF. Demonstrate via Collaborator/OOB callback.
 - **SSRF to localhost but no open ports** — reaching 127.0.0.1 proves SSRF. Need to demonstrate access to a useful service (metadata, admin, database).
 - **URL validation bypass** — `http://127.0.0.1@evil.com` or `http://0x7f000001` bypasses naive URL parsers. Test multiple bypass techniques.
 - **Cloud metadata access** — 169.254.169.254 is the holy grail of SSRF. One IAM credential extraction = Critical.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

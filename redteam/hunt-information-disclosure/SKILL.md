@@ -185,6 +185,8 @@ Each disclosure type provides inputs for other attack vectors:
 4. Chain the disclosure to another vulnerability before reporting — standalone info disclosure is rarely critical.
 5. For config files: the leaked data must contain credentials, API keys, or connection strings (not just generic config).
 
+---
+
 ## Related Skills
 
 - **`source-leak-hunt`** — Focused on `.env`, `.git`, and config file leakage.

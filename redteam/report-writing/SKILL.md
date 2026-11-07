@@ -30,10 +30,13 @@ Impact-first. Human tone. No theoretical language. Triagers are people.
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="example.com"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+mkdir -p "$OUTPUT_DIR/reports"
+
+# Draft from the validated finding, then review every claim
+$EDITOR "$OUTPUT_DIR/reports/finding-01.md"
+grep -niE '\b(could|may|potentially)\b' "$OUTPUT_DIR/reports/finding-01.md"
 ```
 
 ## Procedure
@@ -514,20 +517,6 @@ Authorization: Bearer ACCOUNT_A_TOKEN
 
 ---
 
-## Verification
-
-1. **Human tone check** — confirm AI-signal words are flagged:
-   ```bash
-   grep -q "comprehensive\|leverage\|seamless\|ensure\|delve" SKILL.md && echo "FAIL: AI-signal words present" || echo "PASS: no AI-signal words"
-   ```
-2. **Title formula** — confirm the title formula is documented:
-   ```bash
-   grep -q "Bug Class.*in.*Endpoint.*allows.*attacker" SKILL.md && echo "PASS: title formula present" || echo "FAIL"
-   ```
-All tests verify report writing readiness.
-
----
-
 ## Pitfalls
 - **Executive summary as afterthought** — it's the ONLY section executives read. Lead with business impact, not technical details.
 - **"Could" and "may" language** — these words signal theoretical findings. Use "allows an attacker to" and "demonstrated by."
@@ -536,6 +525,12 @@ All tests verify report writing readiness.
 - **Over-long reports** — triagers skim reports. Keep the body under 600 words. Use attachments for detailed evidence.
 - **AI-sounding language** — words like "comprehensive," "leverage," "seamless," "ensure" signal AI-generated content. Be direct and human.
 
+---
+
+## Verification
+- No `could`, `may`, or `potentially` survives the final pass; every claim states demonstrated behavior.
+- The title follows the bug-class / endpoint / impact / victim-scope formula with the exact endpoint.
+- Each finding includes a reproduction command and captured response beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

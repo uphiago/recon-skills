@@ -262,6 +262,8 @@ fi
 - Autodiscover MUST return internal server names (not just external URLs).
 - Document: Exchange version, AD domain, NetBIOS name, computer names, rate limiting status.
 
+---
+
 ## Related Skills
 
 - **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials

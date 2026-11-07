@@ -33,10 +33,12 @@ This skill encodes patterns that apply specifically to Bugcrowd's submission flo
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="example.com"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+mkdir -p "$OUTPUT_DIR/reports"
+
+# Write the VRT-mapped submission from the template in this skill
+$EDITOR "$OUTPUT_DIR/reports/bugcrowd-submission.md"
 ```
 
 ## Procedure
@@ -324,14 +326,6 @@ Maintain a simple text file with each submission's UUID, severity, and one-line 
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 
 - **Wrong VRT → auto-downgrade** — picking a VRT category that doesn't match the bug causes the triager to auto-downgrade to P4. Search hierarchy: exact bug class → data exposed → control bypassed → endpoint type → generic parent.
@@ -346,6 +340,14 @@ Maintain a simple text file with each submission's UUID, severity, and one-line 
 - **Forgetting Bugcrowdninja alias** — testing without the alias flags your traffic as potential fraud. Always use `@bugcrowdninja.com` emails on Bugcrowd-managed programs.
 - **Not restoring account state after PoC** — state-changing PoCs (password changes, email changes) damage credibility if the account is left in a broken state. Restore immediately and document it.
 - **Assuming VRT severities are fixed** — VRT defaults change across schema versions and per-program configuration. Always read what the *current* form actually auto-suggests rather than relying on memory.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

@@ -27,6 +27,12 @@ Discover the real server IP behind CDN/WAF protections (Cloudflare, Akamai, Fast
 - The target uses a single favicon across all infrastructure.
 - SSL certificates share the same organization name across IPs.
 
+## Prerequisites
+
+- `terminal` with curl, python3, and shodan CLI.
+- Shodan API key: `shodan init <KEY>`.
+- Target favicon file or URL.
+
 ## How to Run
 
 ```bash
@@ -36,12 +42,6 @@ curl --max-time 30 --connect-timeout 10 -sI "https://target.com" | grep -i "cf-r
 # If Cloudflare detected, check for common origin leaks
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/cdn-cgi/trace" | grep -E "ip=|colo="
 ```
-
-## Prerequisites
-
-- `terminal` with curl, python3, and shodan CLI.
-- Shodan API key: `shodan init <KEY>`.
-- Target favicon file or URL.
 
 ## Quick Detection
 
@@ -185,6 +185,8 @@ naabu -host ORIGIN_IP -p - -rate 2000
 2. HTTPS request to origin IP with `Host: target.com` returns the same page content.
 3. Open ports on origin differ from CDN-proxied ports (origin exposes SSH, MySQL, etc.).
 4. SSL certificate on the origin IP lists the target domain in SAN.
+
+---
 
 ## Related Skills
 

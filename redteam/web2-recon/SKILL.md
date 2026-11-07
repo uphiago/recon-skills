@@ -4,7 +4,7 @@ description: Web2 recon pipeline — subdomain enumeration (subfinder, Chaos API
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [web2, recon, redteam]
   category: redteam
@@ -45,7 +45,7 @@ cat > ~/.config/subfinder/config.yaml << 'EOF'
 # Get free keys at: virustotal.com, securitytrails.com, censys.io, shodan.io
 virustotal: [YOUR_VT_KEY]
 securitytrails: [YOUR_ST_KEY]
-# ... (continues in Procedure)
+EOF
 ```
 
 ## Procedure
@@ -716,6 +716,15 @@ Full attack-chain analysis is in `hunt-api-misconfig` → `NSwag / Swagger / Ope
 
 ---
 
+## Pitfalls
+- **Recon without triage** — collecting 10,000 subdomains without prioritizing which to test is data collection, not recon.
+- **HTTP probe without HTTPS** — many services only respond on HTTPS. Test both protocols.
+- **Screen shot collection without analysis** — automated screenshots are useful only if you review them. Unique login pages, error messages, and CMS identifiers are the value.
+- **Port scanning without service identification** — open port 8443 might be anything. Banner grab and identify the actual service.
+- **Stale recon data** — subdomain data older than 30 days is increasingly unreliable. Refresh recon for each engagement.
+
+---
+
 ## Verification
 
 1. **Core recon tools** — confirm key tools are installed:
@@ -727,16 +736,6 @@ Full attack-chain analysis is in `hunt-api-misconfig` → `NSwag / Swagger / Ope
    echo "example.com" | httpx -silent -status-code 2>/dev/null && echo "PASS: httpx operational" || echo "NOTE: httpx not installed"
    ```
 All tests verify web2 recon readiness.
-
----
-
-## Pitfalls
-- **Recon without triage** — collecting 10,000 subdomains without prioritizing which to test is data collection, not recon.
-- **HTTP probe without HTTPS** — many services only respond on HTTPS. Test both protocols.
-- **Screen shot collection without analysis** — automated screenshots are useful only if you review them. Unique login pages, error messages, and CMS identifiers are the value.
-- **Port scanning without service identification** — open port 8443 might be anything. Banner grab and identify the actual service.
-- **Stale recon data** — subdomain data older than 30 days is increasingly unreliable. Refresh recon for each engagement.
-
 
 ---
 

@@ -171,7 +171,7 @@ curl --max-time 30 --connect-timeout 10 -sk "https://subdomain.target.com" | gre
 
 **S3 unclaimed bucket check:**
 ```bash
-aws s3api head-bucket --bucket <extracted-bucket-name> 2>&1 | grep -i "NoSuchBucket\|403\|404"
+aws s3api head-bucket --bucket "extracted-bucket-name" 2>&1 | grep -i "NoSuchBucket\|403\|404"
 ```
 
 **GitLab Pages specific:**
@@ -352,20 +352,20 @@ Cross-references:
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Subdomain enumeration without verification** — DNS resolution proves existence. Need HTTP probe to confirm it's a live web service.
 - **Third-party services in scope confusion** — subdomains pointing to Zendesk, Shopify, statuspage.io are typically out of scope. Verify ownership.
 - **Stale DNS records** — subdomains resolving to dead IPs or parked pages are informational. Need an active service.
 - **Wildcard DNS** — `*.target.com` resolving to the same IP masks real subdomains. Test for wildcard before claiming enumeration completeness.
 - **Subdomain takeover without claim** — dangling CNAME proves takeover potential. Need to actually claim the resource (or demonstrate it's claimable).
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

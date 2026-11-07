@@ -170,6 +170,8 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/prof
 3. For XSS: verify the polluted property reaches `innerHTML`, `eval`, `document.write`, or a script `src` attribute.
 4. Document the exact merge/copy function and the polluted property chain.
 
+---
+
 ## Related Skills
 
 - **`hunt-frameworks`** — Node.js-specific vulnerabilities including prototype pollution in Express/Next.js.

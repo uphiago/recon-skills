@@ -454,14 +454,6 @@ curl --max-time 30 --connect-timeout 10 -X POST "https://target.com/api/analyze"
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Prompt injection without data exfiltration** — making the LLM say "hacked" is not a vulnerability. Need data exfiltration, tool misuse, or downstream impact.
 - **Indirect prompt injection vs direct** — indirect (via ingested documents) is harder to demonstrate. Need the document to be processed and the response to reach the victim.
@@ -471,7 +463,15 @@ curl --max-time 30 --connect-timeout 10 -X POST "https://target.com/api/analyze"
 
 ---
 
-## Related Skills & Chains
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---
+
+## Additional Exploitation Phases
 
 ### Phase X — Indirect Prompt Injection (RAG & External Data)
 
@@ -563,6 +563,11 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/agen
 # Autonomous multi-step without confirmation
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/agent/task" \
   -d '{"goal":"Optimize infrastructure costs", "auto_approve":true}'
+```
+
+---
+
+## Related Skills & Chains
 
 - **`hunt-ssrf`** — Any LLM with a fetch/browse tool is an SSRF primitive with an elevated network position. Chain:tool-use (`fetch_url`) → attacker URL exfils chat secrets AND hits `169.254.169.254` IMDS from inside the LLM VPC. OOB-confirm both legs.
 - **`hunt-idor`** — Chatbots/RAG without per-tenant scoping = IDOR factories. Chain: injection + `get_user`/retrieval → cross-tenant PII, proven with a verifiable B-only artifact.
@@ -571,6 +576,7 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/agen
 - **`security-arsenal`** — LLM Payload Pack: ASCII-smuggling encoder/decoder (Tags block), system-prompt-extract phrases, markdown/tool exfil templates, indirect-injection PDF/HTML carriers.
 - **`triage-validation`** — Enforce the False-Positive Gate: run-twice reproducibility, anchored leak, verifiable cross-tenant artifact, OOB-confirmed exfil. Confabulation and refusal-text are not findings.
 
+---
 
 ## 2026 AI Agent Framework Audit (External Research)
 
@@ -586,5 +592,3 @@ Systematic audit of 13 AI agent frameworks (CrewAI, AutoGen, AG2, LlamaIndex, Ha
 | MCP Python SDK | Tool bypass | 9.3 | Schema validation bypass |
 
 Source: correctover (dev.to, 2026).
-
-```

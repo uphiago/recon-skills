@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Download JS bundles and search for Supabase
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'src="[^"]*\.js"' | cut -d'"' -f2 | while read js; do
   curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$js" -o "/tmp/$(basename $js)"
@@ -41,7 +45,6 @@ grep -rEn 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[^[:space:]]+' /tmp/*.js
 
 # Quick one-liner
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'https://[a-z0-9-]+\.supabase\.co'
-# ... (continues in Procedure)
 ```
 
 ## Procedure
@@ -401,19 +404,19 @@ Data leakage
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Supabase anon key exposure** — the anon key is intentionally public. It grants RLS-restricted access. The finding is when RLS policies are missing.
 - **Public bucket with RLS bypass** — if RLS policies allow public read on storage, that's intentional. Need access to data that should be private.
 - **Supabase URL + anon key as credential** — these are configuration values, not secrets. Rate impact based on what the anon key can access via missing RLS.
 - **Supabase realtime subscription without sensitive data** — subscribing to public channels is expected. Need subscription to private channels.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

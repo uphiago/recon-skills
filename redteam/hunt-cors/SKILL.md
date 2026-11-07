@@ -27,8 +27,14 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+SESSION_COOKIE="session=..."   # cookie from your approved test session
+
 # Probe API endpoints across the entire surface. Critical: test MULTIPLE endpoints,
 # not just /users — user-specific and resource-specific URLs may behave differently.
+# Input comes from web2-recon (urls.txt filtered to API shapes).
 while read url; do
   result=$(curl --max-time 30 --connect-timeout 10 -s -D - -o /dev/null "$url" \
     -H "Origin: https://evil.com" \
@@ -390,6 +396,17 @@ curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/wp-json/wp/v2/users"
 
 **Also check:** WordPress plugins like Jetpack expose `Jet-Query-Total` and `Jet-Query-Pages` in CORS expose-headers — this is a secondary signal that a WordPress REST API is responding with CORS headers even on cached pages.
 
+## Pitfalls
+
+- **ACAO:* without ACAC is safe** — `Access-Control-Allow-Origin: *` without `Access-Control-Allow-Credentials: true` is NOT exploitable. Stop here.
+- **Testing only GET** — some endpoints only emit CORS on OPTIONS preflight. Always test both methods.
+- **Single-origin probe** — testing only `Origin: https://evil.com` misses null-origin trust and subdomain-regex bypass patterns.
+- **Auth-required endpoint false negatives** — 401/403 responses may still emit CORS headers. Test with and without auth cookies.
+- **Subdomain regex: missing end-anchor** — `^https://.*\.target\.com` without `$` matches `https://x.target.com.evil.com`. Always test end-anchor bypass.
+- **Preflight-only CORS** — some servers only validate Origin on OPTIONS. If GET bypasses, the preflight is the real gate.
+
+---
+
 ## Verification
 
 1. **CORS probe** — verify origin reflection detection:
@@ -405,18 +422,6 @@ curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/wp-json/wp/v2/users"
    echo "OPTIONS /api/me HTTP/1.1" | grep -q "OPTIONS" && echo "PASS: OPTIONS method recognized" || echo "FAIL"
    ```
 All 3 tests verify CORS probing.
-
----
-
-## Pitfalls
-
-- **ACAO:* without ACAC is safe** — `Access-Control-Allow-Origin: *` without `Access-Control-Allow-Credentials: true` is NOT exploitable. Stop here.
-- **Testing only GET** — some endpoints only emit CORS on OPTIONS preflight. Always test both methods.
-- **Single-origin probe** — testing only `Origin: https://evil.com` misses null-origin trust and subdomain-regex bypass patterns.
-- **Auth-required endpoint false negatives** — 401/403 responses may still emit CORS headers. Test with and without auth cookies.
-- **Subdomain regex: missing end-anchor** — `^https://.*\.target\.com` without `$` matches `https://x.target.com.evil.com`. Always test end-anchor bypass.
-- **Preflight-only CORS** — some servers only validate Origin on OPTIONS. If GET bypasses, the preflight is the real gate.
-
 
 ---
 

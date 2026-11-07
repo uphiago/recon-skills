@@ -27,6 +27,12 @@ Discover hidden virtual hosts on IP addresses by fuzzing the `Host` header. Many
 - SSL certificates on an IP list multiple domain names in the SAN field.
 - You need to map internal services behind a reverse proxy.
 
+## Prerequisites
+
+- `terminal` with curl, ffuf, dnsx, and httpx.
+- A DNS wordlist for hostname fuzzing.
+- A list of target IP addresses.
+
 ## How to Run
 
 ```bash
@@ -36,12 +42,6 @@ ffuf -u http://TARGET_IP \
   -H "Host: FUZZ.target.com" \
   -fs 0 -mc 200,301,302,401,403
 ```
-
-## Prerequisites
-
-- `terminal` with curl, ffuf, dnsx, and httpx.
-- A DNS wordlist for hostname fuzzing.
-- A list of target IP addresses.
 
 ## Quick Detection
 
@@ -169,6 +169,8 @@ done | sort
 3. The discovered hostname is not in the public subdomain list (previously unknown).
 4. SSL certificate SAN field confirms the hostname belongs on this server.
 5. Take a screenshot and confirm it's a distinct application or service.
+
+---
 
 ## Related Skills
 

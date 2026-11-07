@@ -12,7 +12,11 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`enterprise-vpn-attack`) and you need a focused procedure for it.
+- The target exposes an SSL VPN or remote-access appliance (Cisco ASA/AnyConnect, Fortinet, Citrix ADC, Palo Alto GlobalProtect, Pulse/Ivanti, SonicWall, F5).
+- Recon shows `+CSCOE+` paths, VPN-style hosts (`vpn.*`, `connect.*`, `webvpn.*`, `remote.*`), appliance cookies (`webvpn=`, `SVPNCOOKIE=`, `NSC_AAA=`, `DSAuthSession=`, `BIGipServer*`), or management ports 443/4443/10443/8888.
+- Login pages return appliance banners such as "AnyConnect", "FortiGate", "NetScaler", "GlobalProtect", "Pulse", or "Ivanti".
+
+Do not use for internal lateral movement after a foothold, VPN client-side bugs, or IPsec/L2TP/OpenVPN (different protocols, not the SSL VPN web stack).
 
 ## Prerequisites
 
@@ -32,22 +36,6 @@ curl --max-time 30 --connect-timeout 10 -skI 'https://target/+CSCOE+/logon.html'
 ## Procedure
 
 The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
-
-## When to use this skill
-
-Trigger when recon surfaces:
-- `*.<client>.example/+CSCOE+/logon.html` or similar `+CSCOE+` paths → Cisco ASA / AnyConnect
-- `intranet.*` / `vpn.*` / `connect.*` / `webvpn.*` / `wc.*` / `remote.*` subdomains
-- Port 443 returning login pages with `Server: Apache` or banner like "AnyConnect", "FortiGate", "NetScaler", "GlobalProtect", "Pulse", "Ivanti"
-- TCP 8443 / 4443 / 10443 / 8888 (common VPN web-mgmt ports)
-- HTTP responses with `Set-Cookie: webvpn=` (Cisco) / `SVPNCOOKIE=` (Fortinet) / `NSC_AAA=` (Citrix) / `DSAuthSession=` (Pulse) / `BIGipServer*` (F5)
-
-DO NOT use for:
-- Internal lateral-movement post-foothold (out of scope per user's boundary)
-- VPN client-side bugs (different attack class)
-- IPsec / L2TP / OpenVPN (different protocols, not SSL VPN web stack)
-
----
 
 ## Vendor identification (fingerprinting)
 
@@ -365,6 +353,22 @@ Add `-as` (auto-scan) for broader vuln coverage but slower.
 
 ---
 
+## Pitfalls
+
+- **Don't conclude "patched" from a 404 on one CVE path** — patches deploy unevenly; test 3+ CVEs per vendor
+- **Don't trust the version banner alone** — appliance vendors often backport fixes without bumping the version string
+- **Don't run heavy nuclei scans without rate-limiting** — these appliances are critical infrastructure; use `-rl 5` or lower
+- **Don't fingerprint by trying all CVE PoCs immediately** — start with non-disruptive HEAD + version-banner probes
+- **Don't skip SAML metadata** — even when the appliance is patched, SAML SP misconfig is its own attack surface
+- **Don't run pre-auth RCE PoCs without explicit authorization** — accidentally crashing a VPN concentrator is catastrophic. Detection-only tests first.
+- **Don't trust HTTP status codes alone** — patched appliances may return 200 on known-vulnerable paths but serve different content. Diff the response body against a baseline.
+- **Don't assume one vendor** — many enterprises run multiple VPN appliances (Cisco + Citrix, Fortinet + Pulse). Fingerprint all before selecting attack paths.
+- **Don't ignore the AAA backend** — knowing whether the VPN uses RADIUS-to-local vs SAML-to-Entra changes downstream attack paths completely.
+- **Lockout risk on default credentials** — most enterprise targets have changed factory passwords. Test ≤2 attempts per account.
+- **VPN appliances generate noisy logs** — every probe is likely logged to SIEM. Jitter timing between requests; don't rapid-fire.
+
+---
+
 ## Verification
 
 Run this self-test to confirm VPN appliance fingerprinting works:
@@ -402,25 +406,6 @@ Run this self-test to confirm VPN appliance fingerprinting works:
    ```
 
 All 6 tests verify the VPN fingerprinting and CVE detection syntax.
-
-
----
-
-## Pitfalls
-
-- **Don't conclude "patched" from a 404 on one CVE path** — patches deploy unevenly; test 3+ CVEs per vendor
-- **Don't trust the version banner alone** — appliance vendors often backport fixes without bumping the version string
-- **Don't run heavy nuclei scans without rate-limiting** — these appliances are critical infrastructure; use `-rl 5` or lower
-- **Don't fingerprint by trying all CVE PoCs immediately** — start with non-disruptive HEAD + version-banner probes
-- **Don't skip SAML metadata** — even when the appliance is patched, SAML SP misconfig is its own attack surface
-- **Don't run pre-auth RCE PoCs without explicit authorization** — accidentally crashing a VPN concentrator is catastrophic. Detection-only tests first.
-- **Don't trust HTTP status codes alone** — patched appliances may return 200 on known-vulnerable paths but serve different content. Diff the response body against a baseline.
-- **Don't assume one vendor** — many enterprises run multiple VPN appliances (Cisco + Citrix, Fortinet + Pulse). Fingerprint all before selecting attack paths.
-- **Don't ignore the AAA backend** — knowing whether the VPN uses RADIUS-to-local vs SAML-to-Entra changes downstream attack paths completely.
-- **Lockout risk on default credentials** — most enterprise targets have changed factory passwords. Test ≤2 attempts per account.
-- **VPN appliances generate noisy logs** — every probe is likely logged to SIEM. Jitter timing between requests; don't rapid-fire.
-
-
 
 ---
 

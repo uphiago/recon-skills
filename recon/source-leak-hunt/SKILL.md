@@ -4,7 +4,7 @@ description: "Mass-scan live hosts for exposed sensitive files (.env, .git, wp-c
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 compatibility: Requires curl, grep
 metadata:
   tags: [recon, source-leak, exposure, secrets, wordpress]

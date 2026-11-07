@@ -4,7 +4,7 @@ description: "Master bug bounty orchestrator — full pipeline: recon, pre-hunt 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [bug-bounty, recon, redteam]
   category: redteam
@@ -29,21 +29,24 @@ Full pipeline: Recon -> Learn -> Hunt -> Validate -> Report. One skill for every
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # THE ONE RULE: Always use -ac (auto-calibrate filters noise automatically)
-ffuf -w wordlist.txt -u https://target.com/FUZZ -ac
+ffuf -w wordlist.txt -u "https://$TARGET/FUZZ" -ac
 
 # Authenticated raw request file — IDOR testing (save Burp request to req.txt, replace ID with FUZZ)
 seq 1 10000 | ffuf --request req.txt -w - -ac
 
 # Authenticated API endpoint brute
-ffuf -u https://TARGET/api/FUZZ -w wordlist.txt -H "Cookie: session=TOKEN" -ac
+ffuf -u "https://$TARGET/api/FUZZ" -w wordlist.txt -H "Cookie: session=TOKEN" -ac
 
 # Parameter discovery
-ffuf -w ~/wordlists/burp-parameter-names.txt -u "https://target.com/api/endpoint?FUZZ=test" -ac -mc 200
+ffuf -w ~/wordlists/burp-parameter-names.txt -u "https://$TARGET/api/endpoint?FUZZ=test" -ac -mc 200
 
 # Hidden POST parameters
-ffuf -w ~/wordlists/burp-parameter-names.txt -X POST -d "FUZZ=test" -u "https://target.com/api/endpoint" -ac
-# ... (continues in Procedure)
+ffuf -w ~/wordlists/burp-parameter-names.txt -X POST -d "FUZZ=test" -u "https://$TARGET/api/endpoint" -ac
 ```
 
 ## Procedure
@@ -719,7 +722,7 @@ location.href = userInput
 ## SQL Injection
 
 ### Detection
-```bash
+```text
 # Single quote test
 ' OR '1'='1
 ' OR 1=1--
@@ -1345,6 +1348,25 @@ Check the list below. If it's there and you can't chain it -> KILL IT.
 ### Q7: Would a triager reading this say "yes, that's a real bug"?
 Read your report as if you're a tired triager at 5pm on a Friday. Does it pass?
 
+## Pitfalls
+
+- **Over-automation without understanding** — running nuclei, ffuf, and dalfox on every subdomain triggers WAF blocks, rate limits, and IP bans. Use `-rate` and `-t` flags. Manual probing finds bugs that automated scanners miss.
+- **5-Minute Rule violations** — lingering on a target returning only 401/403/404 wastes time. MOVE ON after 5 minutes of nothing.
+- **"Could" is not a bug** — theoretical attacks without demonstrated impact get rejected. Prove it works or drop it. Every finding must show actual harm: stolen funds, leaked PII, account takeover, or code execution.
+- **Source maps without secrets** — finding `.map` files is reconnaissance-grade, not a vulnerability. Only report when paired with extracted credentials or API keys.
+- **SSRF with DNS-only callback** — DNS pingbacks alone don't prove impact. Need data exfiltration, internal service access, or cloud metadata retrieval.
+- **Open redirect alone** — without an OAuth chain or ATO escalation path, this is informational at best. Build the full chain before reporting.
+- **Spraying without method** — jumping between XSS, IDOR, SSRF, and cache poisoning in one session guarantees shallow findings. Pick ONE bug class per session and go deep.
+- **Report-first, validate-later** — writing the report before confirming the bug still works at time of submission. Always re-test minutes before submitting.
+- **One test account testing itself** — IDOR/ATO bugs need two accounts (attacker + victim). Testing with one account against itself proves nothing.
+- **Not reading disclosed reports first** — spending hours hunting a class that's out of scope or already hard-mitigated wastes time. Read 3+ disclosed reports before hunting.
+- **Over-reliance on one wordlist** — SecLists is a starting point, not the destination. Asset-specific wordlists (from JS files, API responses, swagger docs) outperform generic ones.
+- **Ignoring mobile API versions** — mobile apps often use different/v1 endpoints with lower auth maturity than web counterparts.
+- **Scope creep via subdomain enumeration** — verify every subdomain is owned by the target. Third-party services are typically out of scope.
+- **New features == unreviewed** — anything launched in the last 30 days has the lowest security maturity and highest bug density.
+
+---
+
 ## Verification
 
 Run this self-test to confirm the toolkit is operational:
@@ -1380,26 +1402,6 @@ Run this self-test to confirm the toolkit is operational:
    ```
 
 All 6 tests should pass for a fully operational toolkit. Missing Go binaries can be installed via `go install`; Python tools via `pip3 install`.
-
-
----
-
-## Pitfalls
-
-- **Over-automation without understanding** — running nuclei, ffuf, and dalfox on every subdomain triggers WAF blocks, rate limits, and IP bans. Use `-rate` and `-t` flags. Manual probing finds bugs that automated scanners miss.
-- **5-Minute Rule violations** — lingering on a target returning only 401/403/404 wastes time. MOVE ON after 5 minutes of nothing.
-- **"Could" is not a bug** — theoretical attacks without demonstrated impact get rejected. Prove it works or drop it. Every finding must show actual harm: stolen funds, leaked PII, account takeover, or code execution.
-- **Source maps without secrets** — finding `.map` files is reconnaissance-grade, not a vulnerability. Only report when paired with extracted credentials or API keys.
-- **SSRF with DNS-only callback** — DNS pingbacks alone don't prove impact. Need data exfiltration, internal service access, or cloud metadata retrieval.
-- **Open redirect alone** — without an OAuth chain or ATO escalation path, this is informational at best. Build the full chain before reporting.
-- **Spraying without method** — jumping between XSS, IDOR, SSRF, and cache poisoning in one session guarantees shallow findings. Pick ONE bug class per session and go deep.
-- **Report-first, validate-later** — writing the report before confirming the bug still works at time of submission. Always re-test minutes before submitting.
-- **One test account testing itself** — IDOR/ATO bugs need two accounts (attacker + victim). Testing with one account against itself proves nothing.
-- **Not reading disclosed reports first** — spending hours hunting a class that's out of scope or already hard-mitigated wastes time. Read 3+ disclosed reports before hunting.
-- **Over-reliance on one wordlist** — SecLists is a starting point, not the destination. Asset-specific wordlists (from JS files, API responses, swagger docs) outperform generic ones.
-- **Ignoring mobile API versions** — mobile apps often use different/v1 endpoints with lower auth maturity than web counterparts.
-- **Scope creep via subdomain enumeration** — verify every subdomain is owned by the target. Third-party services are typically out of scope.
-- **New features == unreviewed** — anything launched in the last 30 days has the lowest security maturity and highest bug density.
 
 ---
 

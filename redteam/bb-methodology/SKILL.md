@@ -18,7 +18,8 @@ Master orchestrator for hunting sessions. Combines the 5-phase non-linear workfl
 
 ## When to Use
 
-- Asking "what should I do next" or "where am I in the process.".
+- Asking "what should I do next?" or "where am I in the process?"
+- You need the engagement sequence from scoping through reporting.
 
 ## Prerequisites
 
@@ -158,6 +159,22 @@ Before touching any command:
 
 ---
 
+## Pitfalls
+
+- **Mode confusion** — treating a bug-bounty engagement as a red-team exercise wastes time on hygiene findings that get N/A'd. Confirm the engagement type (PART 0) before any recon.
+- **Non-unique markers** — using `test`, `marker`, or `javascript` as test strings triggers false positives. Always use 8+ char random alphanumeric markers and verify against baseline.
+- **Status-code-only bypass claims** — 200 OK with byte-identical body is NOT a bypass. Always diff response bodies before claiming success.
+- **Single-sample timing conclusions** — one 2× outlier is network jitter, not signal. Minimum n=10 interleaved trials, 2σ threshold for timing-based claims.
+- **Shell loops for >5 iterations** — zsh array expansion can silently produce zero iterations. Use Python with try/except for any loop iterating a list, file, or computed range.
+- **Linear phase assumption** — the 5-phase flow is non-linear. New APIs discovered during Phase 3 require returning to Phase 2 mapping. WAF blocking in Phase 4 requires origin-IP recon from Phase 1.
+- **20-minute rule violations** — continuing past 20 minutes without progress on a single endpoint burns session time. Rotate: endpoint → subdomain → vuln class → target.
+- **Ignoring the A→B signal** — finding one bug means the same developer made more mistakes nearby. Always spend 20 minutes hunting siblings after a confirmed finding.
+- **Report-first, validate-later** — writing the report before confirming the bug still reproduces wastes hours on retracted findings. Always re-test minutes before submission.
+- **Premature pushback** — when the user says "find more," they are usually correct. Exhaust 3 additional hunt-* skill checklists before claiming coverage is complete.
+- **45-minute sunk cost on dead candidates** — if a finding won't reproduce on a second account after 4+ hours, document the retraction and move on. Don't sink more time into making it work.
+
+---
+
 ## Verification
 
 Run this self-test to confirm the methodology's quality gates are operational:
@@ -209,23 +226,6 @@ Run this self-test to confirm the methodology's quality gates are operational:
    ```
 
 If all 5 tests pass, the methodology discipline rules are verifiable. Tests 1-2 are the most common false-positive sources in real engagements.
-
-
----
-
-## Pitfalls
-
-- **Mode confusion** — treating a bug-bounty engagement as a red-team exercise wastes time on hygiene findings that get N/A'd. Confirm the engagement type (PART 0) before any recon.
-- **Non-unique markers** — using `test`, `marker`, or `javascript` as test strings triggers false positives. Always use 8+ char random alphanumeric markers and verify against baseline.
-- **Status-code-only bypass claims** — 200 OK with byte-identical body is NOT a bypass. Always diff response bodies before claiming success.
-- **Single-sample timing conclusions** — one 2× outlier is network jitter, not signal. Minimum n=10 interleaved trials, 2σ threshold for timing-based claims.
-- **Shell loops for >5 iterations** — zsh array expansion can silently produce zero iterations. Use Python with try/except for any loop iterating a list, file, or computed range.
-- **Linear phase assumption** — the 5-phase flow is non-linear. New APIs discovered during Phase 3 require returning to Phase 2 mapping. WAF blocking in Phase 4 requires origin-IP recon from Phase 1.
-- **20-minute rule violations** — continuing past 20 minutes without progress on a single endpoint burns session time. Rotate: endpoint → subdomain → vuln class → target.
-- **Ignoring the A→B signal** — finding one bug means the same developer made more mistakes nearby. Always spend 20 minutes hunting siblings after a confirmed finding.
-- **Report-first, validate-later** — writing the report before confirming the bug still reproduces wastes hours on retracted findings. Always re-test minutes before submission.
-- **Premature pushback** — when the user says "find more," they are usually correct. Exhaust 3 additional hunt-* skill checklists before claiming coverage is complete.
-- **45-minute sunk cost on dead candidates** — if a finding won't reproduce on a second account after 4+ hours, document the retraction and move on. Don't sink more time into making it work.
 
 ---
 

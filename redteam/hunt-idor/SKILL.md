@@ -414,20 +414,20 @@ Cross-references:
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **UUID-based IDOR** — UUIDs are not guessable, so reading a known UUID from another user is IDOR only if the UUID itself was leaked. Document the leak source.
 - **Read-only IDOR without sensitive data** — accessing another user's public profile via IDOR is Low. Need PII, credentials, or private data.
 - **Self-IDOR** — accessing your own data with another identifier you own is not IDOR. Need cross-account access.
 - **IDOR on public resources** — if the resource is intentionally public (no auth check by design), there's no IDOR. Verify auth was expected.
 - **POST/PUT IDOR without CSRF** — write IDOR needs a CSRF vector or the attacker needs the victim's session. Distinguish standalone vs chained exploitability.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

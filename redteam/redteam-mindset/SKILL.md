@@ -4,7 +4,7 @@ description: Red-team operator discipline — the mindset corrections that separ
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [mindset, methodology, redteam]
   category: redteam
@@ -12,44 +12,36 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`redteam-mindset`) and you need a focused procedure for it.
+- Engagement scope says "red team", "adversary emulation", "assume breach", or "TIBER-style".
+- An engagement stalls, a WAF/CAPTCHA blocks you, or a reproduction fails once and you are tempted to retract.
+- You need the operator decision trees for blockers, cadence, and coverage before continuing.
+- You are about to spend time on IDOR/CSRF/XSS instead of access-yielding bugs.
+- You found a vulnerability on app A and there are sister apps B, C, D you have not touched.
+
+Do not use for bug bounty (use `bug-bounty` — different scope rules), WAPT/PCI-style assessments (use OWASP-aligned skills), or pure compliance audits.
 
 ## Prerequisites
 
 - Explicit authorization, target boundaries, and rate limits for the target.
-- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- Tooling: standard HTTP tooling (`curl`, `jq`).
 - A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
 - For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
 
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="example.com"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+mkdir -p "$OUTPUT_DIR/engagement_log"
+
+# Open the engagement journal before the first probe; every test gets one line
+printf '%s session start %s\n' "$(date -u +%FT%TZ)" "$TARGET" \
+  >> "$OUTPUT_DIR/engagement_log/journal.log"
 ```
 
 ## Procedure
 
 The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
-
-## When to use this skill
-
-Trigger when:
-- Engagement scope says "red team", "adversary emulation", "assume breach", "TIBER-style"
-- You're tempted to retract a finding because reproducibility failed once
-- You're tempted to call a defense "working as intended" instead of probing further
-- You hit a blocker (captcha, rate limit, WAF, CA-block, lockout) and consider stopping
-- You're about to spend time on IDOR/CSRF/XSS instead of access-yielding bugs
-- You found a vuln on app A and there are sister apps B, C, D you haven't touched
-
-DO NOT use for:
-- Bug bounty programs (use bug-bounty skill — different scope rules)
-- WAPT/PCI-style assessments (use OWASP-aligned skills)
-- Pure compliance audits
-
----
 
 ## The one-line summary
 
@@ -407,20 +399,6 @@ This skill is the operational discipline; those are the techniques.
 
 ---
 
-## Verification
-
-1. **Mindset principles** — confirm key directives are documented:
-   ```bash
-   grep -q "DO NOT STOP\|primary directive\|coverage over efficiency" SKILL.md && echo "PASS" || echo "FAIL"
-   ```
-2. **Bypass mindset** — confirm 403 bypass thinking:
-   ```bash
-   grep -q "403\|bypass\|try harder" SKILL.md && echo "PASS" || echo "FAIL"
-   ```
-All tests verify redteam mindset documentation.
-
----
-
 ## Pitfalls
 - **Scanner-only thinking** — automated scanners find the same bugs as everyone else. Manual analysis and creative thinking find unique bugs.
 - **Confirmation bias** — looking for evidence to confirm your hypothesis, not evidence that disproves it. Actively seek disconfirming evidence.
@@ -430,6 +408,13 @@ All tests verify redteam mindset documentation.
 - **Not documenting failures** — negative results are intel. "Tested X, Y, Z on /admin — all returned 403" prevents repeating work.
 - **The "DO NOT STOP" directive** — the primary directive in red-team engagements is coverage, not efficiency. Keep digging even when initial probes show nothing.
 
+---
+
+## Verification
+
+- Every probe has a journal line: UTC timestamp, target, payload, verdict, and evidence path.
+- Every blocker has at least two attempted vectors recorded before it is called a stop condition.
+- Every promoted finding has two independent cross-technique confirmations and its original PoC preserved.
 
 ---
 

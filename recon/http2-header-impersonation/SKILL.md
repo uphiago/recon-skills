@@ -27,31 +27,39 @@ Spoof HTTP/2 SETTINGS frames, pseudo-header ordering, and browser-specific HTTP 
 - Mobile API endpoints require Android OkHttp header profiles.
 - Combining with TLS impersonation for a complete network-level browser profile.
 
-## How to Run
-
-```bash
-# Check if target sends different responses based on HTTP headers
-# Compare browser-like headers vs curl defaults
-
-python3 -c "
-import requests
-
-# curl default headers
-r1 = requests.get('https://target.com')
-print(f'Default: {r1.status_code}')
-
-# Browser-like headers
-r2 = requests.get('https://target.com', headers={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-# ... (continues in Procedure)
-```
-
 ## Prerequisites
 
 - `terminal` with python3.
 - `pip install impit` (includes HTTP/2 impersonation via patched h2 library).
 - Or standalone: use the header lists below to configure curl/httpx manually.
+
+## How to Run
+
+```bash
+# Compare default client headers with a browser profile
+export TARGET="https://target.com"
+
+python3 - <<'PY'
+import os
+import requests
+
+url = os.environ["TARGET"]
+default = requests.get(url, timeout=15)
+browser = requests.get(url, timeout=15, headers={
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-User": "?1",
+    "Sec-Fetch-Dest": "document",
+})
+print(f"default: {default.status_code} {len(default.content)}b")
+print(f"browser: {browser.status_code} {len(browser.content)}b")
+if default.status_code != browser.status_code or len(default.content) != len(browser.content):
+    print("DIFFERENTIAL — header-based detection likely")
+PY
+```
 
 ## Quick Detection
 
@@ -252,6 +260,8 @@ Browser Accept-Encoding values differ significantly:
 2. For HTTP/2 SETTINGS verification, use `https://nghttp2.org/httpbin/headers` or a local nghttp2 server.
 3. Compare response size/content between browser-impostor and real browser — identical responses indicate the headers are accepted.
 4. Check Cloudflare `cf-ja4` header — it encodes HTTP/2 fingerprint along with TLS.
+
+---
 
 ## Related Skills
 

@@ -737,19 +737,19 @@ See: https://flatt.tech/research/posts/beyond-the-limit-expanding-single-packet-
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Single-threaded testing** — race conditions require parallel requests. Curl alone can't demonstrate them reliably. Use Python `asyncio` or Burp Intruder with multiple threads.
 - **TOCTOU without state change** — time-of-check-time-of-use is theoretical without demonstrating the state changed between check and use.
 - **Race window too small** — if the window between check and use is microseconds, the race may be impractical. Measure the window before reporting.
 - **Limit-overrun race** — coupon/credit/withdrawal races are the highest-impact. Test with exact parallel requests, not just rapid sequential.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

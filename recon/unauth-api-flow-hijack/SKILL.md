@@ -28,6 +28,12 @@ Exploit API endpoints that implement a full business workflow (interview, applic
 - The workflow includes file upload, data submission, or export functionality.
 - Error messages reveal the expected request format (validating that endpoints are live).
 
+## Prerequisites
+
+- `terminal` with curl and python3.
+- Discovery of at least one API endpoint that accepts POST without authentication.
+- The endpoint returns an identifier (session ID, interview ID, token) that can be passed to subsequent steps.
+
 ## How to Run
 
 ```bash
@@ -45,14 +51,14 @@ for ep in /start /api/start /api/v1/start /begin /init /api/init \
 import sys,json,re
 try:
     d=json.load(sys.stdin)
-# ... (continues in Procedure)
+    for k in d:
+        if any(x in k.lower() for x in ['id','token','session','key']):
+            print(f'{k}: {d[k]}')
+except: pass
+"
+  fi
+done
 ```
-
-## Prerequisites
-
-- `terminal` with curl and python3.
-- Discovery of at least one API endpoint that accepts POST without authentication.
-- The endpoint returns an identifier (session ID, interview ID, token) that can be passed to subsequent steps.
 
 ## Quick Detection
 
@@ -198,6 +204,8 @@ for url in re.findall(r'https?://[^\s\"<>]+\.(?:supabase\.co|amazonaws\.com|stor
 3. Confirm file uploads are stored and retrievable (check the returned URL).
 4. Verify export produces real data (check file size and content).
 5. If session IDs are enumerable, confirm cross-session access (access another session's data).
+
+---
 
 ## Related Skills
 

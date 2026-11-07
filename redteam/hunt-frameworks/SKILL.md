@@ -594,6 +594,8 @@ Each framework section keeps its own pitfalls list; the cross-framework traps ar
 - Each framework section's own Verification checklist must pass before its findings are promoted.
 - Authorization-protected actions (registration, PATCH loops, uploads, console eval) are confirmed with a synthetic object and cleaned up afterwards.
 
+---
+
 ## Related Skills
 
 - **`hunt-prototype-pollution`** — Canonical prototype-pollution payload reference; the Node.js section summarizes only the framework sinks.

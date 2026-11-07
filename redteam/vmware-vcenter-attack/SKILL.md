@@ -39,7 +39,6 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/api/appliance/syste
 
 # Cert metadata
 echo | openssl s_client -connect "$TARGET:443" -servername "$TARGET" 2>/dev/null | openssl x509 -noout -text | grep -A1 "Subject Alt"
-# ... (continues in Procedure)
 ```
 
 ## Procedure
@@ -308,17 +307,6 @@ Internet-exposed vCenter is unfortunately common on the perimeter — and freque
 
 ---
 
-## Verification
-
-1. **vCenter fingerprint** — confirm vCenter URL patterns:
-   ```bash
-   echo "/ui/login" | grep -q "ui/login" && echo "PASS: vCenter UI path recognized" || echo "FAIL"
-   echo "/sdk" | grep -q "sdk" && echo "PASS: vCenter SDK path recognized" || echo "FAIL"
-   ```
-All tests verify vCenter attack readiness.
-
----
-
 ## Pitfalls
 - **vCenter version disclosure without CVE** — knowing the vCenter version is recon. Need a pre-auth CVE affecting that specific version.
 - **Post-exploitation assumed** — vCenter attacks typically require initial foothold. The finding is what you can do ONCE inside, not how you got there.
@@ -327,6 +315,16 @@ All tests verify vCenter attack readiness.
 - **SSO domain administrator** — vCenter SSO `administrator@vsphere.local` has unlimited power. This account is the primary target.
 - **Log insight / vRealize** — vCenter add-ons (Log Insight, vRealize Operations) have their own CVEs. Don't stop at the vCenter web UI.
 
+---
+
+## Verification
+
+1. **vCenter fingerprint** — confirm vCenter URL patterns:
+   ```bash
+   echo "/ui/login" | grep -q "ui/login" && echo "PASS: vCenter UI path recognized" || echo "FAIL"
+   echo "/sdk" | grep -q "sdk" && echo "PASS: vCenter SDK path recognized" || echo "FAIL"
+   ```
+All tests verify vCenter attack readiness.
 
 ---
 

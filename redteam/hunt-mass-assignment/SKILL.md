@@ -187,6 +187,8 @@ mutation UpdateProfile {
 4. Test with multiple naming conventions to rule out framework-level field rejection.
 5. Check batch and patch-format endpoints which may use different serializers.
 
+---
+
 ## Related Skills
 
 - **`hunt-api-misconfig`** — Broader API misconfiguration including mass assignment patterns.

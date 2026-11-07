@@ -30,6 +30,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Test dork results manually
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/.env" | head -5
 # Verify GitHub found secrets

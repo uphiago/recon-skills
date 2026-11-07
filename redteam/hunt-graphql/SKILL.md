@@ -366,20 +366,20 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Introspection enabled without sensitive mutations** — introspection alone is informational. Need to demonstrate exploitable queries/mutations via the revealed schema.
 - **Field-level auth missing but only on public data** — if the exposed field is already public, there's no bug. Needs to expose data the user shouldn't see.
 - **Batching attacks without rate limit bypass** — GraphQL batching can amplify brute-force but only if rate limits are per-request not per-operation.
 - **Depth/complexity attacks without DoS proof** — high query depth is a primitive. Need to demonstrate actual server resource exhaustion.
 - **Persisted queries allowlist bypass** — bypassing APQ to reach introspection is the real finding, not schema visibility.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

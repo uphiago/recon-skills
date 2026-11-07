@@ -28,6 +28,13 @@ Spoof TLS ClientHello parameters — cipher suites, key exchange groups, signatu
 - Need high-throughput HTTP requests that pass TLS fingerprint checks without running a full browser.
 - Target shows different behavior based on TLS fingerprint (mobile vs desktop endpoints).
 
+## Prerequisites
+
+- `terminal` with python3.
+- Python: `pip install impit` (wraps the Rust library via PyO3).
+- Or Node.js: `npm install impit` (native binding).
+- Or Rust: `impit` crate with patched dependencies in Cargo.toml.
+
 ## How to Run
 
 ```bash
@@ -41,13 +48,6 @@ r = impit.get('https://target.com').text
 print(r[:200])
 "
 ```
-
-## Prerequisites
-
-- `terminal` with python3.
-- Python: `pip install impit` (wraps the Rust library via PyO3).
-- Or Node.js: `npm install impit` (native binding).
-- Or Rust: `impit` crate with patched dependencies in Cargo.toml.
 
 ## Quick Detection
 
@@ -245,6 +245,8 @@ print(r.text())
 2. Check `cf-ja4` response header when hitting Cloudflare-protected sites.
 3. Verify response status changes from 403 → 200 when using browser fingerprint vs vanilla curl.
 4. Test with multiple browser profiles to find the one that passes the target's detection.
+
+---
 
 ## Related Skills
 

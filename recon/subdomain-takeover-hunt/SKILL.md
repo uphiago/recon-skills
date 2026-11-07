@@ -26,6 +26,12 @@ Detect subdomains pointing to unregistered or unclaimed third-party cloud servic
 - A subdomain returns NXDOMAIN, 404, or "no such app" error pages.
 - The CNAME target is a service with user-registrable names.
 
+## Prerequisites
+
+- `terminal` with curl, dnsx, subfinder.
+- `subzy` or `subjack` installed for automated detection.
+- List of alive subdomains from `subdomain-enumeration`.
+
 ## How to Run
 
 ```bash
@@ -35,12 +41,6 @@ dnsx -retry 3 -a -cname -resp -silent -l alive_subs.txt | tee dns_records.txt
 # Automated takeover scan
 subzy run --targets alive_subs.txt --hide_fails --vuln
 ```
-
-## Prerequisites
-
-- `terminal` with curl, dnsx, subfinder.
-- `subzy` or `subjack` installed for automated detection.
-- List of alive subdomains from `subdomain-enumeration`.
 
 ## Quick Detection
 
@@ -151,6 +151,8 @@ subfinder -d target.com -silent \
 2. `curl --max-time 30 --connect-timeout 10 -sk https://SUBDOMAIN` returns the service-specific error page indicating the resource is available.
 3. The CNAME target is NOT resolving to a CDN or load balancer.
 4. Document the exact error message and service type before reporting.
+
+---
 
 ## Related Skills
 

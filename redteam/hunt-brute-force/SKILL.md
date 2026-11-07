@@ -20,7 +20,8 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`hunt-brute-force`) and you need a focused procedure for it.
+- A login, OTP/2FA, reset-token, or enumeration endpoint is reachable and rate limiting is unknown or weak.
+- You need to distinguish lockout, soft throttle, CAPTCHA injection, and silent shadow-throttling before claiming a missing rate limit.
 
 ## Prerequisites
 
@@ -32,6 +33,11 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+SESSION_COOKIE="session=..."   # cookie from your approved test session
+
 # Seed: position 500 in the brute set is the REAL OTP for your own test account.
 # If the loop reaches 500 and the correct code no longer authenticates,
 # the endpoint is silently throttling/dropping — NOT unprotected.
@@ -311,6 +317,17 @@ Before writing the report, each must hold:
 - ReDoS with reproducible meaningful server lag: **Medium–High**
 - Attacker-triggerable hard lockout (account DoS): **Medium**
 
+## Pitfalls
+
+- **Testing without rate-limit awareness** — brute-forcing without `-rate` and `-t` flags triggers account lockouts and IP bans. Always test with conservative settings first.
+- **Single-account testing** — brute-forcing your own test account proves nothing. Need two accounts to demonstrate the attack works against a victim.
+- **HTTP status code alone as oracle** — 200 vs 403 differential can be misleading. Always diff response bodies; some apps return 200 with different content for valid vs invalid credentials.
+- **Response timing as sole evidence** — single-sample timing differentials are jitter. Need n>=10 interleaved trials per group with 2-sigma threshold.
+- **Lockout policy not documented** — if the target has account lockout after N attempts, document it. Brute-force with lockout is high-risk and low-reward.
+- **Token entropy claims without measurement** — claiming a token is predictable requires actual measurement (Burp Sequencer effective-bits, ent, or demonstrated counter/timestamp structure).
+
+---
+
 ## Verification
 
 Run this self-test to confirm brute-force readiness:
@@ -325,17 +342,6 @@ Run this self-test to confirm brute-force readiness:
    PASS: SecLists present
 
 All 3 tests verify brute-force probing readiness.
-
----
-
-## Pitfalls
-
-- **Testing without rate-limit awareness** — brute-forcing without `-rate` and `-t` flags triggers account lockouts and IP bans. Always test with conservative settings first.
-- **Single-account testing** — brute-forcing your own test account proves nothing. Need two accounts to demonstrate the attack works against a victim.
-- **HTTP status code alone as oracle** — 200 vs 403 differential can be misleading. Always diff response bodies; some apps return 200 with different content for valid vs invalid credentials.
-- **Response timing as sole evidence** — single-sample timing differentials are jitter. Need n>=10 interleaved trials per group with 2-sigma threshold.
-- **Lockout policy not documented** — if the target has account lockout after N attempts, document it. Brute-force with lockout is high-risk and low-reward.
-- **Token entropy claims without measurement** — claiming a token is predictable requires actual measurement (Burp Sequencer effective-bits, ent, or demonstrated counter/timestamp structure).
 
 ---
 

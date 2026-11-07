@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Download the main page and its JS bundles
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" -o /tmp/index.html
 grep -Eo 'src="[^"]*\.js"' /tmp/index.html | cut -d'"' -f2 | while read js; do
@@ -41,7 +45,6 @@ grep -rEn 'firebaseConfig|firebase.initializeApp|apiKey|authDomain' /tmp/*.js --
 
 # Search for Firebase URLs
 grep -rEn 'firebaseio|firestore|firebasestorage|firebaseapp' /tmp/*.js --include="*.js"
-# ... (continues in Procedure)
 ```
 
 ## Procedure
@@ -466,6 +469,15 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'fireba
 
 ---
 
+## Pitfalls
+- **Public Firebase config without sensitive data** — the Firebase config object is intentionally public. Only report when the database/storage is writable or contains PII.
+- **Realtime DB rules test without write** — reading `.json` is recon. Writing to `.json` and having it persist proves misconfiguration.
+- **Firestore public read** — test `/documents/users` for PII, not `/documents/public_config`.
+- **Storage bucket listing without object read** — listable buckets are informational. Need readable objects with sensitive content.
+- **API key scope testing** — Firebase API keys are not secrets. They're identifiers. Test what the key grants access to, not just that it exists.
+
+---
+
 ## Verification
 
 - Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
@@ -473,10 +485,3 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'fireba
 - Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
-
-## Pitfalls
-- **Public Firebase config without sensitive data** — the Firebase config object is intentionally public. Only report when the database/storage is writable or contains PII.
-- **Realtime DB rules test without write** — reading `.json` is recon. Writing to `.json` and having it persist proves misconfiguration.
-- **Firestore public read** — test `/documents/users` for PII, not `/documents/public_config`.
-- **Storage bucket listing without object read** — listable buckets are informational. Need readable objects with sensitive content.
-- **API key scope testing** — Firebase API keys are not secrets. They're identifiers. Test what the key grants access to, not just that it exists.

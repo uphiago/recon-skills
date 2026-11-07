@@ -28,6 +28,12 @@ Map an organization's entire IP infrastructure by pivoting from domain to ASN (A
 - Services on non-standard ports are invisible to web-only recon.
 - Acquired subsidiaries or international domains may sit on different ASNs with weaker security.
 
+## Prerequisites
+
+- `terminal` whois, dnsx, mapcidr, httpx, and asnmap.
+- The target domain and/or a known IP belonging to the organization.
+- Shodan API key (optional, for deeper OSINT).
+
 ## How to Run
 
 ```bash
@@ -37,12 +43,6 @@ ASN=$(whois $IP | grep -i "origin\|OriginAS" | awk '{print $NF}' | head -1)
 echo "ASN: $ASN"
 whois -h whois.radb.net -- "-i origin $ASN" | grep -Eo "([0-9.]+){4}/[0-9]+" | sort -u
 ```
-
-## Prerequisites
-
-- `terminal` whois, dnsx, mapcidr, httpx, and asnmap.
-- The target domain and/or a known IP belonging to the organization.
-- Shodan API key (optional, for deeper OSINT).
 
 ## Quick Detection
 
@@ -191,6 +191,8 @@ done
 3. TLD expansion found live domains on sibling TLDs.
 4. Web service scan identified unique applications on non-standard ports.
 5. Map the full infrastructure: domains → IPs → services → vulnerabilities.
+
+---
 
 ## Related Skills
 

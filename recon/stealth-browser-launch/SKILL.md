@@ -29,6 +29,13 @@ Launch a patched Chromium binary with C++ source-level fingerprint modifications
 - Need to access reCAPTCHA-protected endpoints without solving CAPTCHAs.
 - Running automated recon behind residential proxies — stealth browser prevents IP+UA correlation.
 
+## Prerequisites
+
+- `terminal` with python3 and pip.
+- `playwright` installed: `pip install playwright && playwright install-deps chromium`.
+- Residential proxy (datacenter IPs are reputation-blocked regardless of browser fingerprint).
+- Optional: `cloakbrowser[geoip]` for automatic timezone/locale resolution from proxy exit IP.
+
 ## How to Run
 
 ```bash
@@ -42,13 +49,6 @@ print(page.title())
 browser.close()
 "
 ```
-
-## Prerequisites
-
-- `terminal` with python3 and pip.
-- `playwright` installed: `pip install playwright && playwright install-deps chromium`.
-- Residential proxy (datacenter IPs are reputation-blocked regardless of browser fingerprint).
-- Optional: `cloakbrowser[geoip]` for automatic timezone/locale resolution from proxy exit IP.
 
 ## Quick Start
 
@@ -202,7 +202,7 @@ cp /path/to/windows/fonts/SegoeUI*.ttf ~/.local/share/fonts/windows/
 fc-cache -f
 
 # Then launch with:
-browser = launch(args=["--fingerprint-fonts-dir=/home/user/.local/share/fonts/windows"])
+# browser = launch(args=["--fingerprint-fonts-dir=/home/user/.local/share/fonts/windows"])
 ```
 
 ## Fingerprint Flag Reference
@@ -243,6 +243,8 @@ browser = launch(args=["--fingerprint-fonts-dir=/home/user/.local/share/fonts/wi
 3. Test against reCAPTCHA v3: `https://antcpt.com/eng/information/demo-form/recaptcha-3-test-score.html` — score should be ≥ 0.7.
 4. Test against `https://deviceandbrowserinfo.com` — `isBot` should be false with 0 true flags.
 5. Verify `navigator.webdriver` is `false` with `page.evaluate("navigator.webdriver")`.
+
+---
 
 ## Related Skills
 

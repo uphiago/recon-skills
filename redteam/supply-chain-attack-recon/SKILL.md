@@ -4,7 +4,7 @@ description: External recon for software supply-chain attack surface — package
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [supply-chain, attack, recon, redteam]
   category: redteam
@@ -603,6 +603,15 @@ Twelve well-documented public cases, mapped to the recon surface above. Each ent
 
 ---
 
+## Pitfalls
+- **Assuming all third-party dependencies are in scope** — check the bug bounty scope. Third-party services (Zendesk, Intercom, statuspage) are typically out of scope.
+- **Dependency version without CVE** — knowing a library version without a matching exploitable CVE is informational.
+- **npm/pip package typosquatting without proof** — demonstrating a typosquatted package EXISTS doesn't prove the target uses it. Need package.json/requirements.txt evidence.
+- **CI/CD supply chain vs runtime supply chain** — poisoning a build-time dependency and a runtime dependency have different impacts. Distinguish them.
+- **Vendor email compromise as supply chain** — compromising a vendor's email to send malicious updates is different from code dependency attacks. Both are supply chain but different TTPs.
+
+---
+
 ## Verification
 
 1. **Dependency scanning** — confirm tool availability:
@@ -611,16 +620,6 @@ Twelve well-documented public cases, mapped to the recon surface above. Each ent
    pip3 show pip-audit 2>/dev/null | grep -q "Name:" && echo "PASS: pip-audit installed" || echo "NOTE: pip-audit not installed"
    ```
 All tests verify supply chain readiness.
-
----
-
-## Pitfalls
-- **Assuming all third-party dependencies are in scope** — check the bug bounty scope. Third-party services (Zendesk, Intercom, statuspage) are typically out of scope.
-- **Dependency version without CVE** — knowing a library version without a matching exploitable CVE is informational.
-- **npm/pip package typosquatting without proof** — demonstrating a typosquatted package EXISTS doesn't prove the target uses it. Need package.json/requirements.txt evidence.
-- **CI/CD supply chain vs runtime supply chain** — poisoning a build-time dependency and a runtime dependency have different impacts. Distinguish them.
-- **Vendor email compromise as supply chain** — compromising a vendor's email to send malicious updates is different from code dependency attacks. Both are supply chain but different TTPs.
-
 
 ---
 

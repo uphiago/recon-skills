@@ -4,7 +4,7 @@ description: Scan WordPress REST API plugin endpoints for unauthenticated state-
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux, macos, any]
+platforms: [any]
 compatibility: Requires python3, curl
 metadata:
   tags: [recon, wordpress, rest-api, auth-bypass, plugin-exploit, unauthorized-access, content-publishing]
@@ -28,6 +28,11 @@ WordPress plugins register custom REST API routes at `/wp-json/{namespace}/`. Ma
 - Standard WordPress endpoints return 401 — but third-party plugin endpoints might not.
 - You want to find hidden admin URLs, debug endpoints, or unauthenticated write operations.
 
+## Prerequisites
+
+- `python3` with `requests` library.
+- Target WordPress site URL.
+
 ## How to Run
 
 ```bash
@@ -38,11 +43,6 @@ for ns in data.get('namespaces', []):
     print(ns)
 "
 ```
-
-## Prerequisites
-
-- `python3` with `requests` library.
-- Target WordPress site URL.
 
 ## Procedure
 

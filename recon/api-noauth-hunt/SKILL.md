@@ -210,7 +210,6 @@ jq 'if type == "array" then .[:2] else . end' \
   "$OUTPUT_DIR/api-validation/bounded-sample.json"
 ```
 
-
 ## Pitfalls
 
 - **HTTP 200 ≠ API.** Some services return HTML on unexpected paths. Verify JSON content type.

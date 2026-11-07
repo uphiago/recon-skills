@@ -28,6 +28,11 @@ Identify the content management system, web framework, server software, and tech
 - A host returns generic 200 on all paths — technology detection tells you what it actually runs.
 - Want to find sites running outdated versions of popular CMS platforms.
 
+## Prerequisites
+
+- `terminal` with httpx, whatweb, wappalyzer, and curl.
+- A list of alive subdomains from `skill_view(name='visual-recon')` or `skill_view(name='subdomain-enumeration')`.
+
 ## How to Run
 
 ```bash
@@ -37,11 +42,6 @@ cat alive_subs.txt | httpx -silent -tech-detect -o tech_detect.txt
 # Deep: whatweb with aggressive checks
 whatweb -i alive_subs.txt -a 3 -t 50 --log-brief=cms_results.txt
 ```
-
-## Prerequisites
-
-- `terminal` with httpx, whatweb, wappalyzer, and curl.
-- A list of alive subdomains from `skill_view(name='visual-recon')` or `skill_view(name='subdomain-enumeration')`.
 
 ## Quick Detection
 
@@ -215,6 +215,8 @@ nuclei -l wordpress_sites.txt -t nuclei-templates/http/cves/2024/
 2. Version-specific paths exist (e.g., `/wp-admin/` for WordPress, `/user/login` for Drupal).
 3. Framework-specific endpoints respond correctly (e.g., `/actuator/health` for Spring Boot).
 4. Document: hostname, CMS, version, detection method, and whether the version has known CVEs.
+
+---
 
 ## Related Skills
 

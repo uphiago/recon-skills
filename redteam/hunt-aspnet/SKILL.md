@@ -12,7 +12,8 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`hunt-aspnet`) and you need a focused procedure for it.
+- The stack is ASP.NET/WebForms/WCF, or responses expose `__VIEWSTATE`, `.aspx`, `trace.axd`, or `elmah.axd`.
+- You need ViewState/machineKey preconditions, parser differentials, or request-validator bypasses.
 
 ## Prerequisites
 
@@ -300,14 +301,6 @@ Before writing the report, confirm:
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 
 - **Confusing signed-only ViewState with encrypted ViewState** — `__VIEWSTATEENCRYPTED=""` or absent means signed-only. This is a primitive, not RCE. Full RCE requires machineKey recovery.
@@ -318,6 +311,14 @@ Before writing the report, confirm:
 - **SharePoint ToolPane accessible anonymously but FormDigest required** — reachable ToolPane is a precondition, not the bug. Need the full chain: ToolPane + anonymous FormDigest + signed-only ViewState + machineKey.
 - **Telerik version from JS bundle != exploitable** — the JS bundle version is the client-side library version, not the server-side Telerik DLL. Verify the server version via `WebResource.axd` response headers.
 - **customErrors mode="On" handling** — stack traces hidden by customErrors may still leak via parser-level exceptions below the handler layer. Test malformed Content-Length, oversized ViewState, and encoding errors.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

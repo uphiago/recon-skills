@@ -24,10 +24,12 @@ metadata:
 ## How to Run
 
 ```bash
-export TARGET="example.test"
+TARGET="example.test"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+
+# Fetch SP metadata first; 200 with <EntityDescriptor> confirms a SAML SP
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/saml/metadata" \
+  | tee "$OUTPUT_DIR/saml-metadata.xml"
 ```
 
 ## Procedure
@@ -243,13 +245,20 @@ validate `<Issuer>` or `<AudienceRestriction>`, the attacker-IdP-signed assertio
 
 ---
 
+## Pitfalls
+- **SAML without signature validation** — unsigned assertions or `WantAssertionsSigned="false"` are the primary SAML findings.
+- **XML signature wrapping (XSW)** — classic SAML attack. Test all 8 XSW variants, not just #1.
+- **SAML Response replay** — capturing and replaying a SAML Response within its validity window. Test NotOnOrAfter enforcement.
+- **SAML-to-JWT confusion** — SAML assertions are XML; JWT is JSON. Don't cross-apply attack techniques.
+- **SP metadata publicly accessible** — accessing `/saml/metadata` is informational. The finding is what the metadata reveals (unsigned requests, weak algorithms).
+
+---
+
 ## Verification
 
 - Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
 - Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
 - Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
 
 ---
 
@@ -356,7 +365,7 @@ if policy_el is not None:
 ### Phase 4 — SSO Timing-Based User Enumeration
 
 ```bash
-TARGET="$1"  # SSO login endpoint
+SSO_HOST="$1"  # SSO host, no scheme
 USERS_FILE="$2"  # List of usernames/emails to test
 
 echo "[*] SSO timing-based user enumeration"
@@ -367,7 +376,7 @@ echo "[*] SSO timing-based user enumeration"
 while read -r user; do
   START=$(date +%s%N)
   curl -sk -o /dev/null --max-time 15 --connect-timeout 10 \
-    "https://$TARGET/sso/login?username=$user&password=WRONG_PASS" 2>/dev/null
+    "https://$SSO_HOST/sso/login?username=$user&password=WRONG_PASS" 2>/dev/null
   END=$(date +%s%N)
   ELAPSED=$(( (END - START) / 1000000 ))
 
@@ -377,15 +386,6 @@ done < "$USERS_FILE" | sort -t: -k2 -rn | head -20
 
 echo "[*] Users with significantly higher response times likely exist"
 ```
-
----
-
-## Pitfalls
-- **SAML without signature validation** — unsigned assertions or `WantAssertionsSigned="false"` are the primary SAML findings.
-- **XML signature wrapping (XSW)** — classic SAML attack. Test all 8 XSW variants, not just #1.
-- **SAML Response replay** — capturing and replaying a SAML Response within its validity window. Test NotOnOrAfter enforcement.
-- **SAML-to-JWT confusion** — SAML assertions are XML; JWT is JSON. Don't cross-apply attack techniques.
-- **SP metadata publicly accessible** — accessing `/saml/metadata` is informational. The finding is what the metadata reveals (unsigned requests, weak algorithms).
 
 ---
 

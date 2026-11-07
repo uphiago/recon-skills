@@ -290,19 +290,19 @@ Target: `https://intranet.corp.example` (clearly internal, behind VPN). Type-1 r
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **NTLM Type-2 challenge without relay target** — capturing NTLM challenges is recon. Need a relay target (SMB, HTTP, LDAP) for impact.
 - **AV_PAIR domain name disclosure** — the internal domain name from AV_PAIR is informational. Need credential capture or relay for impact.
 - **NTLM relay on same host** — SMB-to-SMB relay on the same host is often blocked by SMB signing. Test cross-protocol relay (HTTP-to-SMB, LDAP-to-HTTP).
 - **NTLMv1 vs v2** — NTLMv1 hashes crack in minutes. NTLMv2 requires significant effort. Distinguish in the report.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

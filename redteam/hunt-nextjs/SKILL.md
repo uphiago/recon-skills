@@ -26,6 +26,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Confirm Next.js and get build ID
 curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId":"[^"]+"'
 curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-powered-by\|x-nextjs"
@@ -271,6 +275,14 @@ if m:
 
 ---
 
+## Pitfalls
+- **Next.js source maps in production** — `.map` files in `/_next/` are information disclosure (source code visibility), not RCE.
+- **_next/data endpoint enumeration** — build ID + data endpoints expose server-side props. Test if sensitive data passes through getServerSideProps.
+- **Middleware bypass** — Next.js middleware runs on Edge. Test if `/api/` paths bypass middleware via direct access.
+- **ISR cache poisoning** — Incremental Static Regeneration can be poisoned if revalidation triggers are controllable.
+
+---
+
 ## Verification
 ✅ Server Action: action executes without valid session, returns data or mutates state
 ✅ SSRF: DNS/HTTP callback received from `/_next/image` SSRF
@@ -284,9 +296,3 @@ if m:
 - Source map exposure only: Low-Medium
 
 ---
-
-## Pitfalls
-- **Next.js source maps in production** — `.map` files in `/_next/` are information disclosure (source code visibility), not RCE.
-- **_next/data endpoint enumeration** — build ID + data endpoints expose server-side props. Test if sensitive data passes through getServerSideProps.
-- **Middleware bypass** — Next.js middleware runs on Edge. Test if `/api/` paths bypass middleware via direct access.
-- **ISR cache poisoning** — Incremental Static Regeneration can be poisoned if revalidation triggers are controllable.

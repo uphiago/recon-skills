@@ -168,6 +168,8 @@ done < "$TARGETS_FILE"
 - Directory listing MUST show actual `Index of` header — not assume from 200 status alone.
 - All findings should be saved to per-target markdown files under `$OUTDIR/`.
 
+---
+
 ## Related Skills
 
 - `wp-mass-recon` — batch scanner for high-volume WordPress probing.

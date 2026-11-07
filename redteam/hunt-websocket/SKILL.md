@@ -4,7 +4,7 @@ description: "Hunt WebSocket vulnerabilities — Cross-Site WebSocket Hijacking 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [websocket, hunt, redteam]
   category: redteam
@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Grep JS for WS connections (handshake URLs, socket.io clients)
 grep -rE "new WebSocket|io\(|io\.connect|socket\.io|new SockJS|signalr|Phoenix\.Socket|wss?://" \
   recon/$TARGET/ --include="*.js" 2>/dev/null | \
@@ -41,7 +45,7 @@ curl --max-time 30 --connect-timeout 10 -sI -o /dev/null -w "%{http_code}\n" \
   -H "Connection: Upgrade" -H "Upgrade: websocket" \
   -H "Sec-WebSocket-Version: 13" \
   -H "Sec-WebSocket-Key: $(head -c16 /dev/urandom | base64)" \
-# ... (continues in Procedure)
+  "https://$TARGET/"
 ```
 
 ## Procedure
@@ -319,35 +323,18 @@ brew install websocat                # alt client; supports text/binary + autore
 - Financial message tampering (server-confirmed): **Critical**
 - Namespace/room subscription bypass (cross-tenant): **High**
 
-## Verification
-
-Run this self-test to confirm websocket hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-websocket" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **WebSocket without auth** — if the WebSocket endpoint doesn't require auth tokens, anyone can connect. Test post-connection auth requirements.
 - **ws:// instead of wss://** — plaintext WebSocket on public services allows MITM. This is Medium if the WebSocket carries sensitive data.
 - **WebSocket CSWSH** — Cross-Site WebSocket Hijacking: if the WebSocket handshake doesn't validate Origin, an attacker's page can open a WebSocket. Test with `Origin: evil.com`.
 - **WebSocket message injection** — injecting into WebSocket messages that are reflected to other users is stored XSS via WebSocket.
+
+---
+
+## Verification
+- The handshake returns 101 with `Upgrade: websocket` and a valid `Sec-WebSocket-Accept` hash.
+- A data-frame round-trip proves the channel; CSWSH additionally requires the server to accept an attacker `Origin` while carrying the victim cookie.
+- The handshake and frame exchange are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

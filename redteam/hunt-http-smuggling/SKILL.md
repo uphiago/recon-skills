@@ -536,20 +536,20 @@ if __name__ == "__main__":
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **HTTP smuggling without two-tier architecture** — smuggling requires a front-end proxy and back-end server that disagree on request boundaries. Single-tier apps are immune.
 - **TE.CL vs CL.TE confusion** — these are opposite attacks. Fingerprint the specific disagreement before attempting.
 - **Smuggling probe without confirmable side effect** — a 200 or 400 on a probe request doesn't confirm smuggling. Need a visible side effect (cache poison, request queue poisoning, response queue).
 - **HTTP/2 downgrade smuggling** — H2C downgrade smuggling requires the backend to accept HTTP/1.1 over the same connection. Test if the backend speaks HTTP/1.1.
 - **WAF bypass via smuggling** — many WAFs don't reassemble smuggled requests. This is the primary value prop of smuggling attacks.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

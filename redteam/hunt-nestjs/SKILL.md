@@ -183,6 +183,8 @@ curl --max-time 30 --connect-timeout 10 -sk -X DELETE "https://target.com/api/us
 3. Microservice handler processes requests without any authentication while HTTP equivalent requires JWT.
 4. CRUD auto-endpoints expose create/update/delete operations without explicit authorization.
 
+---
+
 ## Related Skills
 
 - **`hunt-graphql`** — NestJS GraphQL endpoints with @nestjs/graphql decorators.

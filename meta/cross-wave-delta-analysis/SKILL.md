@@ -105,6 +105,8 @@ Signal critical deltas: new port 3306 (MySQL), new CORS credential reflections, 
 - NEW findings should be re-tested immediately — they may be transient.
 - PERSISTENT findings across 3+ waves are the most reliable (no security team, no patching cadence).
 
+---
+
 ## Related Skills
 
 - `attack-patterns-reference` — match findings to pattern IDs (P-01 to P-25)

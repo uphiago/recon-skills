@@ -42,7 +42,7 @@ for ep in users subscribers profiles accounts settings; do
       echo "  $method /${ep}: HTTP $code"
     fi
   done
-# ... (continues in Procedure)
+done
 ```
 
 ## Procedure
@@ -134,6 +134,16 @@ curl --max-time 30 --connect-timeout 10 -sk -X PATCH "${TARGET}/subscribers?user
 
 ---
 
+## Pitfalls
+
+- **200/204 without persistence** — the API accepted the write but silently dropped it (RLS, trigger, read replica lag). Confirm with a GET on the same resource and a unique marker value.
+- **Write to 0 rows** — a PATCH with a filter that matches nothing returns success without changing state. It proves the route exists, not that a write gap exists.
+- **Own-data write reported as cross-tenant** — writing your own row is expected behavior. The finding requires writing another user's or tenant's object.
+- **Unauthenticated write that requires a CSRF/session precondition** — if the same request fails from a fresh client, document the precondition instead of claiming open access.
+- **Destructive confirmation** — PATCH/DELETE on shared or production data needs explicit authorization and a synthetic, restorable object. Clean up the probe row after confirmation.
+
+---
+
 ## Verification
 
 - **Confirmed write gap**: PATCH/POST returns 200 with modified data in response body. Verify by GET-ing the same resource.
@@ -149,11 +159,3 @@ curl --max-time 30 --connect-timeout 10 -sk -X PATCH "${TARGET}/subscribers?user
 - If only own data writable → check `hunt-business-logic` for economic impact of self-modification
 
 ---
-
-## Pitfalls
-
-- **200/204 without persistence** — the API accepted the write but silently dropped it (RLS, trigger, read replica lag). Confirm with a GET on the same resource and a unique marker value.
-- **Write to 0 rows** — a PATCH with a filter that matches nothing returns success without changing state. It proves the route exists, not that a write gap exists.
-- **Own-data write reported as cross-tenant** — writing your own row is expected behavior. The finding requires writing another user's or tenant's object.
-- **Unauthenticated write that requires a CSRF/session precondition** — if the same request fails from a fresh client, document the precondition instead of claiming open access.
-- **Destructive confirmation** — PATCH/DELETE on shared or production data needs explicit authorization and a synthetic, restorable object. Clean up the probe row after confirmation.

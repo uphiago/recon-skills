@@ -26,6 +26,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 cat recon/$TARGET/urls.txt | gf lfi > recon/$TARGET/lfi-candidates.txt
 grep -E "(\?|&)(page|file|path|template|view|lang|module|include|doc|load|read|content|download|img|pdf|report|dir)=" \
   recon/$TARGET/urls.txt
@@ -266,36 +270,19 @@ C:\Windows\System32\inetsrv\config\applicationHost.config
 | File read + upload | phar:// / log / session poison | RCE — **Critical** |
 | Source disclosure | full app source | hardcoded secrets, new sinks, machineKey |
 
-## Verification
-
-Run this self-test to confirm lfi hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-lfi" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **LFI without file content** — `/etc/passwd` on a modern system without password hashes is informational. Need shadow file, SSH keys, or application config.
 - **Path traversal without LFI** — `../../../etc/passwd` returning 200 but no file content is path traversal, not LFI. Different attack class.
 - **LFI to RCE chain incomplete** — LFI to `/proc/self/environ` or log poisoning requires specific conditions. Document the full chain.
 - **PHP wrapper chain** — `php://filter` base64 encode works on many PHP versions. Test before assuming LFI is unexploitable.
 - **Null byte injection** — `%00` truncation was patched in PHP 5.3.4+. Not applicable to modern PHP.
+
+---
+
+## Verification
+- The returned bytes must match known file content (for example the `root:` line from `/etc/passwd`), not just HTTP 200.
+- Traversal depth is proven by comparing a known-good path against a non-existent path at the same depth.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

@@ -26,6 +26,10 @@ Use when you have a list of API endpoints or target domains and need to systemat
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # WRONG — tests only /users:
 curl --max-time 30 --connect-timeout 10 -sk -I "https://$TARGET/wp-json/wp/v2/users" -H "Origin: https://evil.com" | grep -i "access-control"
 
@@ -310,7 +314,6 @@ done < "$CORS_RESULTS"
 - SPAs with client-side API calls (Next.js, React, Vue)
 
 ## Reference Files
-
 
 ## Common Root Causes
 

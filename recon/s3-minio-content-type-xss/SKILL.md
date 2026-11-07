@@ -29,6 +29,12 @@ Exploit public cloud storage buckets (S3, MinIO, and compatible) by overriding t
 - The bucket URL responds to `?response-content-type=` with a changed Content-Type.
 - The bucket returns an AWS SignatureDoesNotMatch error leaking the real bucket host and region.
 
+## Prerequisites
+
+- `terminal` with curl and python3.
+- Identify at least one public object URL served from storage.
+- For S3 exploitation: your own AWS account credentials (free tier sufficient).
+
 ## How to Run
 
 ```bash
@@ -38,12 +44,6 @@ curl --max-time 30 --connect-timeout 10 -skI "https://cdn.target.com/uploads/ava
 # If you get 'text/html', the override works — proceed to exploitation
 # If you get 'Request specific response headers cannot be used for anonymous GET requests', it's S3 — use signed URL approach
 ```
-
-## Prerequisites
-
-- `terminal` with curl and python3.
-- Identify at least one public object URL served from storage.
-- For S3 exploitation: your own AWS account credentials (free tier sufficient).
 
 ## Quick Detection
 
@@ -171,6 +171,8 @@ echo "$OBJECT_URL" | grep -qE "^https?://(www\.)?target\.com" && echo "SAME-ORIG
 3. Access the uploaded file with the override parameter in a browser — verify the JavaScript executes.
 4. Confirm same-origin: the object URL shares the target's domain (not a third-party storage domain).
 5. Document the full chain: upload bypass technique → override parameter → same-origin XSS.
+
+---
 
 ## Related Skills
 

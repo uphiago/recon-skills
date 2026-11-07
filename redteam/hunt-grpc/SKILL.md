@@ -4,7 +4,7 @@ description: "Hunt gRPC vulnerabilities — server reflection enabled (enumerate
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [grpc, hunt, redteam]
   category: redteam
@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Common gRPC ports (50051 native; 443/8443 via TLS+ALPN h2; 9090/8080 h2c)
 nmap -sV -p 50051,50052,443,9090,8080,8443,6565,9000 $TARGET 2>/dev/null | grep open
 
@@ -283,35 +287,18 @@ buf       # lint/inspect proto, drive Connect endpoints
 | Plaintext h2c on internal port | MITM / sniff metadata (bearer tokens) | Credential capture — High |
 | `.proto` leak (repo/swagger) | `-protoset` to drive reflection-off target | Unlocks Phases 3–4 — Low alone, High as enabler |
 
-## Verification
-
-Run this self-test to confirm grpc hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-grpc" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **gRPC reflection enabled without sensitive methods** — reflection is a design choice. Only report when it exposes internal/admin methods.
 - **No TLS on gRPC** — plaintext gRPC on internal networks is common. Only a finding on public-facing services.
 - **gRPC-Web proxy bypass** — the proxy translating gRPC-Web to gRPC may have different auth than the backend. Test both paths.
 - **Protobuf fuzzing without crash** — malformed protobuf causing 500 is not necessarily exploitable. Need RCE or data leak from the crash.
+
+---
+
+## Verification
+- Every finding names the service and method and shows the reflection listing or descriptor that proves the schema is exposed.
+- A successful call must return a protobuf-decoded message (for example `grpcurl` output), not just HTTP/2 200 or a TLS handshake.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

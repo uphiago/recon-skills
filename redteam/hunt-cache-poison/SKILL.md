@@ -248,8 +248,6 @@ True-Client-IP
 
 ---
 
----
-
 ## SameSite Lax Bypass + WCD Combo
 
 ```bash
@@ -350,14 +348,6 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 
 - **Unkeyed header reflection without cache hit** — the header must be reflected AND the response must be cached (X-Cache: hit). Reflection alone without cache hit is not cache poisoning.
@@ -367,6 +357,13 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 - **Host header poisoning without shared cache** — if the cache is per-origin (not shared), poisoning only affects your own requests. Test from a different IP/browser.
 - **Web cache deception vs poisoning** — deception tricks the cache into storing sensitive data as static content. Poisoning injects malicious content. Don't confuse the two.
 
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

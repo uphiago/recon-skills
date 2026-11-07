@@ -4,7 +4,7 @@ description: "Hunt source code and build artifact leakage — JavaScript source 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [source, leak, hunt, redteam]
   category: redteam
@@ -14,7 +14,8 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`hunt-source-leak`) and you need a focused procedure for it.
+- Recon surfaces `.js.map`, Swagger/OpenAPI, `.env`, `.git`, webpack chunks, or build manifests.
+- You need to reconstruct source or extract secrets from build artifacts before hunting.
 
 ## Prerequisites
 
@@ -26,18 +27,26 @@ metadata:
 ## How to Run
 
 ```bash
-# First 80 bytes tell the story
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Fetch a candidate map, then classify the first 80 bytes before processing
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/static/js/main.js.map" -o /tmp/map_file
 head -c 80 /tmp/map_file
 # "<!DOCTYPE" or "<html" = faux map (SPA serving HTML)
 # "{" or ")))}" = real source map
 
-python3 -c "
+python3 - <<'PY'
 with open('/tmp/map_file') as f:
     d = f.read()
-if d.strip().startswith('{'): print('Real source map')
-elif '<!DOCTYPE' in d or '<html' in d: print('FAUX — SPA serving HTML')
-else: print(f'Unknown, first 80b: {repr(d[:80])}')
-"
+if d.strip().startswith('{'):
+    print('Real source map')
+elif '<!DOCTYPE' in d or '<html' in d:
+    print('FAUX — SPA serving HTML')
+else:
+    print(f'Unknown, first 80b: {repr(d[:80])}')
+PY
 ```
 
 ## Procedure
@@ -71,13 +80,16 @@ head -c 80 /tmp/map_file
 # "<!DOCTYPE" or "<html" = faux map (SPA serving HTML)
 # "{" or ")))}" = real source map
 
-python3 -c "
+python3 - <<'PY'
 with open('/tmp/map_file') as f:
     d = f.read()
-if d.strip().startswith('{'): print('Real source map')
-elif '<!DOCTYPE' in d or '<html' in d: print('FAUX — SPA serving HTML')
-else: print(f'Unknown, first 80b: {repr(d[:80])}')
-"
+if d.strip().startswith('{'):
+    print('Real source map')
+elif '<!DOCTYPE' in d or '<html' in d:
+    print('FAUX — SPA serving HTML')
+else:
+    print(f'Unknown, first 80b: {repr(d[:80])}')
+PY
 ```
 
 **Fallback:** Download raw JS bundles and grep directly (Phase 8).
@@ -337,32 +349,34 @@ done
 ### 8.2 Grep for Secrets and Internal Endpoints
 
 ```bash
-python3 -c "
-import re, os
+python3 - <<'PY'
+import os, re
 
-d = '/tmp'
-for f in os.listdir(d):
-    if not f.startswith('js_'): continue
-    data = open(os.path.join(d, f)).read()
+for name in os.listdir('/tmp'):
+    if not name.startswith('js_'):
+        continue
+    data = open(os.path.join('/tmp', name)).read()
 
     # Firebase API keys
     for m in re.findall(r'AIza[0-9A-Za-z_-]{35}', data):
-        print(f'[$f] FIREBASE_KEY: {m}')
+        print(f'[{name}] FIREBASE_KEY: {m}')
 
     # AWS access keys
     for m in re.findall(r'AKIA[0-9A-Z]{16}', data):
-        print(f'[$f] AWS_KEY: {m}')
+        print(f'[{name}] AWS_KEY: {m}')
 
-    # Stripe keys    for m in re.findall(r's[kr]_(live|test)_[A-Za-z0-9]+', data):
-        print(f'[$f] STRIPE_KEY: {m}')
+    # Stripe keys
+    for m in re.findall(r's[kr]_(live|test)_[A-Za-z0-9]+', data):
+        print(f'[{name}] STRIPE_KEY: {m}')
 
     # Internal URLs with custom ports — HIGH VALUE
-    for m in re.findall(r'[\"'"'"'](https?://[^\"'"'"'\\\\\)\s,;:]+:\d{3,5}[^\"'"'"'\\\\\)\s,;]*)', data):
-        print(f'[$f] INTERNAL_URL: {m}')
+    for m in re.findall(r"https?://[^\"'\\)\s,;:]+:\d{3,5}[^\"'\\)\s,;]*", data):
+        print(f'[{name}] INTERNAL_URL: {m}')
 
-    # Non-public env var references    for m in re.findall(r'process\.env\.(?!NEXT_PUBLIC_)([A-Z_]+)', data):
-        print(f'[$f] ENV_REF: process.env.{m}')
-"
+    # Non-public env var references
+    for m in re.findall(r'process\.env\.(?!NEXT_PUBLIC_)([A-Z_]+)', data):
+        print(f'[{name}] ENV_REF: process.env.{m}')
+PY
 ```
 
 ### 8.3 Framework-Specific Checks
@@ -385,12 +399,12 @@ for f in os.listdir(d):
 From this session's MedxGo recon on [STAGING_ENV] — source maps returned HTML (faux maps), so raw JS was analyzed:
 ```bash
 # 3.8MB Angular main.js — one grep line found the jackpot:
-python3 -c "
+python3 - <<'PY'
 import re
 data = open('/tmp/js_main.js').read()
-for m in re.findall(r'[\"'"'"'](https?://[^\"'"'"'\\\\\)\s,;:]+:\d+)[\"'"'"']', data):
+for m in re.findall(r"https?://[^\"'\\)\s,;:]+:\d+", data):
     print(m)
-"
+PY
 # → https://mean.[STAGING_ENV]:446
 ```
 This was an undocumented internal MEAN stack API server. One grep line discovered a whole new attack surface.
@@ -445,17 +459,17 @@ trufflehog filesystem /tmp/repo/
 - robots.txt only: Informational
 
 ## Verification
-1. **Skill integrity** — confirm the skill file is well-formed:
-   ```bash
-   grep -q "name: hunt-source-leak" SKILL.md && echo "PASS: frontmatter present" || echo "FAIL"
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-2. **Catch-all rejection** — the content filter must reject a bare HTML homepage:
-   ```bash
-   printf '<!doctype html><title>home</title>' > /tmp/sl_catchall.html
-   grep -qiE 'DB_|APP_|_KEY|_SECRET|DB_PASSWORD' /tmp/sl_catchall.html \
-     && echo "FAIL: catch-all flagged as leak" || echo "PASS: catch-all rejected"
-   ```
+
+- A leak finding requires sensitive content (`DB_`, `APP_KEY`, `_SECRET`, API keys, source frames), not an accessible path or HTTP 200.
+- Catch-all rejection: a bare HTML homepage must not pass the content filter.
+
+  ```bash
+  printf '<!doctype html><title>home</title>' > /tmp/sl_catchall.html
+  grep -qiE 'DB_|APP_|_KEY|_SECRET|DB_PASSWORD' /tmp/sl_catchall.html \
+    && echo "FAIL: catch-all flagged as leak" || echo "PASS: catch-all rejected"
+  ```
+
+- The path, status, byte count, and matching content excerpt are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

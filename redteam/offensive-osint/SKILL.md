@@ -14,7 +14,6 @@ metadata:
 
 > **v3.0** — Refactored 2026-05-02 from a 4,168-line monolith into a lean SKILL.md (~400 lines) plus 15 modular reference files in `references/`. Detail content loads on demand — Claude reads only the reference files relevant to the current task.
 
-
 ## When to Use
 
 - Any authorized recon: scoping, asset discovery, attack-path mapping, secret triage, severity scoring.
@@ -188,9 +187,6 @@ Apps below threshold are tagged `mobile_review_pending` and shown but not analyz
 
 ---
 
-
----
-
 ## 39. Attack-Path Hint Patterns
 
 When emitting a HIGH/CRITICAL API endpoint finding (score ≥ 70), include a one-sentence `attack_path_hint` in evidence so the operator knows where to start exploiting. Templates:
@@ -229,9 +225,6 @@ When emitting a HIGH/CRITICAL API endpoint finding (score ≥ 70), include a one
 | Open Docker registry | *"Public Docker registry at {host} — `GET /v2/_catalog` lists images; pull and scan layers for embedded secrets."* |
 | Telegram bot token live | *"Telegram bot token validated — `getUpdates` reveals bot recipients (admin chats); if `getMe` shows bot is in channels, full message read access."* |
 | Sourcemap with `sourcesContent[]` | *"Sourcemap on {host} includes embedded original sources — full frontend code reconstructable; grep for inline secrets and internal hostnames."* |
-
----
-
 
 ---
 
@@ -290,6 +283,15 @@ Drop these prompts into a fresh Claude session to verify the skill loads correct
 
 ---
 
+## Pitfalls
+- **OSINT collection without scope validation** — scraping LinkedIn/Shodan/crunchbase for employee names and tech stacks is recon, not a finding. The finding is what you DO with that data.
+- **Breach data possession** — possessing actual breach corpora (email:pass combos) is legally risky. Use hashes or redacted samples in reports.
+- **Certificate transparency log mining** — finding subdomains via crt.sh is highly automated now. The value is in what the subdomains expose, not just their existence.
+- **Google dorks returning cached/outdated results** — dork results may show pages that no longer exist. Verify each finding is live before reporting.
+- **Social media scraping without authorization** — some programs explicitly exclude social engineering and social media profiling. Check scope first.
+
+---
+
 ## Verification
 
 1. **crt.sh probe** — confirm certificate transparency lookup:
@@ -301,16 +303,6 @@ Drop these prompts into a fresh Claude session to verify the skill loads correct
    curl --max-time 30 --connect-timeout 10 -s "https://web.archive.org/cdx/search/cdx?url=example.com&output=text&limit=3" | head -3
    ```
 All tests verify OSINT readiness.
-
----
-
-## Pitfalls
-- **OSINT collection without scope validation** — scraping LinkedIn/Shodan/crunchbase for employee names and tech stacks is recon, not a finding. The finding is what you DO with that data.
-- **Breach data possession** — possessing actual breach corpora (email:pass combos) is legally risky. Use hashes or redacted samples in reports.
-- **Certificate transparency log mining** — finding subdomains via crt.sh is highly automated now. The value is in what the subdomains expose, not just their existence.
-- **Google dorks returning cached/outdated results** — dork results may show pages that no longer exist. Verify each finding is live before reporting.
-- **Social media scraping without authorization** — some programs explicitly exclude social engineering and social media profiling. Check scope first.
-
 
 ---
 

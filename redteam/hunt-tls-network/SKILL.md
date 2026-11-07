@@ -4,7 +4,7 @@ description: "Hunt TLS/SSL and DNS misconfigurations — missing HSTS (downgrade
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [tls, network, hunt, redteam]
   category: redteam
@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Quick TLS test with testssl.sh
 brew install testssl
 testssl.sh --fast $TARGET 2>/dev/null | grep -E "CRITICAL|HIGH|MEDIUM|OK|NOT" | head -30
@@ -41,7 +45,6 @@ echo | openssl s_client -connect $TARGET:443 -servername $TARGET 2>/dev/null | \
   openssl x509 -noout -dates -subject -issuer 2>/dev/null
 
 # Check for weak ciphers manually (a successful handshake = the cipher is OFFERED, not exploitable)
-# ... (continues in Procedure)
 ```
 
 ## Procedure
@@ -201,7 +204,7 @@ swaks --to your-tester@gmail.com \
       --from "CEO <ceo@$TARGET>" \
       --header "Subject: [TEST] DMARC spoof PoC for $TARGET" \
       --body "Authorized bug-bounty test. Spoofed from-domain: $TARGET" \
-      --server <an-smtp-relay-you-control-or-localhost>
+      --server "an-smtp-relay-you-control-or-localhost"
 ```
 
 **Confirmation gate — a spoof PoC is only valid if you can show:**
@@ -376,6 +379,15 @@ curl --max-time 30 --connect-timeout 10 -s "https://dmarcian.com/dmarc-inspector
 
 ---
 
+## Pitfalls
+- **TLS version without exploit** — TLS 1.0/1.1 support is a configuration finding, not a vulnerability (unless paired with a specific downgrade attack).
+- **Weak cipher without exploit** — RC4, 3DES, etc. are weak but exploitation requires active MITM. Document the attack scenario.
+- **Self-signed certificate** — self-signed certs are common on internal services. On public services, this is a phishing risk (Low-Medium).
+- **Certificate transparency log monitoring** — finding subdomains via CT logs is recon, not a vulnerability. The finding is what those subdomains expose.
+- **Heartbleed/POODLE test** — these legacy TLS vulnerabilities are extremely rare in 2024+. Test but don't spend excessive time.
+
+---
+
 ## Verification
 Each finding ships only with the proof listed — never the `dig`/header output alone.
 
@@ -397,10 +409,3 @@ Each finding ships only with the proof listed — never the `dig`/header output 
 **Pre-submission scope gate:** before filing ANY item here, confirm the program does not list it as out of scope (email-auth, missing-headers, weak-TLS-without-exploit, and CAA are commonly OOS). Quote the in-scope line in your report.
 
 ---
-
-## Pitfalls
-- **TLS version without exploit** — TLS 1.0/1.1 support is a configuration finding, not a vulnerability (unless paired with a specific downgrade attack).
-- **Weak cipher without exploit** — RC4, 3DES, etc. are weak but exploitation requires active MITM. Document the attack scenario.
-- **Self-signed certificate** — self-signed certs are common on internal services. On public services, this is a phishing risk (Low-Medium).
-- **Certificate transparency log monitoring** — finding subdomains via CT logs is recon, not a vulnerability. The finding is what those subdomains expose.
-- **Heartbleed/POODLE test** — these legacy TLS vulnerabilities are extremely rare in 2024+. Test but don't spend excessive time.

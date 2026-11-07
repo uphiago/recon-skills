@@ -253,20 +253,20 @@ def handleResponse(req, interesting):
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **MFA bypass via direct URL access** — navigating to `/dashboard` after initial login (but before MFA) is the most common bypass. Test all post-login paths.
 - **Response manipulation** — changing `{"mfa_required":true}` to `false` in the response is a bypass only if the server trusts client-side state.
 - **MFA code reuse** — if the code can be reused within its validity window, document the window length and number of possible reuses.
 - **Backup code brute-force** — backup codes are typically 8+ characters. Feasibility depends on rate limiting. Test rate limits before claiming exploitability.
 - **MFA enrollment without re-authentication** — adding a new MFA device without current password/OTP verification is the finding, not the MFA itself.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 
@@ -278,4 +278,3 @@ def handleResponse(req, interesting):
 - **`hunt-misc`** — Recovery-code dump via `/api/me` is a misc-class info disclosure that becomes Critical when chained. Chain primitive: `/api/me` returns full user object including `backup_codes` array (plaintext, never rotated) → attacker with any read-IDOR or XSS exfils backup codes → uses one backup code → MFA satisfied → ATO without OTP knowledge.
 - **`security-arsenal`** — Pull the OTP-brute-force payload section (000000-999999 wordlist generator, ffuf rate-limit-evasion patterns with `-t 5 -p 0.5-2`, distributed-IP rotation via proxychains) and the JWT-token-replay table when "MFA satisfied" claim lives in a JWT claim that can be forged.
 - **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an MFA bypass that only works when the attacker already has the password. Standalone MFA bypass is High; chained-with-password-oracle is Critical; chained-with-cookie-theft-only is Critical. The chain question separates the two.
-

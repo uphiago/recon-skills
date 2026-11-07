@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Source review: find globals fed into sinks (this is what makes clobbering exploitable)
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/" | grep -nE \
   "document\.(getElementById|baseURI)|window\.[A-Za-z_]+\.(url|src|href|html|cmd)|\
@@ -308,6 +312,15 @@ Match the repo standard: a technique that *fires in DevTools* is not a finding u
 
 ---
 
+## Pitfalls
+- **DOM XSS without sink confirmation** — finding `innerHTML` or `document.write` with user input is a potential sink, not a confirmed bug. Trace the full data flow from source to sink.
+- **postMessage without origin check** — receiving postMessage events without verifying `event.origin` is the vulnerability. Test with `window.postMessage(payload, '*')`.
+- **Source maps without secrets** — `.map` files alone are informational. Need extracted API keys, internal paths, or credentials.
+- **eval with static strings** — `eval("constant")` is not exploitable. Need dynamic input reaching eval.
+- **Sanitizer bypass claim without proof** — claiming DOMPurify bypass requires a working payload against the specific version in use.
+
+---
+
 ## Verification
 
 - Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
@@ -315,10 +328,3 @@ Match the repo standard: a technique that *fires in DevTools* is not a finding u
 - Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
-
-## Pitfalls
-- **DOM XSS without sink confirmation** — finding `innerHTML` or `document.write` with user input is a potential sink, not a confirmed bug. Trace the full data flow from source to sink.
-- **postMessage without origin check** — receiving postMessage events without verifying `event.origin` is the vulnerability. Test with `window.postMessage(payload, '*')`.
-- **Source maps without secrets** — `.map` files alone are informational. Need extracted API keys, internal paths, or credentials.
-- **eval with static strings** — `eval("constant")` is not exploitable. Need dynamic input reaching eval.
-- **Sanitizer bypass claim without proof** — claiming DOMPurify bypass requires a working payload against the specific version in use.

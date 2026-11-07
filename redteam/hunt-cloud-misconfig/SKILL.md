@@ -217,6 +217,18 @@ No CVE assigned specifically to AWS RUM as of 2026-05. The attack class is docum
 
 ---
 
+## Pitfalls
+
+- **S3 bucket listing without read access** — finding a listable bucket is recon, not a vulnerability. Need to demonstrate readable objects with sensitive content.
+- **Firebase public read without sensitive data** — an open Firebase RTDB with only public app config is informational. Need PII, credentials, or internal data.
+- **GCP/Azure storage without credential impact** — public blob storage containing static assets is not a finding. Need secrets, source code, or customer data.
+- **Cloud metadata endpoint accessible from outside** — SSRF to 169.254.169.254 is only exploitable from inside the cloud. External access to metadata is a different (and more severe) finding.
+- **Bucket ACL misconfig vs policy misconfig** — bucket policies and ACLs are different mechanisms. Test both before concluding the bucket is public.
+- **CloudFront/Cloudflare CDN origin leakage** — bypassing CDN to reach the origin is recon until you demonstrate what's different (debug endpoints, auth-less access).
+- **Unrestricted cloud function triggers** — publicly-invokable functions may be intentional. Need to demonstrate the function does something sensitive (data access, resource modification).
+
+---
+
 ## Verification
 
 1. **S3 bucket probe** — confirm AWS CLI or curl bucket syntax:
@@ -235,19 +247,6 @@ All 3 tests verify cloud misconfig probing.
 
 ---
 
-## Pitfalls
-
-- **S3 bucket listing without read access** — finding a listable bucket is recon, not a vulnerability. Need to demonstrate readable objects with sensitive content.
-- **Firebase public read without sensitive data** — an open Firebase RTDB with only public app config is informational. Need PII, credentials, or internal data.
-- **GCP/Azure storage without credential impact** — public blob storage containing static assets is not a finding. Need secrets, source code, or customer data.
-- **Cloud metadata endpoint accessible from outside** — SSRF to 169.254.169.254 is only exploitable from inside the cloud. External access to metadata is a different (and more severe) finding.
-- **Bucket ACL misconfig vs policy misconfig** — bucket policies and ACLs are different mechanisms. Test both before concluding the bucket is public.
-- **CloudFront/Cloudflare CDN origin leakage** — bypassing CDN to reach the origin is recon until you demonstrate what's different (debug endpoints, auth-less access).
-- **Unrestricted cloud function triggers** — publicly-invokable functions may be intentional. Need to demonstrate the function does something sensitive (data access, resource modification).
-
-
----
-
 ## Related Skills & Chains
 
 - **`hunt-subdomain`** — Stale CNAMEs pointing to deleted buckets are a takeover gold mine. Chain primitive: Cloud misconfig (S3 public/deleted) + `hunt-subdomain` → unclaimed CNAME points to bucket → `assets.target.com` takeover.
@@ -256,4 +255,3 @@ All 3 tests verify cloud misconfig probing.
 - **`supply-chain-attack-recon`** — Exposed CI/CD endpoints and SBOMs reveal internal package names. Chain primitive: Exposed Jenkins/GitLab + internal package name leak → npm/PyPI dependency-confusion publish → CI build pwn.
 - **`security-arsenal`** — Load the Cloud Bucket Wordlist (target-prod / target-backup / target-staging permutations) and the Admin-Panel Path List for fast enumeration.
 - **`triage-validation`** — Apply the Unique-Marker gate: any "writable bucket" claim requires a write of a unique marker file and a read-back from a clean session before report submission.
-

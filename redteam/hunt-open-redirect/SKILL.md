@@ -26,6 +26,10 @@ Use when the target has any redirect parameter — ?url=, ?next=, ?redirect=, ?r
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 COLLAB="https://evil.com"
 cat recon/$TARGET/redirect-candidates.txt | qsreplace "$COLLAB" | while read url; do
   LOC=$(curl --max-time 30 --connect-timeout 10 -s -I --max-redirs 0 "$url" | grep -i "^location:")
@@ -216,35 +220,18 @@ cat recon/$TARGET/urls.txt | gf redirect | qsreplace "https://evil.com" | \
 - Chains to phishing with brand name: Low-Medium
 - Server-side → SSRF: High
 
-## Verification
-
-Run this self-test to confirm open-redirect hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-open-redirect" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Open redirect alone is Low** — most bug bounty programs pay Low for open redirect without chaining to OAuth/ATO.
 - **javascript: scheme in redirect** — `javascript:alert(1)` in a redirect parameter is XSS, not open redirect. Distinguish the two.
 - **CRLF injection in redirect** — `%0d%0a` in redirect parameter enables header injection. This is higher impact than open redirect.
 - **Meta refresh redirect** — `<meta http-equiv="refresh">` redirect is harder to exploit than 3xx. Document the attack scenario (phishing, not automated).
+
+---
+
+## Verification
+- The response must carry a `Location:` header to the attacker host, captured with `--max-redirs 0`.
+- Meta-refresh or JavaScript redirects require a browser PoC to count.
+- The exact URL, redirect target, and full response headers are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

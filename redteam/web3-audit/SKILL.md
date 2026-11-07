@@ -23,17 +23,19 @@ metadata:
 ## Prerequisites
 
 - Explicit authorization, target boundaries, and rate limits for the target.
-- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- Tooling: `forge` (Foundry), `slither`, `curl`, `jq`.
 - A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
 - For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
 
 ## How to Run
 
 ```bash
-export TARGET="example.test"
 export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
-mkdir -p "$OUTPUT_DIR"
-# Then follow the steps in Procedure.
+export MAINNET_RPC="${MAINNET_RPC:-https://eth.llamarpc.com}"
+
+# Scaffold a Foundry PoC workspace and fork mainnet state for the test
+forge init --force "$OUTPUT_DIR/poc"
+forge test --match-test test_exploit -vvvv --fork-url "$MAINNET_RPC" --root "$OUTPUT_DIR/poc"
 ```
 
 ## Procedure
@@ -582,21 +584,6 @@ forge coverage --report summary
 
 ---
 
-## Verification
-
-1. **Solana tooling** — confirm Anchor/SPL tool availability:
-   ```bash
-   which anchor 2>/dev/null && echo "PASS: anchor CLI found" || echo "NOTE: anchor not installed"
-   which solana 2>/dev/null && echo "PASS: solana CLI found" || echo "NOTE: solana CLI not installed"
-   ```
-2. **Common Solana vulnerability classes** — confirm key classes are documented:
-   ```bash
-   grep -q "account confusion\|signer check\|CPI\|PDA\|bump seed" SKILL.md && echo "PASS: Solana-specific vuln classes present" || echo "FAIL"
-   ```
-All tests verify Web3 audit readiness.
-
----
-
 ## Pitfalls
 - **Solana vs EVM confusion** — Solana's programming model (Rust, BPF) is entirely different from EVM (Solidity, EVM bytecode). Don't cross-apply techniques.
 - **Reentrancy on non-EVM chains** — Solana's runtime processes transactions sequentially within a block. Cross-program invocation (CPI) reentrancy is different from EVM reentrancy.
@@ -604,6 +591,12 @@ All tests verify Web3 audit readiness.
 - **Arbitrary CPI vulnerability** — passing a user-controlled program ID to `invoke()` or `invoke_signed()` allows calling arbitrary programs.
 - **PDA (Program Derived Address) misuse** — PDAs without proper seed validation can be forged. Seeds from user input without type checking are dangerous.
 
+---
+
+## Verification
+- Every finding has a `forge test` PoC with `assertEq` on the drained balance, minted token, or corrupted state.
+- The fork block is pinned and the test fails against the pre-fix state.
+- The PoC and fork configuration are stored beneath `${OUTPUT_DIR:-./output}/poc/`.
 
 ---
 

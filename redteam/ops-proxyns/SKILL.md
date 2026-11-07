@@ -14,7 +14,8 @@ metadata:
 
 ## When to Use
 
-- The target surface matches this skill's scope (`ops-proxyns`) and you need a focused procedure for it.
+- Probes must egress through Tor and the toolchain includes Go/Rust/static binaries that ignore `LD_PRELOAD`.
+- You need DNS-leak-free, kernel-level routing before an engagement or mass scan.
 
 ## Prerequisites
 
@@ -40,7 +41,7 @@ sudo tee /etc/tor/torrc << 'EOF'
 SOCKSPort 9050
 ControlPort 9051
 CookieAuthentication 0
-# ... (continues in Procedure)
+EOF
 ```
 
 ## Procedure
@@ -312,6 +313,15 @@ proxychains4 curl ifconfig.me
 
 ---
 
+## Pitfalls
+- **Proxy not rotating** — if the same IP is used for all requests, rate limiting and IP bans are inevitable. Verify rotation is actually working.
+- **Proxy logs containing credentials** — HTTP proxies log full request URLs. Ensure proxy logs are sanitized before sharing.
+- **DNS leaks through proxy** — some proxy configurations leak DNS. Test with `dnsleaktest.com`-equivalent before running sensitive operations.
+- **Proxy chain latency** — multi-hop proxy chains add latency that breaks timing-based attacks. Test throughput before running time-sensitive probes.
+- **SOCKS vs HTTP proxy confusion** — SOCKS5 proxies tunnel TCP; HTTP proxies only tunnel HTTP. Use the right proxy for the protocol.
+
+---
+
 ## Verification
 
 1. **Proxy test** — confirm proxy connectivity:
@@ -325,11 +335,3 @@ proxychains4 curl ifconfig.me
 All tests verify proxy readiness.
 
 ---
-
-## Pitfalls
-- **Proxy not rotating** — if the same IP is used for all requests, rate limiting and IP bans are inevitable. Verify rotation is actually working.
-- **Proxy logs containing credentials** — HTTP proxies log full request URLs. Ensure proxy logs are sanitized before sharing.
-- **DNS leaks through proxy** — some proxy configurations leak DNS. Test with `dnsleaktest.com`-equivalent before running sensitive operations.
-- **Proxy chain latency** — multi-hop proxy chains add latency that breaks timing-based attacks. Test throughput before running time-sensitive probes.
-- **SOCKS vs HTTP proxy confusion** — SOCKS5 proxies tunnel TCP; HTTP proxies only tunnel HTTP. Use the right proxy for the protocol.
-

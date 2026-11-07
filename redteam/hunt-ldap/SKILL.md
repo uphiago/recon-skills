@@ -34,6 +34,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # ALWAYS capture a control response first — you compare everything to this.
 BASE=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}|%{size_download}|%{time_total}" \
   -X POST https://$TARGET/api/login \
@@ -345,35 +349,18 @@ WAF-block, and length-jitter explanations.
 - AD user/group enumeration only: **Medium-High**
 - Blind boolean oracle confirmed but no useful attribute reachable: **Medium**
 
-## Verification
-
-Run this self-test to confirm ldap hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-ldap" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Anonymous LDAP bind without sensitive attributes** — anonymous bind returning public directory info is normal. Need PII, credentials, or membership data.
 - **LDAP injection without authentication bypass** — blind LDAP injection that only returns true/false is harder to exploit. Need data exfiltration or auth bypass.
 - **LDAPS not enforced but on internal network** — plaintext LDAP on internal networks is common. Only a finding on public-facing services.
 - **NTLM from LDAP without relay path** — capturing NTLM hashes from LDAP is valuable only if there's a relay target.
+
+---
+
+## Verification
+- Every finding compares an injected request against a baseline request and shows the behavioral delta.
+- Blind or error-based claims require a reproducible oracle (error text, timing, or attribute-count change), not one anomalous response.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

@@ -27,6 +27,10 @@ metadata:
 ## How to Run
 
 ```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
 # Fingerprint — the X-Jenkins header leaks the exact version (drives CVE selection)
 curl --max-time 30 --connect-timeout 10 -sI "https://$TARGET/" | grep -iE "x-jenkins|x-hudson"
 curl --max-time 30 --connect-timeout 10 -sI "https://$TARGET/login" | grep -i "x-jenkins-session"
@@ -298,14 +302,6 @@ trufflehog docker --image ORG/IMAGE:latest --only-verified
 
 ---
 
-## Verification
-
-- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
-- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
-- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
-
----
-
 ## Pitfalls
 
 - **Exposed .git/config without object access** — a 200 on `/.git/config` proves the repo is reachable, but without `/.git/objects/` access you can't extract source. Test both paths.
@@ -315,3 +311,13 @@ trufflehog docker --image ORG/IMAGE:latest --only-verified
 - **Container registry misconfig** — public container images may contain build secrets, source code, or credentials. Always pull and inspect the layers.
 - **Artifact poisoning across builds** — if build artifacts are stored without per-build isolation, a previous build's artifacts may be served to the next build.
 - **Masked CI/CD variables** — logging a masked variable inside a heredoc or base64-encoded still leaks it. Test output formats that bypass masking.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---

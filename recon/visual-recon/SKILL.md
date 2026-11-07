@@ -28,6 +28,12 @@ Automatically screenshot every live host to triage hundreds of subdomains visual
 - Want to compare visual fingerprints across subdomains (shared infrastructure).
 - Target serves different content based on User-Agent or geolocation.
 
+## Prerequisites
+
+- `terminal` gowitness, httpx, and curl.
+- `gowitness` installed: `go install github.com/sensepost/gowitness@latest`.
+- A list of alive subdomains from `subdomain-enumeration`.
+
 ## How to Run
 
 ```bash
@@ -45,14 +51,7 @@ gowitness file -f alive_subs.txt -P ./screenshots/ --no-http \
 
 # Query results
 gowitness report list --db gowitness.db
-# ... (continues in Procedure)
 ```
-
-## Prerequisites
-
-- `terminal` gowitness, httpx, and curl.
-- `gowitness` installed: `go install github.com/sensepost/gowitness@latest`.
-- A list of alive subdomains from `subdomain-enumeration`.
 
 ## Quick Start
 
@@ -191,6 +190,8 @@ gowitness report list --db gowitness.db \
 2. Visual inspection confirms each screenshot shows meaningful content (not blank, not error).
 3. Technology detection matches the visual fingerprint (WordPress favicon = WordPress CMS).
 4. Priority targets (login panels, admin dashboards, dev environments) are identified and moved to next phase.
+
+---
 
 ## Related Skills
 

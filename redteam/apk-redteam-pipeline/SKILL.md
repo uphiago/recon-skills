@@ -4,7 +4,7 @@ description: End-to-end Android APK red-team pipeline — automated APK acquisit
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux]
+platforms: [linux, macos]
 metadata:
   tags: [apk, android, mobile, reverse-engineering, redteam]
   category: redteam
@@ -12,8 +12,12 @@ metadata:
 
 ## When to Use
 
-- Target has a mobile app catalogue (Play Store developer page), when you find an APK URL hosted on a web server.
-- When post-recon mentions "mobile app" in scope.
+- Target has a mobile app catalogue (Play Store developer page), or you find an APK URL hosted on a web server.
+- Post-recon mentions "mobile app" in scope, or a customer-facing, dealer/partner, or employee companion app is listed.
+- APK package IDs surface in stealer logs (`com.<brand>.app`, `com.<brand>.<sub-brand>`).
+- A bug bounty program lists Android in scope.
+
+Do not use for iOS-only targets (IPA/MobSF/frida-ios-dump), React Native/Flutter web apps already covered by JS bundle analysis, or server-side-only assessments.
 
 ## Prerequisites
 
@@ -35,22 +39,6 @@ grep -oE 'id=[a-zA-Z0-9._]+' /tmp/dev.html | sort -u
 ## Procedure
 
 The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
-
-## When to use this skill
-
-Trigger when:
-- Recon surfaces 1+ mobile apps under the target's developer name (Play Store dev page)
-- A web app hosts `*.apk` files directly (e.g. `Recruitz.apk` found on a subdomain during one engagement)
-- APK package IDs leaked via stealer logs (e.g. `com.<brand>.app`, `com.<brand>.<sub-brand>` patterns in stealer dump format)
-- Customer-facing app, dealer/partner portal, or employee mobile companion app is in scope
-- Bug bounty program lists Android in scope
-
-DO NOT use for:
-- iOS-only targets (different pipeline — IPA reverse, MobSF, frida-ios-dump)
-- React Native / Flutter web apps already covered by JS bundle analysis
-- Server-side only assessments
-
----
 
 ## Stage 0 — Inventory all org-owned apps
 
@@ -119,15 +107,16 @@ curl --max-time 30 --connect-timeout 10 -sk "https://apkpure.com/search?q=<brand
 
 ```bash
 # Standard unzip (works for clean APK)
-unzip -o <package>.apk -d extracted_<package>/
+PKG="com.example.app"
+unzip -o "$PKG.apk" -d "extracted_$PKG/"
 
 # For truncated/repaired XAPK
-7z x -y <package>.apk -o"extracted_<package>"
+7z x -y "$PKG.apk" -o"extracted_$PKG"
 
 # For nested XAPK
-for inner in extracted_<package>/*.apk; do
-  mkdir -p "extracted_<package>/$(basename "$inner" .apk)"
-  unzip -o "$inner" -d "extracted_<package>/$(basename "$inner" .apk)"
+for inner in "extracted_$PKG"/*.apk; do
+  mkdir -p "extracted_$PKG/$(basename "$inner" .apk)"
+  unzip -o "$inner" -d "extracted_$PKG/$(basename "$inner" .apk)"
 done
 ```
 
@@ -142,11 +131,12 @@ brew install jadx          # macOS
 wget https://github.com/skylot/jadx/releases/latest/download/jadx-1.5.x.zip
 
 # Decompile
-jadx -d decompiled_<package>/ <package>.apk
+PKG="com.example.app"
+jadx -d "decompiled_$PKG/" "$PKG.apk"
 
 # For XAPK that contains multiple APKs
-for inner in extracted_<package>/*.apk; do
-  jadx -d decompiled_<package>_$(basename "$inner" .apk)/ "$inner"
+for inner in "extracted_$PKG"/*.apk; do
+  jadx -d "decompiled_${PKG}_$(basename "$inner" .apk)/" "$inner"
 done
 ```
 
@@ -375,6 +365,23 @@ mitmproxy --listen-port 8080
 
 ---
 
+## Pitfalls
+
+- **Don't grep only for "password"** — most secrets have specific high-signal patterns (AKIA, AIza, eyJ, etc.). Generic word grep produces too much noise.
+- **Don't skip XAPK split APKs** — config.armeabi splits and config.<lang> splits sometimes contain different code paths.
+- **Don't trust expired JWTs as "dead intel"** — the path structure, endpoint list, and signing algorithm are still useful. The 8-year-expired-JWT example above shows this.
+- **Don't reverse only the latest version** — older APK versions (via APKMirror version history) sometimes have secrets removed in newer versions but still active server-side.
+- **Don't ignore Firebase even if app looks "simple"** — Firebase rules misconfigurations (public read on Firestore) are extremely common.
+- **Don't run Frida on a production device** — use rooted emulator or test device only.
+- **APKPure CDN rate-limiting** — truncated downloads with missing EOCD are common. Rotate IP (VPN hop) and retry; `7z x` is more lenient than `unzip` for partially-downloaded archives.
+- **Large APKs can OOM jadx** — for APKs >100 MB, increase jadx heap with `-Xmx4g` or fall back to `strings`-only pass first.
+- **Keystore/SQLite files in assets/** — overlooked because they don't match regex secret patterns. Manually review `assets/` directory tree for `.db`, `.sqlite`, `.jks`, `.bks`, `.p12` files.
+- **ProGuard/R8 obfuscation** — most APKs are obfuscated; secret patterns survive renaming, but class names don't. Don't dismiss an APK because method names are `a.b.c.d`.
+- **Multi-dex APKs** — some secrets live in `classes2.dex` onward; don't stop after `classes.dex`.
+- **Play Store developer pages may list inactive/beta apps** — cross-reference with download counts and last-updated dates; stale apps may have been archived but still expose secrets.
+
+---
+
 ## Verification
 
 Run this self-test to confirm the pipeline works end-to-end:
@@ -415,24 +422,6 @@ Run this self-test to confirm the pipeline works end-to-end:
    ```
 
 If all 5 tests pass, the pipeline is operational. Test 1 (acquisition) may fail due to APKPure CDN blocking — this does not block the rest of the workflow; fall back to APKMirror or direct APK URL.
-
-
----
-
-## Pitfalls
-
-- **Don't grep only for "password"** — most secrets have specific high-signal patterns (AKIA, AIza, eyJ, etc.). Generic word grep produces too much noise.
-- **Don't skip XAPK split APKs** — config.armeabi splits and config.<lang> splits sometimes contain different code paths.
-- **Don't trust expired JWTs as "dead intel"** — the path structure, endpoint list, and signing algorithm are still useful. The 8-year-expired-JWT example above shows this.
-- **Don't reverse only the latest version** — older APK versions (via APKMirror version history) sometimes have secrets removed in newer versions but still active server-side.
-- **Don't ignore Firebase even if app looks "simple"** — Firebase rules misconfigurations (public read on Firestore) are extremely common.
-- **Don't run Frida on a production device** — use rooted emulator or test device only.
-- **APKPure CDN rate-limiting** — truncated downloads with missing EOCD are common. Rotate IP (VPN hop) and retry; `7z x` is more lenient than `unzip` for partially-downloaded archives.
-- **Large APKs can OOM jadx** — for APKs >100 MB, increase jadx heap with `-Xmx4g` or fall back to `strings`-only pass first.
-- **Keystore/SQLite files in assets/** — overlooked because they don't match regex secret patterns. Manually review `assets/` directory tree for `.db`, `.sqlite`, `.jks`, `.bks`, `.p12` files.
-- **ProGuard/R8 obfuscation** — most APKs are obfuscated; secret patterns survive renaming, but class names don't. Don't dismiss an APK because method names are `a.b.c.d`.
-- **Multi-dex APKs** — some secrets live in `classes2.dex` onward; don't stop after `classes.dex`.
-- **Play Store developer pages may list inactive/beta apps** — cross-reference with download counts and last-updated dates; stale apps may have been archived but still expose secrets.
 
 ---
 
