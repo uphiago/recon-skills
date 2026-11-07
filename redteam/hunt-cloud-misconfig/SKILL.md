@@ -195,7 +195,7 @@ No CVE assigned specifically to AWS RUM as of 2026-05. The attack class is docum
    ```
 3. **Cloud metadata endpoint** — confirm metadata IP recognition:
    ```bash
-   echo "192.0.2.1" | grep -q "169.254" && echo "PASS: metadata IP recognized" || echo "FAIL"
+   echo "169.254.169.254" | grep -q "169.254.169.254" && echo "PASS: metadata IP recognized" || echo "FAIL"
    ```
 All 3 tests verify cloud misconfig probing.
 
@@ -206,7 +206,7 @@ All 3 tests verify cloud misconfig probing.
 - **S3 bucket listing without read access** — finding a listable bucket is recon, not a vulnerability. Need to demonstrate readable objects with sensitive content.
 - **Firebase public read without sensitive data** — an open Firebase RTDB with only public app config is informational. Need PII, credentials, or internal data.
 - **GCP/Azure storage without credential impact** — public blob storage containing static assets is not a finding. Need secrets, source code, or customer data.
-- **Cloud metadata endpoint accessible from outside** — SSRF to 192.0.2.1 is only exploitable from inside the cloud. External access to metadata is a different (and more severe) finding.
+- **Cloud metadata endpoint accessible from outside** — SSRF to 169.254.169.254 is only exploitable from inside the cloud. External access to metadata is a different (and more severe) finding.
 - **Bucket ACL misconfig vs policy misconfig** — bucket policies and ACLs are different mechanisms. Test both before concluding the bucket is public.
 - **CloudFront/Cloudflare CDN origin leakage** — bypassing CDN to reach the origin is recon until you demonstrate what's different (debug endpoints, auth-less access).
 - **Unrestricted cloud function triggers** — publicly-invokable functions may be intentional. Need to demonstrate the function does something sensitive (data access, resource modification).

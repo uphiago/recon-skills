@@ -37,7 +37,7 @@ X-MS-InvokeApp: 1; RequireReadOnly              (SharePoint web request)
 X-SharePointHealthScore: 0                      (SharePoint specific)
 SPIisLatency: <ms>                              (SharePoint internal timing)
 SPRequestDuration: <ms>                         (SharePoint request duration)
-MicrosoftSharePointTeamServices: [REDACTED_IP]      (often stripped by ELB — but if present, exact version)
+MicrosoftSharePointTeamServices: 16.0.10337.12109      (often stripped by ELB — but if present, exact version)
 X-Forms_Based_Auth_Required: <login URL>        (Forms-auth zone indicator)
 X-Forms_Based_Auth_Return_Url: <return URL>     (Forms-auth zone indicator)
 X-MSDAVEXT_Error: 917656; Access denied...      (WebDAV extension active)
@@ -106,7 +106,7 @@ HelpWindowKey('WSSEndUser_troubleshooting                  (anonymous error.aspx
    ```bash
    # Method 1: _vti_inf.html (always anonymous, always present)
    curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_vti_inf.html"
-   # → FPVersion="[REDACTED_IP]" (15.x = SP2013, 16.x = SP2016/2019/SE)
+   # → FPVersion="16001000" (15.x = SP2013, 16.x = SP2016/2019/SE)
 
    # Method 2: _api/contextinfo POST (anonymous on most farms)
    curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.example/_api/contextinfo" \
@@ -209,7 +209,7 @@ HelpWindowKey('WSSEndUser_troubleshooting                  (anonymous error.aspx
 
 6. **SafeControl enumeration via Picker.aspx.** Picker.aspx differentiates two error states by class existence:
    - Type EXISTS but not whitelisted: `"Only PickerDialog types can be used with the dialog. The type should be configured as a safecontrol in this site."`
-   - Type DOES NOT exist: `"Could not load type '<Class>' from assembly 'Microsoft.SharePoint, Version=[REDACTED_IP], Culture=neutral, PublicKeyToken=71e9bce111e9429c'."`
+   - Type DOES NOT exist: `"Could not load type '<Class>' from assembly 'Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c'."`
 
    Feed a wordlist of `Microsoft.SharePoint.*.WebControls.*` and `Microsoft.SharePoint.WebPartPages.*` types to enumerate reachable classes. The list itself is recon for CVE-2019-0604-family chains.
 

