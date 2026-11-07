@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, github, secret, API-key, token, dork, OSINT, trufflehog, credential]
-category: recon
-related_skills:
-  - js-secrets-extraction
-  - hardcoded-credential-hunt
-  - source-leak-hunt
+metadata:
+  tags: [recon, github, secret, API-key, token, dork, OSINT, trufflehog, credential]
+  category: recon
+  related_skills:
+    - js-secrets-extraction
+    - hardcoded-credential-hunt
+    - source-leak-hunt
 ---
 
 # GitHub Secret Hunting
@@ -31,6 +32,17 @@ Scan public GitHub repositories for leaked API keys, tokens, passwords, and inte
 - `terminal` with python3, curl, git.
 - GitHub Personal Access Token (only `public_repo` scope needed).
 - Tool dependencies: TruffleHog, GitDorker, gitleaks.
+
+## How to Run
+
+```bash
+# Basic GitHub code search for sensitive patterns in target repos
+echo "target.com" | while read domain; do
+  curl --max-time 30 --connect-timeout 10 -s -H "Authorization: token $GITHUB_TOKEN" \
+    "https://api.github.com/search/code?q=$domain+filename:.env" \
+    | jq '.items[]?.html_url'
+done
+```
 
 ## Quick Detection
 
@@ -185,6 +197,8 @@ exiftool doc.pdf | grep -i "author\|creator\|producer"
 3. Confirm the secret was committed recently (check commit date) — stale secrets are lower priority.
 4. Check if the repo is public and the secret grants meaningful access (admin vs read-only).
 5. Document the exact file path, commit hash, and line number for the report.
+
+---
 
 ## Related Skills
 

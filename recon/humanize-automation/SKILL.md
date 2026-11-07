@@ -6,11 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires python3
-tags: [recon, humanize, behavioral, anti-bot, mouse, keyboard, automation]
-category: recon
-related_skills:
-  - stealth-browser-launch
-  - tls-fingerprint-impersonation
+metadata:
+  tags: [recon, humanize, behavioral, anti-bot, mouse, keyboard, automation]
+  category: recon
+  related_skills:
+    - stealth-browser-launch
+    - tls-fingerprint-impersonation
+    - evasion-stack-guide
 ---
 
 # Humanize Automation
@@ -30,6 +32,24 @@ Replace instant programmatic interactions with human-like mouse movements, keybo
 - `terminal` with python3.
 - `cloakbrowser` installed: `pip install cloakbrowser`.
 - Or standalone Playwright with custom patching: import `patch_page` from the humanize module.
+
+## How to Run
+
+```bash
+export TARGET="https://target.com/login"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+python3 - "$TARGET" <<'PY'
+import sys
+from cloakbrowser import launch
+
+browser = launch(humanize=True)
+page = browser.new_page()
+page.goto(sys.argv[1])
+print(page.title())
+browser.close()
+PY
+```
 
 ## Quick Start
 
@@ -222,6 +242,8 @@ page.locator("#email").fill("user@example.com")
 2. Compare reCAPTCHA v3 scores with and without `humanize=True` — humanize should increase score by 0.2-0.4.
 3. Use browser DevTools Performance tab to record a session — mouse events should show realistic timing curves, not instant jumps.
 4. Verify `Input.dispatchKeyEvent` events have `isTrusted: true` in the event listener.
+
+---
 
 ## Related Skills
 

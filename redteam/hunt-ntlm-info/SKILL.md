@@ -4,9 +4,35 @@ description: "Hunt NTLM/Negotiate information disclosure on internet-reachable I
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ntlm, information-disclosure, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [ntlm, information-disclosure, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Target advertises `WWW-Authenticate: NTLM` or `Negotiate` headers anonymously.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Most one-shot curl runs DON'T return Type-2 because the connection closes.
+# Use this as a quick probe to confirm NTLM is offered:
+curl --max-time 30 --connect-timeout 10 -sk -I -H "Authorization: NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw==" \
+  "https://target.example/_api/web/CurrentUser" 2>&1 | grep -i "WWW-Authenticate"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -264,35 +290,19 @@ Target: `https://intranet.corp.example` (clearly internal, behind VPN). Type-1 r
 
 ---
 
-## Verification
-
-Run this self-test to confirm ntlm-info hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-ntlm-info" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **NTLM Type-2 challenge without relay target** — capturing NTLM challenges is recon. Need a relay target (SMB, HTTP, LDAP) for impact.
 - **AV_PAIR domain name disclosure** — the internal domain name from AV_PAIR is informational. Need credential capture or relay for impact.
 - **NTLM relay on same host** — SMB-to-SMB relay on the same host is often blocked by SMB signing. Test cross-protocol relay (HTTP-to-SMB, LDAP-to-HTTP).
 - **NTLMv1 vs v2** — NTLMv1 hashes crack in minutes. NTLMv2 requires significant effort. Distinguish in the report.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

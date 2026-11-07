@@ -4,11 +4,52 @@ description: "Hunt CORS Misconfiguration — origin-reflection with credentials,
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cors, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cors, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-CORS — Cross-Origin Resource Sharing Misconfiguration
+
+## When to Use
+
+- Testing API endpoints, SPAs.
+- Any app emitting Access-Control-* headers.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `httpx`, `nuclei`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+SESSION_COOKIE="session=..."   # cookie from your approved test session
+
+# Probe API endpoints across the entire surface. Critical: test MULTIPLE endpoints,
+# not just /users — user-specific and resource-specific URLs may behave differently.
+# Input comes from web2-recon (urls.txt filtered to API shapes).
+while read url; do
+  result=$(curl --max-time 30 --connect-timeout 10 -s -D - -o /dev/null "$url" \
+    -H "Origin: https://evil.com" \
+    -H "Cookie: $SESSION_COOKIE" | grep -i "access-control")
+  [ -n "$result" ] && echo "=== $url ===" && echo "$result"
+done < recon/$TARGET/api-endpoints.txt
+
+# httpx bulk check
+cat recon/$TARGET/live-hosts.txt | awk '{print $1}' | \
+  httpx -H "Origin: https://evil.com" -match-string "access-control-allow-origin"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## What actually pays (and what does not)
 
@@ -355,6 +396,17 @@ curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/wp-json/wp/v2/users"
 
 **Also check:** WordPress plugins like Jetpack expose `Jet-Query-Total` and `Jet-Query-Pages` in CORS expose-headers — this is a secondary signal that a WordPress REST API is responding with CORS headers even on cached pages.
 
+## Pitfalls
+
+- **ACAO:* without ACAC is safe** — `Access-Control-Allow-Origin: *` without `Access-Control-Allow-Credentials: true` is NOT exploitable. Stop here.
+- **Testing only GET** — some endpoints only emit CORS on OPTIONS preflight. Always test both methods.
+- **Single-origin probe** — testing only `Origin: https://evil.com` misses null-origin trust and subdomain-regex bypass patterns.
+- **Auth-required endpoint false negatives** — 401/403 responses may still emit CORS headers. Test with and without auth cookies.
+- **Subdomain regex: missing end-anchor** — `^https://.*\.target\.com` without `$` matches `https://x.target.com.evil.com`. Always test end-anchor bypass.
+- **Preflight-only CORS** — some servers only validate Origin on OPTIONS. If GET bypasses, the preflight is the real gate.
+
+---
+
 ## Verification
 
 1. **CORS probe** — verify origin reflection detection:
@@ -373,18 +425,6 @@ All 3 tests verify CORS probing.
 
 ---
 
-## Pitfalls
-
-- **ACAO:* without ACAC is safe** — `Access-Control-Allow-Origin: *` without `Access-Control-Allow-Credentials: true` is NOT exploitable. Stop here.
-- **Testing only GET** — some endpoints only emit CORS on OPTIONS preflight. Always test both methods.
-- **Single-origin probe** — testing only `Origin: https://evil.com` misses null-origin trust and subdomain-regex bypass patterns.
-- **Auth-required endpoint false negatives** — 401/403 responses may still emit CORS headers. Test with and without auth cookies.
-- **Subdomain regex: missing end-anchor** — `^https://.*\.target\.com` without `$` matches `https://x.target.com.evil.com`. Always test end-anchor bypass.
-- **Preflight-only CORS** — some servers only validate Origin on OPTIONS. If GET bypasses, the preflight is the real gate.
-
-
----
-
 ## Related Skills
 
 - **`hunt-xss`** — Trusted subdomain XSS enables credentialed CORS reads from the attacker's origin. Chain primitive: XSS on `app.target.com` → fetch from `evil.com` with credentials → steal CSRF tokens and PII from the victim's authenticated session.
@@ -393,4 +433,4 @@ All 3 tests verify CORS probing.
 - **`hunt-subdomain`** — Dangling CNAME on a CORS-trusted subdomain enables full credentialed read. Chain primitive: takeover `staging.target.com` → host CORS PoC on the now-controlled origin → browser allows credentialed reads from the trusted origin.
 - **`hunt-source-leak`** — JS bundles may reveal internal API routes that have different CORS configurations. Chain primitive: source map reveals `/internal/admin/api/me` → test CORS on this unadvertised endpoint — often has broader CORS policy than the main API.
 - **`cors-chain-automation`** — Batch-probes API endpoints for CORS misconfiguration at scale; pairs with this skill for automation after initial manual discovery. Chain primitive: manual hunt-cors identifies reflect-any-origin + credentials on `/api/me` → `cors-chain-automation` bulk-scan all sibling endpoints for the same misconfig pattern.
-- **`wp-plugin-automation`** — WordPress REST API CORS credential reflection is endemic on WP Engine hosts; `wp-plugin-automation` finds plugin CVEs that escalate CORS-primitive into RCE. Chain primitive: CORS on WP REST API exfils user list + CSRF tokens → `wp-plugin-automation` finds vulnerable Slider Revolution → RCE from admin session alone.
+- **`wp-plugin-cve-hunt`** — WordPress REST API CORS credential reflection is endemic on WP Engine hosts; `wp-plugin-cve-hunt` finds plugin CVEs that escalate a CORS primitive into RCE. Chain primitive: CORS on WP REST API exfils user list + CSRF tokens → `wp-plugin-cve-hunt` finds a vulnerable Slider Revolution → RCE from an admin session alone.

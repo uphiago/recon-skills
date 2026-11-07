@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, nuclei
-tags: [recon, CMS, fingerprinting, technology, WordPress, Drupal, Joomla, Magento]
-category: recon
-related_skills:
-  - web-enumeration
-  - wordpress-plugin-hunt
-  - visual-recon
-  - wp-mass-recon
+metadata:
+  tags: [recon, CMS, fingerprinting, technology, WordPress, Drupal, Joomla, Magento]
+  category: recon
+  related_skills:
+    - source-leak-hunt
+    - wordpress-plugin-hunt
+    - visual-recon
+    - wp-mass-recon
 ---
 
 # CMS Detection
@@ -31,6 +32,16 @@ Identify the content management system, web framework, server software, and tech
 
 - `terminal` with httpx, whatweb, wappalyzer, and curl.
 - A list of alive subdomains from `skill_view(name='visual-recon')` or `skill_view(name='subdomain-enumeration')`.
+
+## How to Run
+
+```bash
+# Fastest: httpx with built-in tech detection
+cat alive_subs.txt | httpx -silent -tech-detect -o tech_detect.txt
+
+# Deep: whatweb with aggressive checks
+whatweb -i alive_subs.txt -a 3 -t 50 --log-brief=cms_results.txt
+```
 
 ## Quick Detection
 
@@ -205,9 +216,11 @@ nuclei -l wordpress_sites.txt -t nuclei-templates/http/cves/2024/
 3. Framework-specific endpoints respond correctly (e.g., `/actuator/health` for Spring Boot).
 4. Document: hostname, CMS, version, detection method, and whether the version has known CVEs.
 
+---
+
 ## Related Skills
 
-- **`web-enumeration`** — Once CMS is identified, enumerate its specific paths and endpoints.
+- **`source-leak-hunt`** — Once CMS is identified, enumerate its specific paths and endpoints.
 - **`wordpress-plugin-hunt`** — Deep plugin version detection for WordPress targets.
 - **`wp-mass-recon`** — Batch WordPress vulnerability scanning.
 - **`visual-recon`** — Confirm CMS detection with visual screenshot verification.

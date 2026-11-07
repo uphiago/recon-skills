@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, password, credential, hardcoded, HTML, javascript, API]
-category: recon
-related_skills:
-  - api-noauth-hunt
-  - js-secrets-extraction
-  - source-leak-hunt
+metadata:
+  tags: [recon, password, credential, hardcoded, HTML, javascript, API]
+  category: recon
+  related_skills:
+    - api-noauth-hunt
+    - js-secrets-extraction
+    - source-leak-hunt
 ---
 
 # Hardcoded Credential Hunt
@@ -32,11 +33,30 @@ Detect credentials baked into client-side code or HTML responses. Targets includ
 - A target serving HTML, JSON, or JavaScript without proper authentication on configuration/settings endpoints.
 - Access to at least one public page, form, or API endpoint.
 
+## How to Run
+
+```bash
+# Scan HTML for password fields with pre-filled values
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/PATH" | grep -Poi '(?:password|passwd|senha|pass|pwd|secret)\s*[=:"]\s*"?[^"&\s]{4,30}"?' | head -10
+
+# Scan JSON config endpoints for credential-like keys
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/config" | python3 -c "
+import sys, json, re
+try:
+    data = json.load(sys.stdin)
+    for k, v in data.items() if isinstance(data, dict) else []:
+        if any(x in k.lower() for x in ['pass','secret','key','token','auth']):
+            print(f'{k}: {v}')
+except: pass
+"
+
+```
+
 ## Quick Detection
 
 ```bash
 # Scan HTML for password fields with pre-filled values
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com/PATH" | grep -Eoi '(?:password|passwd|senha|pass|pwd|secret)\s*[=:"]\s*"?[^"&\s]{4,30}"?' | head -10
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/PATH" | grep -Poi '(?:password|passwd|senha|pass|pwd|secret)\s*[=:"]\s*"?[^"&\s]{4,30}"?' | head -10
 
 # Scan JSON config endpoints for credential-like keys
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/config" | python3 -c "
@@ -50,7 +70,7 @@ except: pass
 "
 
 # Scan inline JavaScript for hardcoded secrets
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Eo '(?:SECRET|PASSWORD|API_KEY|TOKEN)\s*=\s*"[^"]{8,}"' | head -10
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Po '(?:SECRET|PASSWORD|API_KEY|TOKEN)\s*=\s*"[^"]{8,}"' | head -10
 ```
 
 ## Procedure
@@ -108,19 +128,20 @@ Werkzeug, Django, and Express debug pages often leak secrets in inline JavaScrip
 
 ```bash
 # Trigger an error and check for credential leaks
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/ERROR_TRIGGER_PATH" | python3 -c "
-import sys, re
-html = sys.stdin.read()
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com:5000/ERROR_TRIGGER_PATH" -o /tmp/error.html
+python3 - <<'PY'
+import re
+html = open('/tmp/error.html').read()
 # Werkzeug debugger SECRET
-match = re.search(r'SECRET\s*=\s*[\"]([^\"\']+)[\"]', html)
+match = re.search(r'SECRET\s*=\s*["]([^"\']+)["]', html)
 if match: print(f'WERKZEUG_SECRET: {match.group(1)}')
 # Django settings
-for m in re.finditer(r'SECRET_KEY\s*=\s*[\"]([^\"\']+)[\"]', html):
+for m in re.finditer(r'SECRET_KEY\s*=\s*["]([^"\']+)["]', html):
     print(f'DJANGO_SECRET: {m.group(1)}')
 # Generic credential patterns
-for m in re.finditer(r'(?:PASSWORD|PASS|TOKEN|API_KEY)\s*=\s*[\"]([^\"\']{6,})[\"']", html, re.I):
+for m in re.finditer(r'(?:PASSWORD|PASS|TOKEN|API_KEY)\s*=\s*["]([^"\']{6,})["]', html, re.I):
     print(f'LEAKED: {m.group(0)}')
-"
+PY
 ```
 
 ### Phase 4 — Authentication Bypass Testing
@@ -153,9 +174,11 @@ done
 ## Verification
 
 1. **Confirm the credential is static:** fetch the page/endpoint three times and verify the password value is identical each time.
-2. **Confirm it grants access:** use the credential at the intended endpoint and verify the response differs from a failed attempt (HTTP 200/302 vs 401/403).
+2. **Confirm it grants access:** use the credential at the intended endpoint and compare against a known-failed attempt with a random wrong credential. A bare 200/302 is not proof — catch-all apps return 200 on failure. Require a body diff: session token issued, redirect to an authenticated area, or account-specific content absent from the failed attempt.
 3. **Map the privilege level:** test the credential against other endpoints to determine scope (read-only, write, admin, reset).
 4. **Check for audit trail:** repeat the access with a unique identifier in the request to verify the action appears in logs (confirms real impact).
+
+---
 
 ## Related Skills
 

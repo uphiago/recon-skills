@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, subfinder, httpx, dnsx, dig, jq
-tags: [recon, subdomain, DNS, crt.sh, asset-discovery]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - staging-subdomain-hunt
-  - deep-invade
-  - recon-playbook
+metadata:
+  tags: [recon, subdomain, DNS, crt.sh, asset-discovery]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - staging-subdomain-hunt
+    - deep-invade
+    - recon-playbook
 ---
 
 # Subdomain Enumeration Skill
@@ -168,13 +169,14 @@ OUTDIR="$OUTPUT_ROOT/subdomains/$DOMAIN"
 echo "[*] Resolving subdomains..."
 
 # Batch resolve with dnsx (100x faster than dig loop)
-dnsx -silent -l "$OUTDIR/all_passive.txt" -a -resp-only -o "$OUTDIR/resolved_raw.txt" 2>/dev/null
+# -json keeps host->IP mapping (-resp-only would emit bare IPs and lose the hostname)
+dnsx -silent -l "$OUTDIR/all_passive.txt" -a -json -o "$OUTDIR/resolved_raw.jsonl" 2>/dev/null
 # Format output: subdomain => IP
 while read -r line; do
-  sub=$(echo "$line" | cut -d' ' -f1)
-  ip=$(echo "$line" | cut -d' ' -f2)
-  echo "$sub => $ip"
-done < "$OUTDIR/resolved_raw.txt" > "$OUTDIR/resolved.txt"
+  sub=$(echo "$line" | jq -r '.host // empty')
+  ip=$(echo "$line" | jq -r '.a[0] // empty')
+  [ -n "$sub" ] && [ -n "$ip" ] && echo "$sub => $ip"
+done < "$OUTDIR/resolved_raw.jsonl" > "$OUTDIR/resolved.txt"
 
 resolved=$(wc -l < "$OUTDIR/resolved.txt")
 echo "[+] $resolved subdomains resolved to IPs"

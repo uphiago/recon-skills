@@ -6,16 +6,17 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, sector, wordpress, cors, xmlrpc, mass-recon]
-category: redteam
-related_skills:
-  - wp-mass-recon
-  - cors-credential-wordpress
-  - xmlrpc-exploitation
-  - source-leak-hunt
-  - error-log-mining
-  - deep-invade
-  - recon-playbook
+metadata:
+  tags: [recon, sector, wordpress, cors, xmlrpc, mass-recon]
+  category: redteam
+  related_skills:
+    - wp-mass-recon
+    - cors-credential-wordpress
+    - xmlrpc-exploitation
+    - source-leak-hunt
+    - error-log-mining
+    - deep-invade
+    - recon-playbook
 ---
 
 # RECON-SECTOR — Parameterized Sector Reconnaissance
@@ -166,6 +167,8 @@ done < "$TARGETS_FILE"
 - XMLRPC findings MUST confirm `methodResponse` in body — not just a 200 status.
 - Directory listing MUST show actual `Index of` header — not assume from 200 status alone.
 - All findings should be saved to per-target markdown files under `$OUTDIR/`.
+
+---
 
 ## Related Skills
 

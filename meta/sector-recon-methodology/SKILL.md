@@ -6,15 +6,16 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [meta, sector, methodology, target-selection, us-companies]
-category: meta
-related_skills:
-  - recon-playbook
-  - wp-mass-recon
-  - attack-patterns-reference
-  - subdomain-enumeration
-  - cross-wave-delta-analysis
-  - web-enumeration
+metadata:
+  tags: [meta, sector, methodology, target-selection, us-companies]
+  category: meta
+  related_skills:
+    - recon-playbook
+    - wp-mass-recon
+    - attack-patterns-reference
+    - subdomain-enumeration
+    - cross-wave-delta-analysis
+    - source-leak-hunt
 ---
 
 # Sector Recon Methodology Skill

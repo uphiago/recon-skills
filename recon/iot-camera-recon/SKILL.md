@@ -6,11 +6,12 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, camera, IoT, RTSP, ONVIF, Axis, Hikvision]
-category: recon
-related_skills:
-  - port-mass-scan
-  - port-service-discovery
+metadata:
+  tags: [recon, camera, IoT, RTSP, ONVIF, Axis, Hikvision]
+  category: recon
+  related_skills:
+    - port-mass-scan
+    - port-service-discovery
 ---
 
 # IoT Camera Recon Skill
@@ -58,7 +59,7 @@ masscan -p554,80,8010,8011 --rate=10000 192.168.0.0/24 -oJ cameras.json
 ### Phase 1 — Mass Camera Discovery
 
 ```bash
-RANGE="$1"  # e.g., [REDACTED_IP]/16
+RANGE="$1"  # e.g., 187.44.0.0/16
 OUTDIR="$OUTDIR/cameras"
 mkdir -p "$OUTDIR"
 

@@ -4,8 +4,10 @@ description: Web2 recon pipeline — subdomain enumeration (subfinder, Chaos API
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [web2, recon, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [web2, recon, redteam]
+  category: redteam
 ---
 
 # WEB2 RECON PIPELINE
@@ -13,6 +15,42 @@ tags: [web2, recon, redteam]
 Full asset discovery from nothing to a prioritized URL list ready for hunting.
 
 ---
+
+## When to Use
+
+- Starting recon on any web2 target or when asked about asset discovery, subdomain enum.
+- Attack surface mapping.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `censys`, `chaos`, `curl`, `dalfox`, `dig`, `dnsx`, `ffuf`, `gau`, `gf`, `gh`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# 1. Set your Chaos API key (get free key at chaos.projectdiscovery.io)
+export CHAOS_API_KEY="your-key-here"
+# Add to ~/.zshrc or ~/.bashrc for persistence:
+echo 'export CHAOS_API_KEY="your-key-here"' >> ~/.zshrc
+
+# 2. Update nuclei templates (run weekly)
+nuclei -update-templates
+
+# 3. Configure subfinder with API keys for more sources
+mkdir -p ~/.config/subfinder
+cat > ~/.config/subfinder/config.yaml << 'EOF'
+# Get free keys at: virustotal.com, securitytrails.com, censys.io, shodan.io
+virustotal: [YOUR_VT_KEY]
+securitytrails: [YOUR_ST_KEY]
+EOF
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## SETUP (one-time)
 
@@ -539,7 +577,7 @@ done < subs.txt
 
 **Trade-off:** Serial vs. concurrent. The fallback handles ~24 subdomains in 14 seconds; the same workload on `httpx` with default 50 threads finishes in 2-3 seconds. For VDP-scale recon (< 100 subdomains) the fallback is fine. For mass recon (1000+) fix the toolchain first.
 
-Verified against HackerOne's own VDP in `docs/verification/recon-hackerone-vdp.md`.
+(Verified against HackerOne's own VDP during skill development; the verification log is internal and not shipped with the repository.)
 
 ---
 
@@ -678,6 +716,15 @@ Full attack-chain analysis is in `hunt-api-misconfig` → `NSwag / Swagger / Ope
 
 ---
 
+## Pitfalls
+- **Recon without triage** — collecting 10,000 subdomains without prioritizing which to test is data collection, not recon.
+- **HTTP probe without HTTPS** — many services only respond on HTTPS. Test both protocols.
+- **Screen shot collection without analysis** — automated screenshots are useful only if you review them. Unique login pages, error messages, and CMS identifiers are the value.
+- **Port scanning without service identification** — open port 8443 might be anything. Banner grab and identify the actual service.
+- **Stale recon data** — subdomain data older than 30 days is increasingly unreliable. Refresh recon for each engagement.
+
+---
+
 ## Verification
 
 1. **Core recon tools** — confirm key tools are installed:
@@ -689,16 +736,6 @@ Full attack-chain analysis is in `hunt-api-misconfig` → `NSwag / Swagger / Ope
    echo "example.com" | httpx -silent -status-code 2>/dev/null && echo "PASS: httpx operational" || echo "NOTE: httpx not installed"
    ```
 All tests verify web2 recon readiness.
-
----
-
-## Pitfalls
-- **Recon without triage** — collecting 10,000 subdomains without prioritizing which to test is data collection, not recon.
-- **HTTP probe without HTTPS** — many services only respond on HTTPS. Test both protocols.
-- **Screen shot collection without analysis** — automated screenshots are useful only if you review them. Unique login pages, error messages, and CMS identifiers are the value.
-- **Port scanning without service identification** — open port 8443 might be anything. Banner grab and identify the actual service.
-- **Stale recon data** — subdomain data older than 30 days is increasingly unreliable. Refresh recon for each engagement.
-
 
 ---
 

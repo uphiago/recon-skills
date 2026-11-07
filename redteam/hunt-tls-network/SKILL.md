@@ -4,11 +4,52 @@ description: "Hunt TLS/SSL and DNS misconfigurations — missing HSTS (downgrade
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [tls, network, hunt, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [tls, network, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-TLS-NETWORK — TLS/SSL & DNS Security
+
+## When to Use
+
+- Recon to find infrastructure weaknesses.
+- To TRIAGE them honestly before reporting.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `dnsx`, `nmap`, `openssl`, `python3`, `sslyze`, `swaks`, `testssl.sh`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Quick TLS test with testssl.sh
+brew install testssl
+testssl.sh --fast $TARGET 2>/dev/null | grep -E "CRITICAL|HIGH|MEDIUM|OK|NOT" | head -30
+
+# Or use sslyze (Python)
+pip3 install sslyze
+python3 -m sslyze $TARGET --json_out /tmp/sslyze_$TARGET.json 2>/dev/null
+cat /tmp/sslyze_$TARGET.json | python3 -m json.tool | grep -i "vulnerability\|insecure\|error" | head -20
+
+# Check certificate expiry and chain
+echo | openssl s_client -connect $TARGET:443 -servername $TARGET 2>/dev/null | \
+  openssl x509 -noout -dates -subject -issuer 2>/dev/null
+
+# Check for weak ciphers manually (a successful handshake = the cipher is OFFERED, not exploitable)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Reality Check (Read First)
 
@@ -130,8 +171,9 @@ for selector in default google mail k1 selector1 selector2 s1 s2 dkim; do
 done
 
 # --- Spoofability evaluation (heuristic only; PROOF is the swaks test below) ---
-SPF=$(dig +short  # Bulk: dnsx -silent -l file -a -resp-only TXT $TARGET | tr -d '"' | grep -i "v=spf1")
-DMARC=$(dig +short  # Bulk: dnsx -silent -l file -a -resp-only TXT _dmarc.$TARGET | tr -d '"' | grep -i "v=DMARC1")
+SPF=$(dig +short TXT "$TARGET" | tr -d '"' | grep -i "v=spf1")
+DMARC=$(dig +short TXT "_dmarc.$TARGET" | tr -d '"' | grep -i "v=DMARC1")
+# Bulk alternative: dnsx -silent -l targets.txt -txt -resp-only | grep -iE "v=spf1|v=DMARC1"
 
 # SPF "+all" / "all" with no qualifier = pass-everything = spoofable from any IP
 echo "$SPF" | grep -Eq '[+ ]all($|[^-~?])' && echo "[CRITICAL] SPF passes all senders (+all)"
@@ -162,7 +204,7 @@ swaks --to your-tester@gmail.com \
       --from "CEO <ceo@$TARGET>" \
       --header "Subject: [TEST] DMARC spoof PoC for $TARGET" \
       --body "Authorized bug-bounty test. Spoofed from-domain: $TARGET" \
-      --server <an-smtp-relay-you-control-or-localhost>
+      --server "an-smtp-relay-you-control-or-localhost"
 ```
 
 **Confirmation gate — a spoof PoC is only valid if you can show:**
@@ -193,7 +235,7 @@ done
 
 # Automated security headers check
 curl --max-time 30 --connect-timeout 10 -s "https://securityheaders.com/?q=https://$TARGET&followRedirects=on" | \
-  grep -Eo "grade-\K[A-F+]" | head -3
+  grep -Po "grade-\K[A-F+]" | head -3
 ```
 
 ---
@@ -204,7 +246,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://securityheaders.com/?q=https
 # crt.sh — certificate transparency logs
 curl --max-time 30 --connect-timeout 10 -s "https://crt.sh/?q=%25.$TARGET&output=json" | \
   python3 -m json.tool 2>/dev/null | grep "name_value" | \
-  grep -Eo '"name_value": "\K[^"]+' | \
+  grep -Po '"name_value": "\K[^"]+' | \
   sed 's/\*\.//g' | sort -u > recon/$TARGET/ct-subdomains.txt
 
 echo "[+] CT subdomains found: $(wc -l < recon/$TARGET/ct-subdomains.txt)"
@@ -224,7 +266,8 @@ This is the highest-impact item in the whole skill. A CNAME/A record pointing at
 ```bash
 # For each subdomain from CT logs, resolve the CNAME chain and check for a live origin
 while read sub; do
-  CNAME=$(dig +short  # Bulk: dnsx -silent -l file -a -resp-only CNAME "$sub" | head -1)
+  CNAME=$(dig +short CNAME "$sub" | head -1)
+  # Bulk: dnsx -silent -l file -cname -resp-only
   [ -z "$CNAME" ] && continue
   CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 --connect-timeout 8 "https://$sub/" 2>/dev/null)
   echo "$sub -> $CNAME  [http $CODE]"
@@ -336,8 +379,16 @@ curl --max-time 30 --connect-timeout 10 -s "https://dmarcian.com/dmarc-inspector
 
 ---
 
-## Validation
+## Pitfalls
+- **TLS version without exploit** — TLS 1.0/1.1 support is a configuration finding, not a vulnerability (unless paired with a specific downgrade attack).
+- **Weak cipher without exploit** — RC4, 3DES, etc. are weak but exploitation requires active MITM. Document the attack scenario.
+- **Self-signed certificate** — self-signed certs are common on internal services. On public services, this is a phishing risk (Low-Medium).
+- **Certificate transparency log monitoring** — finding subdomains via CT logs is recon, not a vulnerability. The finding is what those subdomains expose.
+- **Heartbleed/POODLE test** — these legacy TLS vulnerabilities are extremely rare in 2024+. Test but don't spend excessive time.
 
+---
+
+## Verification
 Each finding ships only with the proof listed — never the `dig`/header output alone.
 
 - **Subdomain takeover:** you registered the dangling resource and served a unique canary over `https://sub.target.com/` with valid TLS. Screenshot + canary string. (Tear down after.)
@@ -358,34 +409,3 @@ Each finding ships only with the proof listed — never the `dig`/header output 
 **Pre-submission scope gate:** before filing ANY item here, confirm the program does not list it as out of scope (email-auth, missing-headers, weak-TLS-without-exploit, and CAA are commonly OOS). Quote the in-scope line in your report.
 
 ---
-
-## Verification
-
-Run this self-test to confirm tls-network hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-tls-network" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
-## Pitfalls
-- **TLS version without exploit** — TLS 1.0/1.1 support is a configuration finding, not a vulnerability (unless paired with a specific downgrade attack).
-- **Weak cipher without exploit** — RC4, 3DES, etc. are weak but exploitation requires active MITM. Document the attack scenario.
-- **Self-signed certificate** — self-signed certs are common on internal services. On public services, this is a phishing risk (Low-Medium).
-- **Certificate transparency log monitoring** — finding subdomains via CT logs is recon, not a vulnerability. The finding is what those subdomains expose.
-- **Heartbleed/POODLE test** — these legacy TLS vulnerabilities are extremely rare in 2024+. Test but don't spend excessive time.

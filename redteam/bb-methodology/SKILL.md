@@ -4,8 +4,10 @@ description: Use at the START of any bug bounty hunting session, when switching 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [bug-bounty, methodology, recon, redteam]
+platforms: [linux]
+metadata:
+  tags: [bug-bounty, methodology, recon, redteam]
+  category: redteam
 ---
 
 # Bug Bounty Methodology: Workflow + Mindset
@@ -13,6 +15,37 @@ tags: [bug-bounty, methodology, recon, redteam]
 Master orchestrator for hunting sessions. Combines the 5-phase non-linear workflow with the critical thinking framework that separates top 1% hunters from the rest.
 
 ---
+
+## When to Use
+
+- Asking "what should I do next?" or "where am I in the process?"
+- You need the engagement sequence from scoping through reporting.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `amass`, `arjun`, `curl`, `dalfox`, `ffuf`, `gau`, `httpx`, `interactsh-client`, `katana`, `naabu`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   python3 -c "
+   import statistics
+   control = [700, 710, 690, 705, 715, 698, 702, 708, 695, 712]
+   mean_c = statistics.mean(control)
+   stdev_c = statistics.stdev(control)
+   threshold = mean_c + 2*stdev_c
+   suspect = 1527
+   print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
+   " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
+
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## PART 0: MODE CONFIRMATION (Before Anything Else)
 
@@ -139,6 +172,60 @@ Before touching any command:
 - **Report-first, validate-later** — writing the report before confirming the bug still reproduces wastes hours on retracted findings. Always re-test minutes before submission.
 - **Premature pushback** — when the user says "find more," they are usually correct. Exhaust 3 additional hunt-* skill checklists before claiming coverage is complete.
 - **45-minute sunk cost on dead candidates** — if a finding won't reproduce on a second account after 4+ hours, document the retraction and move on. Don't sink more time into making it work.
+
+---
+
+## Verification
+
+Run this self-test to confirm the methodology's quality gates are operational:
+
+1. **Marker uniqueness test** — confirm baseline check catches false positives:
+   ```bash
+   echo "<a href='javascript:HelpWindowKey(1)'>Help</a>" > /tmp/test-baseline.html
+   MARKER="javascript"
+   grep -q "$MARKER" /tmp/test-baseline.html && echo "FAIL: marker appears in baseline — choose unique marker" || echo "PASS: marker is unique"
+   rm -f /tmp/test-baseline.html
+   ```
+
+2. **Body-diff test** — verify diff catches byte-identical responses:
+   ```bash
+   echo "identical body" > /tmp/a.txt && cp /tmp/a.txt /tmp/b.txt
+   diff /tmp/a.txt /tmp/b.txt >/dev/null && echo "PASS: identical bodies detected (no bypass)" || echo "FAIL: diff broken"
+   rm -f /tmp/a.txt /tmp/b.txt
+   ```
+
+3. **Statistical sample test** — verify Python can compute mean/σ:
+   ```bash
+   python3 -c "
+   import statistics
+   control = [700, 710, 690, 705, 715, 698, 702, 708, 695, 712]
+   mean_c = statistics.mean(control)
+   stdev_c = statistics.stdev(control)
+   threshold = mean_c + 2*stdev_c
+   suspect = 1527
+   print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
+   " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
+   ```
+
+4. **Shell-loop ban verification** — confirm Python iteration works reliably:
+   ```bash
+   python3 -c "
+   items = ['a','b','c','d','e','f','g','h','i','j']
+   results = []
+   for item in items:
+       results.append(f'processed:{item}')
+   expected = 10
+   actual = len(results)
+   print(f'PASS: {actual}/{expected} items processed' if actual == expected else f'FAIL: {actual}/{expected}')
+   " 2>/dev/null || echo "FAIL: Python3 unavailable"
+   ```
+
+5. **Mode confirmation check** — verify the engagement-type decision framework is understood:
+   ```bash
+   grep -q "PART 0" SKILL.md && echo "PASS: PART 0 mode-confirmation present" || echo "FAIL: PART 0 missing"
+   ```
+
+If all 5 tests pass, the methodology discipline rules are verifiable. Tests 1-2 are the most common false-positive sources in real engagements.
 
 ---
 
@@ -288,7 +375,7 @@ What did you find?
 |   +-- UUID only? -> Find UUID leak source, then retry
 +-- SSRF
 |   +-- DNS only? -> DON'T REPORT. Try cloud metadata
-|   +-- Can reach [REDACTED_IP]? -> Extract keys -> RCE
+|   +-- Can reach 169.254.169.254? -> Extract keys -> RCE
 |   +-- Internal port scan? -> Find Redis/K8s -> RCE
 +-- SQLi
 |   +-- Error-based? -> Extract data (passwords, tokens)
@@ -473,60 +560,6 @@ For any iteration that runs more than 5 times, **use Python (with try/except per
 - Always count results. If you expected 100 probes and got <50 lines of output, your loop ate something.
 
 **Lesson from an authorized engagement:** A zsh array-iteration verb-tampering test silently produced no curl invocations across 20+ iterations (zsh ate the array). Output looked like "HIT [GET] /_api/web → " repeated for every probe but the actual response was missing. ~50 probes worth of testing lost. Switching the test to Python with explicit per-iteration logging surfaced the real results.
-
----
-
-## Verification
-
-Run this self-test to confirm the methodology's quality gates are operational:
-
-1. **Marker uniqueness test** — confirm baseline check catches false positives:
-   ```bash
-   echo "<a href='javascript:HelpWindowKey(1)'>Help</a>" > /tmp/test-baseline.html
-   MARKER="javascript"
-   grep -q "$MARKER" /tmp/test-baseline.html && echo "FAIL: marker appears in baseline — choose unique marker" || echo "PASS: marker is unique"
-   rm -f /tmp/test-baseline.html
-   ```
-
-2. **Body-diff test** — verify diff catches byte-identical responses:
-   ```bash
-   echo "identical body" > /tmp/a.txt && cp /tmp/a.txt /tmp/b.txt
-   diff /tmp/a.txt /tmp/b.txt >/dev/null && echo "PASS: identical bodies detected (no bypass)" || echo "FAIL: diff broken"
-   rm -f /tmp/a.txt /tmp/b.txt
-   ```
-
-3. **Statistical sample test** — verify Python can compute mean/σ:
-   ```bash
-   python3 -c "
-   import statistics
-   control = [700, 710, 690, 705, 715, 698, 702, 708, 695, 712]
-   mean_c = statistics.mean(control)
-   stdev_c = statistics.stdev(control)
-   threshold = mean_c + 2*stdev_c
-   suspect = 1527
-   print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
-   " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
-   ```
-
-4. **Shell-loop ban verification** — confirm Python iteration works reliably:
-   ```bash
-   python3 -c "
-   items = ['a','b','c','d','e','f','g','h','i','j']
-   results = []
-   for item in items:
-       results.append(f'processed:{item}')
-   expected = 10
-   actual = len(results)
-   print(f'PASS: {actual}/{expected} items processed' if actual == expected else f'FAIL: {actual}/{expected}')
-   " 2>/dev/null || echo "FAIL: Python3 unavailable"
-   ```
-
-5. **Mode confirmation check** — verify the engagement-type decision framework is understood:
-   ```bash
-   grep -q "PART 0" SKILL.md && echo "PASS: PART 0 mode-confirmation present" || echo "FAIL: PART 0 missing"
-   ```
-
-If all 5 tests pass, the methodology discipline rules are verifiable. Tests 1-2 are the most common false-positive sources in real engagements.
 
 ---
 

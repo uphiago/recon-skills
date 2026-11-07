@@ -6,14 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: N/A (analysis methodology)
-tags: [meta, wave, delta, comparison, analysis]
-category: meta
-related_skills:
-  - recon-playbook
-  - cross-attack-chains
-  - cors-credential-wordpress
-  - xmlrpc-exploitation
-  - attack-patterns-reference
+metadata:
+  tags: [meta, wave, delta, comparison, analysis]
+  category: meta
+  related_skills:
+    - recon-playbook
+    - cross-attack-chains
+    - cors-credential-wordpress
+    - xmlrpc-exploitation
+    - attack-patterns-reference
 ---
 
 # Cross-Wave Delta Analysis Skill
@@ -103,6 +104,8 @@ Signal critical deltas: new port 3306 (MySQL), new CORS credential reflections, 
 - Every delta must be reproducible with the exact same command on both waves' output.
 - NEW findings should be re-tested immediately — they may be transient.
 - PERSISTENT findings across 3+ waves are the most reliable (no security team, no patching cadence).
+
+---
 
 ## Related Skills
 

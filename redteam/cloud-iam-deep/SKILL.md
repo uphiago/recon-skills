@@ -4,8 +4,10 @@ description: "GCP/AWS/Azure cloud exploitation -- Cloud Functions, Firestore, Cl
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cloud, IAM, AWS, GCP, Azure, privilege-escalation, redteam]
+platforms: [linux]
+metadata:
+  tags: [cloud, IAM, AWS, GCP, Azure, privilege-escalation, redteam]
+  category: redteam
 ---
 
 # Cloud IAM Deep -- Cloud Functions, Storage, IAM Exploitation
@@ -16,6 +18,23 @@ tags: [cloud, IAM, AWS, GCP, Azure, privilege-escalation, redteam]
 - When a target uses serverless (Cloud Functions, Cloud Run)
 - After finding S3 bucket names or MinIO instances
 - One SA key can escalate to full cloud access
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$API_KEY"   -H "Content-Type: application/json"   -d '{"email":"attacker@domain.com","password":"Senha123!","returnSecureToken":true}'
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Cloud Functions URL Patterns (GCP)
 

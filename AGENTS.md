@@ -34,7 +34,6 @@ where this repository is running.
 
 | Directory | Ownership |
 |---|---|
-| `auth/` | Authentication protocols and SSO |
 | `chains/` | Evidence-backed attack paths |
 | `infra/` | Infrastructure exploitation and validation |
 | `meta/` | Cross-skill workflows and engagement methodology |

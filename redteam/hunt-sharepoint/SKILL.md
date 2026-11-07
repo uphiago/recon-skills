@@ -4,9 +4,45 @@ description: Hunt Microsoft SharePoint Server (2013/2016/2019/Subscription Editi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [sharepoint, hunt, redteam, microsoft]
+platforms: [linux]
+metadata:
+  tags: [sharepoint, hunt, redteam, microsoft]
+  category: redteam
 ---
+
+## When to Use
+
+- Target has SharePoint headers (SPRequestGuid, X-MS-InvokeApp, X-SharePointHealthScore, MicrosoftSharePointTeamServices) or paths (/_layouts/15/, /_vti_bin/, /_api/, /_catalogs/).
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   # Method 1: _vti_inf.html (always anonymous, always present)
+   curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_vti_inf.html"
+   # → FPVersion="16001000" (15.x = SP2013, 16.x = SP2016/2019/SE)
+
+   # Method 2: _api/contextinfo POST (anonymous on most farms)
+   curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.example/_api/contextinfo" \
+     -H "Accept: application/json;odata=verbose" \
+     | jq -r '.d.GetContextWebInformation.LibraryVersion'
+   # → "15.0.5545.1000" (full build number)
+
+   # Method 3: /_layouts/15/start.aspx body
+   curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_layouts/15/start.aspx" \
+     | grep -oE "15\.[0-9]+\.[0-9]+\.[0-9]+|16\.[0-9]+\.[0-9]+\.[0-9]+"
+
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -37,7 +73,7 @@ X-MS-InvokeApp: 1; RequireReadOnly              (SharePoint web request)
 X-SharePointHealthScore: 0                      (SharePoint specific)
 SPIisLatency: <ms>                              (SharePoint internal timing)
 SPRequestDuration: <ms>                         (SharePoint request duration)
-MicrosoftSharePointTeamServices: [REDACTED_IP]      (often stripped by ELB — but if present, exact version)
+MicrosoftSharePointTeamServices: 16.0.10337.12109      (often stripped by ELB — but if present, exact version)
 X-Forms_Based_Auth_Required: <login URL>        (Forms-auth zone indicator)
 X-Forms_Based_Auth_Return_Url: <return URL>     (Forms-auth zone indicator)
 X-MSDAVEXT_Error: 917656; Access denied...      (WebDAV extension active)
@@ -106,7 +142,7 @@ HelpWindowKey('WSSEndUser_troubleshooting                  (anonymous error.aspx
    ```bash
    # Method 1: _vti_inf.html (always anonymous, always present)
    curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_vti_inf.html"
-   # → FPVersion="[REDACTED_IP]" (15.x = SP2013, 16.x = SP2016/2019/SE)
+   # → FPVersion="16001000" (15.x = SP2013, 16.x = SP2016/2019/SE)
 
    # Method 2: _api/contextinfo POST (anonymous on most farms)
    curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.example/_api/contextinfo" \
@@ -209,7 +245,7 @@ HelpWindowKey('WSSEndUser_troubleshooting                  (anonymous error.aspx
 
 6. **SafeControl enumeration via Picker.aspx.** Picker.aspx differentiates two error states by class existence:
    - Type EXISTS but not whitelisted: `"Only PickerDialog types can be used with the dialog. The type should be configured as a safecontrol in this site."`
-   - Type DOES NOT exist: `"Could not load type '<Class>' from assembly 'Microsoft.SharePoint, Version=[REDACTED_IP], Culture=neutral, PublicKeyToken=71e9bce111e9429c'."`
+   - Type DOES NOT exist: `"Could not load type '<Class>' from assembly 'Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c'."`
 
    Feed a wordlist of `Microsoft.SharePoint.*.WebControls.*` and `Microsoft.SharePoint.WebPartPages.*` types to enumerate reachable classes. The list itself is recon for CVE-2019-0604-family chains.
 
@@ -431,36 +467,20 @@ Same target. Feeding `Microsoft.SharePoint.WebPartPages.DataFormWebPart` (the ca
 
 ---
 
-## Verification
-
-Run this self-test to confirm sharepoint hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-sharepoint" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **SharePoint version disclosure without CVE** — knowing the SP version is informational. Need a matching exploitable CVE.
 - **/_layouts/ accessible but no anonymous operations** — path reachability is recon. Need anonymous read/write/execute.
 - **EoL SharePoint without exploitation** — "SharePoint 2013 is EoL" is a hygiene finding, not a vulnerability. Need demonstrated exploit.
 - **FormDigest anonymous issuance** — `_api/contextinfo` returning FormDigest anonymously is a precondition for ToolShell, not a standalone bug.
 - **Modern vs Classic auth** — SharePoint Online uses Modern Auth (OAuth). On-prem SP may use Classic (NTLM/Kerberos). Different attack surfaces.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

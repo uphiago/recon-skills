@@ -4,11 +4,49 @@ description: "Kernel-level proxy protection via proxy-ns — forces ALL traffic 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ops, proxyns, redteam, infrastructure]
+platforms: [linux]
+metadata:
+  tags: [ops, proxyns, redteam, infrastructure]
+  category: redteam
 ---
 
 # OPS-PROXYNS — Kernel-Level Proxy / OPSEC Protection
+
+## When to Use
+
+- Probes must egress through Tor and the toolchain includes Go/Rust/static binaries that ignore `LD_PRELOAD`.
+- You need DNS-leak-free, kernel-level routing before an engagement or mass scan.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `httpx`, `masscan`, `nmap`, `nuclei`, `proxychains`, `python3`, `subfinder`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Prerequisites
+sudo apt update && sudo apt install -y tor proxychains4 git make gcc curl
+
+# Clone and build proxy-ns
+git clone https://github.com/OkamiW/proxy-ns.git /tmp/proxy-ns
+cd /tmp/proxy-ns
+CGO_ENABLED=0 make
+sudo cp proxy-ns /usr/local/bin/
+
+# Configure Tor
+sudo tee /etc/tor/torrc << 'EOF'
+SOCKSPort 9050
+ControlPort 9051
+CookieAuthentication 0
+EOF
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Why proxy-ns Over proxychains
 
@@ -127,7 +165,7 @@ Always use rotating User-Agent and jitter between requests:
 import requests, random, time
 
 USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/[REDACTED_IP]",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/142.0.7444.176",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15",
     "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
@@ -275,6 +313,15 @@ proxychains4 curl ifconfig.me
 
 ---
 
+## Pitfalls
+- **Proxy not rotating** — if the same IP is used for all requests, rate limiting and IP bans are inevitable. Verify rotation is actually working.
+- **Proxy logs containing credentials** — HTTP proxies log full request URLs. Ensure proxy logs are sanitized before sharing.
+- **DNS leaks through proxy** — some proxy configurations leak DNS. Test with `dnsleaktest.com`-equivalent before running sensitive operations.
+- **Proxy chain latency** — multi-hop proxy chains add latency that breaks timing-based attacks. Test throughput before running time-sensitive probes.
+- **SOCKS vs HTTP proxy confusion** — SOCKS5 proxies tunnel TCP; HTTP proxies only tunnel HTTP. Use the right proxy for the protocol.
+
+---
+
 ## Verification
 
 1. **Proxy test** — confirm proxy connectivity:
@@ -288,11 +335,3 @@ proxychains4 curl ifconfig.me
 All tests verify proxy readiness.
 
 ---
-
-## Pitfalls
-- **Proxy not rotating** — if the same IP is used for all requests, rate limiting and IP bans are inevitable. Verify rotation is actually working.
-- **Proxy logs containing credentials** — HTTP proxies log full request URLs. Ensure proxy logs are sanitized before sharing.
-- **DNS leaks through proxy** — some proxy configurations leak DNS. Test with `dnsleaktest.com`-equivalent before running sensitive operations.
-- **Proxy chain latency** — multi-hop proxy chains add latency that breaks timing-based attacks. Test throughput before running time-sensitive probes.
-- **SOCKS vs HTTP proxy confusion** — SOCKS5 proxies tunnel TCP; HTTP proxies only tunnel HTTP. Use the right proxy for the protocol.
-

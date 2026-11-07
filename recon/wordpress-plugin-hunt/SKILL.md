@@ -6,15 +6,16 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, wordpress, plugins, CVE, exploitation]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - deep-invade
-  - cross-attack-chains
-  - wordpress-full-compromise
-  - staging-subdomain-hunt
-  - xmlrpc-exploitation
+metadata:
+  tags: [recon, wordpress, plugins, CVE, exploitation]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - deep-invade
+    - cross-attack-chains
+    - wordpress-full-compromise
+    - staging-subdomain-hunt
+    - xmlrpc-exploitation
 ---
 
 # WordPress Plugin Hunt Skill
@@ -220,8 +221,8 @@ echo "[*] Scanning HTML source for plugin fingerprints..."
 PAGE=$(curl -sk --max-time 10 --connect-timeout 10 "https://$TARGET/" 2>/dev/null)
 
 # CSS/JS handles
-echo "$PAGE" | grep -Eo "(?:/wp-content/plugins/|/wp-content/themes/)[a-zA-Z0-9_-]+" | sort -u | while read -r path; do
-  plugin=$(echo "$path" | grep -Eo 'plugins/\K[a-zA-Z0-9_-]+|themes/\K[a-zA-Z0-9_-]+')
+echo "$PAGE" | grep -Po "(?:/wp-content/plugins/|/wp-content/themes/)[a-zA-Z0-9_-]+" | sort -u | while read -r path; do
+  plugin=$(echo "$path" | grep -Po 'plugins/\K[a-zA-Z0-9_-]+|themes/\K[a-zA-Z0-9_-]+')
   echo "  [SOURCE] $plugin (found in HTML)"
 done
 

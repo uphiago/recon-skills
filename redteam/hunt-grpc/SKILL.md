@@ -4,11 +4,52 @@ description: "Hunt gRPC vulnerabilities — server reflection enabled (enumerate
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [grpc, hunt, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [grpc, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-GRPC — gRPC Security
+
+## When to Use
+
+- Target exposes port 50051 / 443 / 8443 / 9090 with HTTP/2, when grpcurl/grpcui detects reflection, when an Envoy or grpc-gateway proxy is fronting a microservice.
+- When recon reveals a microservice architecture.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `grpcurl`, `nmap`, `openssl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Common gRPC ports (50051 native; 443/8443 via TLS+ALPN h2; 9090/8080 h2c)
+nmap -sV -p 50051,50052,443,9090,8080,8443,6565,9000 $TARGET 2>/dev/null | grep open
+
+# ALPN must negotiate h2 — gRPC cannot run on HTTP/1.1
+echo | openssl s_client -alpn h2 -connect $TARGET:443 2>/dev/null | grep -i "ALPN.*h2"
+
+# Native-gRPC fingerprint: an HTTP/2 POST to a bogus method returns a grpc-status
+# trailer (12 = UNIMPLEMENTED) even when the path is wrong — strong signal it's gRPC.
+curl --max-time 30 --connect-timeout 10 -s --http2-prior-knowledge -X POST "http://$TARGET:9090/x.Y/Z" \
+  -H "content-type: application/grpc" -o /dev/null -D - | grep -i grpc-status
+
+# TLS-fronted h2 (port 443): look for grpc-status trailer / grpc content-type
+curl --max-time 30 --connect-timeout 10 -s --http2 -X POST "https://$TARGET/grpc.health.v1.Health/Check" \
+  -H "content-type: application/grpc-web+proto" -o /dev/null -D - | grep -i "grpc-status\|content-type"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -246,35 +287,18 @@ buf       # lint/inspect proto, drive Connect endpoints
 | Plaintext h2c on internal port | MITM / sniff metadata (bearer tokens) | Credential capture — High |
 | `.proto` leak (repo/swagger) | `-protoset` to drive reflection-off target | Unlocks Phases 3–4 — Low alone, High as enabler |
 
-## Verification
-
-Run this self-test to confirm grpc hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-grpc" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **gRPC reflection enabled without sensitive methods** — reflection is a design choice. Only report when it exposes internal/admin methods.
 - **No TLS on gRPC** — plaintext gRPC on internal networks is common. Only a finding on public-facing services.
 - **gRPC-Web proxy bypass** — the proxy translating gRPC-Web to gRPC may have different auth than the backend. Test both paths.
 - **Protobuf fuzzing without crash** — malformed protobuf causing 500 is not necessarily exploitable. Need RCE or data leak from the crash.
+
+---
+
+## Verification
+- Every finding names the service and method and shows the reflection listing or descriptor that proves the schema is exposed.
+- A successful call must return a protobuf-decoded message (for example `grpcurl` output), not just HTTP/2 200 or a TLS handshake.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 
@@ -284,7 +308,7 @@ All 3 tests verify the skill is properly structured and ready for use.
 - **`hunt-api-misconfig`** — JWT alg=none, mass-assignment in protobuf message fields, and HTTP verb tampering all apply to gRPC-Web/grpc-gateway transcoded endpoints. Chain primitive: transcoded REST endpoint accepts `X-HTTP-Method-Override: DELETE` on a GET-only route → resource deletion.
 - **`hunt-auth-bypass`** — Edge-auth-only gRPC services where the proxy authenticates but the backend trusts proxy-injected headers. Chain primitive: `x-user-id: 1` header injected into gRPC metadata → backend treats as authenticated admin → cross-tenant impersonation.
 - **`hunt-tls-network`** — Plaintext h2c gRPC on non-standard ports, ALPN negotiation analysis, and TLS version fallback. Chain primitive: gRPC on port 9090 with h2c (no TLS) → MITM on local network can read/send auth tokens in metadata.
-- **`hunt-ssrf`** — gRPC methods accepting URL/host parameters (webhook, import, proxy) are SSRF surfaces. Chain primitive: `billing.BillingService/ProcessWebhook` accepts `webhook_url` → set to `http://[REDACTED_IP]/latest/meta-data/` → cloud metadata exfil.
+- **`hunt-ssrf`** — gRPC methods accepting URL/host parameters (webhook, import, proxy) are SSRF surfaces. Chain primitive: `billing.BillingService/ProcessWebhook` accepts `webhook_url` → set to `http://169.254.169.254/latest/meta-data/` → cloud metadata exfil.
 - **`hunt-cloud-misconfig`** — gRPC services that expose cloud resource management methods (CreateInstance, ListBuckets, InvokeFunction) through a public transcoder. Chain primitive: reflection finds `cloud.CloudService/CreateInstance` → grpc-gateway exposes `/v1/cloud/instances` → unauth cloud resource provisioning.
 - **`hunt-http-smuggling`** — HTTP/2 Rapid Reset (CVE-2023-44487) is relevant for gRPC-over-HTTP/2 stacks. Chain primitive: gRPC server behind nginx/Envoy → rapid reset floods bypass MAX_CONCURRENT_STREAMS → DoS on control plane.
 - **`security-arsenal`** — Reach for the gRPC service enumeration wordlist (common service names: UserService, OrderService, AdminService, AuthService, PaymentService), the protobuf payload templates, and the reflection probe payloads.

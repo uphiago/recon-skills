@@ -4,13 +4,54 @@ description: "Master bug bounty orchestrator — full pipeline: recon, pre-hunt 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [bug-bounty, recon, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [bug-bounty, recon, redteam]
+  category: redteam
 ---
 
 # Bug Bounty Master Workflow
 
 Full pipeline: Recon -> Learn -> Hunt -> Validate -> Report. One skill for everything.
+
+## When to Use
+
+- ANY bug bounty task — starting a new target, recon, hunting specific vulns, source code audit, AI feature testing.
+- Report writing.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `arjun`, `chaos`, `curl`, `dalfox`, `dnsx`, `ffuf`, `gau`, `gf`, `gh`, `httpx`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# THE ONE RULE: Always use -ac (auto-calibrate filters noise automatically)
+ffuf -w wordlist.txt -u "https://$TARGET/FUZZ" -ac
+
+# Authenticated raw request file — IDOR testing (save Burp request to req.txt, replace ID with FUZZ)
+seq 1 10000 | ffuf --request req.txt -w - -ac
+
+# Authenticated API endpoint brute
+ffuf -u "https://$TARGET/api/FUZZ" -w wordlist.txt -H "Cookie: session=TOKEN" -ac
+
+# Parameter discovery
+ffuf -w ~/wordlists/burp-parameter-names.txt -u "https://$TARGET/api/endpoint?FUZZ=test" -ac -mc 200
+
+# Hidden POST parameters
+ffuf -w ~/wordlists/burp-parameter-names.txt -X POST -d "FUZZ=test" -u "https://$TARGET/api/endpoint" -ac
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## THE ONLY QUESTION THAT MATTERS
 
@@ -68,7 +109,7 @@ Full pipeline: Recon -> Learn -> Hunt -> Validate -> Report. One skill for every
 | Bug A (Signal) | Hunt for Bug B | Escalate to C |
 |----------------|---------------|---------------|
 | IDOR (read) | PUT/DELETE on same endpoint | Full account data manipulation |
-| SSRF (any) | Cloud metadata [REDACTED_IP] | IAM credential exfil -> RCE |
+| SSRF (any) | Cloud metadata 169.254.169.254 | IAM credential exfil -> RCE |
 | XSS (stored) | Check if HttpOnly is set on session cookie | Session hijack -> ATO |
 | Open redirect | OAuth redirect_uri accepts your domain | Auth code theft -> ATO |
 | S3 bucket listing | Enumerate JS bundles | Grep for OAuth client_secret -> OAuth chain |
@@ -534,7 +575,7 @@ grep -rn "TODO\|FIXME\|not signed\|not verified\|for now" --include="*.rs" | gre
 
 ## SSRF -- Server-Side Request Forgery
 
-- [ ] Try cloud metadata: `http://[REDACTED_IP]/latest/meta-data/`
+- [ ] Try cloud metadata: `http://169.254.169.254/latest/meta-data/`
 - [ ] Try internal services: `http://127.0.0.1:6379/` (Redis), `:9200` (Elasticsearch), `:27017` (MongoDB)
 - [ ] Test all IP bypass techniques (see table below)
 - [ ] Test protocol bypass: `file://`, `dict://`, `gopher://`
@@ -550,7 +591,7 @@ grep -rn "TODO\|FIXME\|not signed\|not verified\|for now" --include="*.rs" | gre
 | Short IP | `http://127.1/` | Abbreviated notation |
 | IPv6 | `http://[::1]/` | Loopback in IPv6 |
 | IPv6-mapped | `http://[::ffff:127.0.0.1]/` | IPv4-mapped IPv6 |
-| Redirect chain | `http://attacker.com/302->http://[REDACTED_IP]` | Check each hop |
+| Redirect chain | `http://attacker.com/302->http://169.254.169.254` | Check each hop |
 | DNS rebinding | Register domain resolving to 127.0.0.1 | First check = external, fetch = internal |
 | URL encoding | `http://127.0.0.1%2523@attacker.com` | Parser confusion |
 | Enclosed alphanumeric | `http://①②⑦.⓪.⓪.①` | Unicode numerals |
@@ -681,7 +722,7 @@ location.href = userInput
 ## SQL Injection
 
 ### Detection
-```bash
+```text
 # Single quote test
 ' OR '1'='1
 ' OR 1=1--
@@ -1243,16 +1284,16 @@ done
 
 ### EC2 Metadata (via SSRF)
 ```bash
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
 # Returns role name, then:
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/ROLE-NAME
+http://169.254.169.254/latest/meta-data/iam/security-credentials/ROLE-NAME
 # Returns AccessKeyId, SecretAccessKey, Token -> Critical
 
 # GCP (needs header Metadata-Flavor: Google):
 http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
 
 # Azure (needs header Metadata: true):
-http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
 ```
 
 ### Firebase Open Rules
@@ -1319,8 +1360,48 @@ Read your report as if you're a tired triager at 5pm on a Friday. Does it pass?
 - **Report-first, validate-later** — writing the report before confirming the bug still works at time of submission. Always re-test minutes before submitting.
 - **One test account testing itself** — IDOR/ATO bugs need two accounts (attacker + victim). Testing with one account against itself proves nothing.
 - **Not reading disclosed reports first** — spending hours hunting a class that's out of scope or already hard-mitigated wastes time. Read 3+ disclosed reports before hunting.
+- **Over-reliance on one wordlist** — SecLists is a starting point, not the destination. Asset-specific wordlists (from JS files, API responses, swagger docs) outperform generic ones.
+- **Ignoring mobile API versions** — mobile apps often use different/v1 endpoints with lower auth maturity than web counterparts.
 - **Scope creep via subdomain enumeration** — verify every subdomain is owned by the target. Third-party services are typically out of scope.
 - **New features == unreviewed** — anything launched in the last 30 days has the lowest security maturity and highest bug density.
+
+---
+
+## Verification
+
+Run this self-test to confirm the toolkit is operational:
+
+1. **Core tool check** — verify essential Go binaries are installed:
+   ```bash
+   which subfinder httpx nuclei katana ffuf dalfox gau waybackurls 2>/dev/null
+   ```
+
+2. **FFUF calibration test** — confirm `-ac` auto-calibrate works:
+   ```bash
+   ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://example.com/FUZZ -ac -timeout 5 2>&1 | head -5
+   ```
+
+3. **Subfinder connectivity** — verify passive sources are reachable:
+   ```bash
+   subfinder -d example.com -silent -timeout 30 2>&1 | head -3
+   ```
+
+4. **HackerOne API reachability** — confirm GraphQL endpoint is accessible:
+   ```bash
+   curl --max-time 30 --connect-timeout 10 -s "https://hackerone.com/graphql" -o /dev/null -w "%{http_code}" && echo " PASS" || echo " FAIL"
+   ```
+
+5. **Semgrep install check** — confirm static analysis is available:
+   ```bash
+   semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
+   ```
+
+6. **Wordlist availability** — confirm SecLists is cloned:
+   ```bash
+   ls /usr/share/seclists/Discovery/Web-Content/common.txt >/dev/null 2>&1 && echo "PASS: SecLists present" || echo "FAIL: git clone https://github.com/danielmiessler/SecLists.git /usr/share/seclists"
+   ```
+
+All 6 tests should pass for a fully operational toolkit. Missing Go binaries can be installed via `go install`; Python tools via `pip3 install`.
 
 ---
 
@@ -1551,55 +1632,9 @@ When payout is being downgraded, use these counters:
 
 ---
 
-# INSTALLATION (Claude Code Skill)
+# INSTALLATION
 
-To use this as a Claude Code skill, copy this file to your skills directory:
-
-```bash
-# Option A: Clone the repo and link the skill
-git clone https://github.com/shuvonsec/claude-bug-bounty.git ~/.claude/skills/bug-bounty
-ln -s ~/.claude/skills/bug-bounty/SKILL.md ~/.claude/skills/bug-bounty/SKILL.md
-
-# Option B: Direct copy
-mkdir -p ~/.claude/skills/bug-bounty
-curl --max-time 30 --connect-timeout 10 -s https://raw.githubusercontent.com/shuvonsec/claude-bug-bounty/main/SKILL.md \
-  -o ~/.claude/skills/bug-bounty/SKILL.md
-```
-
-Then in Claude Code, this skill loads automatically when you ask about bug bounty, recon, or vulnerability hunting.
-
----
-
-## Verification
-
-Run this self-test to confirm the toolkit is operational:
-
-1. **Core tool check** — verify essential Go binaries are installed:
-   ```bash
-   which subfinder httpx nuclei katana ffuf dalfox gau waybackurls 2>/dev/null
-   ```
-
-2. **FFUF calibration test** — confirm `-ac` auto-calibrate works:
-   ```bash
-   ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://example.com/FUZZ -ac -timeout 5 2>&1 | head -5
-   ```
-
-3. **Subfinder connectivity** — verify passive sources are reachable:
-   ```bash
-   subfinder -d example.com -silent -timeout 30 2>&1 | head -3
-   ```
-
-4. **HackerOne API reachability** — confirm GraphQL endpoint is accessible:
-   ```bash
-   curl --max-time 30 --connect-timeout 10 -s "https://hackerone.com/graphql" -o /dev/null -w "%{http_code}" && echo " PASS" || echo " FAIL"
-   ```
-
-5. **Semgrep install check** — confirm static analysis is available:
-   ```bash
-   semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
-   ```
-
-All 5 tests should pass for a fully operational toolkit.
+This file is a portable methodology skill. Load it with whichever agent or workflow you use; it assumes only the tools listed in the prerequisites.
 
 ---
 
@@ -1621,7 +1656,7 @@ All 5 tests should pass for a fully operational toolkit.
 
 ### When to use the orchestrator vs a direct skill
 
-The orchestrator (this skill) is for the "I don't yet know what bug class to hunt for" case. If you've already identified the candidate — "the response reflects my Host header into a JavaScript src URL, that's cache poisoning" — load `hunt-cache-poisoning` directly. The orchestrator's value is the initial routing from a fuzzy intent ("there's a chatbot, what should I test") to a concrete skill set (`hunt-llm-ai` + `hunt-api-misconfig`).
+The orchestrator (this skill) is for the "I don't yet know what bug class to hunt for" case. If you've already identified the candidate — "the response reflects my Host header into a JavaScript src URL, that's cache poisoning" — load `hunt-cache-poison` directly. The orchestrator's value is the initial routing from a fuzzy intent ("there's a chatbot, what should I test") to a concrete skill set (`hunt-llm-ai` + `hunt-api-misconfig`).
 
 When in doubt: open the orchestrator FIRST on any new target, let it route, then close the orchestrator and work in the loaded skills. Don't keep the orchestrator loaded all session — it occupies context window that could hold actual probe results.
 
@@ -1655,4 +1690,4 @@ Use the scaffold from the start. Half-organized engagements lose findings — a 
 ### When the orchestrator gets it wrong
 
 Across 30+ Phase 2 verification tests in this repo, the orchestrator correctly auto-triggered the matching skill in every test — zero misfires. If on a future target the orchestrator misroutes (loads the wrong hunt-* for the topic), the cause is almost always the `description:` frontmatter field on the target skill: a missing keyword that would have matched the user's intent. Fix forward by editing that skill's frontmatter `description:` field to include the missing trigger word. Don't add another layer of dispatch logic; tighten the description.
-- **`bb-local-toolkit`** — When you need to know which local clone has the command-line for a given task. Workflow primitive: this skill is general bug-bounty guidance; `bb-local-toolkit` answers the specific "where is jhaddix/SecLists installed on this machine?" question.
+- **`bb-methodology`** — When the question is "where do I start / what do I do next" rather than a concrete class. Workflow primitive: this skill names the topic-matched hunt-* skills; `bb-methodology` owns the 5-phase workflow and the engagement-mode gate.

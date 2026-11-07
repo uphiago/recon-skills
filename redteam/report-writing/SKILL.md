@@ -4,8 +4,10 @@ description: Bug bounty report writing for H1/Bugcrowd/Intigriti/Immunefi — re
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [report, writing, redteam]
+platforms: [linux]
+metadata:
+  tags: [report, writing, redteam]
+  category: redteam
 ---
 
 # REPORT WRITING
@@ -13,6 +15,33 @@ tags: [report, writing, redteam]
 Impact-first. Human tone. No theoretical language. Triagers are people.
 
 ---
+
+## When to Use
+
+- Validating a finding and before submitting.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `mysql`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="example.com"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR/reports"
+
+# Draft from the validated finding, then review every claim
+$EDITOR "$OUTPUT_DIR/reports/finding-01.md"
+grep -niE '\b(could|may|potentially)\b' "$OUTPUT_DIR/reports/finding-01.md"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## THE MOST IMPORTANT RULE
 
@@ -488,20 +517,6 @@ Authorization: Bearer ACCOUNT_A_TOKEN
 
 ---
 
-## Verification
-
-1. **Human tone check** — confirm AI-signal words are flagged:
-   ```bash
-   grep -q "comprehensive\|leverage\|seamless\|ensure\|delve" SKILL.md && echo "FAIL: AI-signal words present" || echo "PASS: no AI-signal words"
-   ```
-2. **Title formula** — confirm the title formula is documented:
-   ```bash
-   grep -q "Bug Class.*in.*Endpoint.*allows.*attacker" SKILL.md && echo "PASS: title formula present" || echo "FAIL"
-   ```
-All tests verify report writing readiness.
-
----
-
 ## Pitfalls
 - **Executive summary as afterthought** — it's the ONLY section executives read. Lead with business impact, not technical details.
 - **"Could" and "may" language** — these words signal theoretical findings. Use "allows an attacker to" and "demonstrated by."
@@ -510,6 +525,12 @@ All tests verify report writing readiness.
 - **Over-long reports** — triagers skim reports. Keep the body under 600 words. Use attachments for detailed evidence.
 - **AI-sounding language** — words like "comprehensive," "leverage," "seamless," "ensure" signal AI-generated content. Be direct and human.
 
+---
+
+## Verification
+- No `could`, `may`, or `potentially` survives the final pass; every claim states demonstrated behavior.
+- The title follows the bug-class / endpoint / impact / victim-scope formula with the exact endpoint.
+- Each finding includes a reproduction command and captured response beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 
@@ -536,7 +557,7 @@ All tests verify report writing readiness.
 - BAD: "Interesting finding on /api/users"
 - BAD: "IDOR vulnerability in API"
 - GOOD: "Authenticated IDOR on /api/users/{uid} -> admin email + role disclosure"
-- GOOD: "Unauthenticated SSRF on /preview?url= -> AWS metadata [REDACTED_IP] reachable"
+- GOOD: "Unauthenticated SSRF on /preview?url= -> AWS metadata 169.254.169.254 reachable"
 
 The bad titles get opened last. The good titles get opened first. Same finding, different queue position, different triage day, different payout speed.
 

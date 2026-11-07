@@ -6,13 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, API, no-auth, data-breach, CRUD]
-category: recon
-related_skills:
-  - firebase-supabase-attack
-  - js-secrets-extraction
-  - port-service-discovery
-  - source-leak-hunt
+metadata:
+  tags: [recon, API, no-auth, data-breach, CRUD]
+  category: recon
+  related_skills:
+    - hunt-firebase
+    - hunt-supabase
+    - js-secrets-extraction
+    - port-service-discovery
+    - source-leak-hunt
 ---
 
 # API No-Authentication Validation
@@ -28,7 +30,7 @@ explicit authorization immediately before execution.
 - Target has an API subdomain (api.target.com, backend.target.com).
 - JavaScript bundles reference internal API endpoints.
 - After `port-service-discovery` finds HTTP on unexpected ports.
-- After `firebase-supabase-attack` identifies backend APIs.
+- After `hunt-firebase` or `hunt-supabase` identifies backend APIs.
 
 ## Prerequisites
 
@@ -207,7 +209,6 @@ curl --max-time 15 --connect-timeout 5 -sk \
 jq 'if type == "array" then .[:2] else . end' \
   "$OUTPUT_DIR/api-validation/bounded-sample.json"
 ```
-
 
 ## Pitfalls
 

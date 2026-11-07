@@ -4,9 +4,51 @@ description: Client-facing red-team deliverable format — codifies the Subject 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [report, template, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [report, template, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- The engagement is "external red team for an enterprise client" (not H1/Bugcrowd/Intigriti), when generating the final report, when the client has specified a custom report format.
+- When packaging findings into DOCX/PDF.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Prerequisite: pandoc installed (apt/dnf/brew install pandoc)
+
+# Convert (add --reference-doc=/path/to/reference.docx for a branded template)
+pandoc REPORT_FINAL.md \
+  -o REPORT_FINAL.docx \
+  --resource-path=engagement_log/poc \
+  --toc \
+  --toc-depth=2 \
+  --highlight-style=tango
+
+# Verify image count
+python3 - <<'PY'
+from docx import Document
+d = Document('REPORT_FINAL.docx')
+imgs = [r for r in d.part.rels.values() if 'image' in r.target_ref]
+print(f'Embedded images: {len(imgs)}')
+print(f'Paragraphs: {len(d.paragraphs)}')
+print(f'Headings: {sum(1 for p in d.paragraphs if p.style.name.startswith("Heading"))}')
+PY
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## When to use
 
@@ -167,27 +209,25 @@ Each finding MUST have reproducible steps. The PoC section is what proves the fi
 ## DOCX generation pipeline (markdown → docx with embedded images)
 
 ```bash
-# Prerequisite: pandoc installed
-brew install pandoc
+# Prerequisite: pandoc installed (apt/dnf/brew install pandoc)
 
-# Convert
+# Convert (add --reference-doc=/path/to/reference.docx for a branded template)
 pandoc REPORT_FINAL.md \
   -o REPORT_FINAL.docx \
   --resource-path=engagement_log/poc \
-  --reference-doc=~/.claude/skills/redteam-report-template/templates/reference.docx \
   --toc \
   --toc-depth=2 \
   --highlight-style=tango
 
 # Verify image count
-python3 -c "
+python3 - <<'PY'
 from docx import Document
 d = Document('REPORT_FINAL.docx')
 imgs = [r for r in d.part.rels.values() if 'image' in r.target_ref]
 print(f'Embedded images: {len(imgs)}')
 print(f'Paragraphs: {len(d.paragraphs)}')
-print(f'Headings: {sum(1 for p in d.paragraphs if p.style.name.startswith(\"Heading\"))}')
-"
+print(f'Headings: {sum(1 for p in d.paragraphs if p.style.name.startswith("Heading"))}')
+PY
 ```
 
 ### Image filename convention
@@ -273,9 +313,9 @@ Each gives the client context about their real-world detection capability, which
 
 ## Template library (where to put canned text)
 
-Maintain reusable boilerplate in:
+Maintain reusable boilerplate in a directory you control, e.g.:
 ```
-~/.claude/skills/redteam-report-template/templates/
+${REPORT_TEMPLATES_DIR:-./templates}/
     executive_summary.md      # Reusable exec summary skeleton
     methodology.md            # Standard methodology section
     cleanup_statement.md      # Standard cleanup language
@@ -341,20 +381,6 @@ These numbers are typical for a 1-week external red-team engagement on a mid-siz
 
 ---
 
-## Verification
-
-1. **CVSS calculator** — confirm CVSS 3.1 awareness:
-   ```bash
-   grep -q "CVSS\|cvss\|3.1" SKILL.md && echo "PASS: CVSS scoring documented" || echo "FAIL"
-   ```
-2. **Template structure** — confirm report sections are documented:
-   ```bash
-   grep -q "Executive Summary\|Findings\|Remediation" SKILL.md && echo "PASS: report structure present" || echo "FAIL"
-   ```
-All tests verify report template readiness.
-
----
-
 ## Pitfalls
 - **Over-technical language** — executives read the executive summary. Make the first paragraph impact-focused: "An attacker can steal all customer PII by..."
 - **Missing CVSS score** — red-team reports without CVSS scores are dismissed by compliance teams. Always include CVSS 3.1 with vector string.
@@ -363,6 +389,12 @@ All tests verify report template readiness.
 - **Redacted screenshots without unredacted availability** — offer the unredacted version privately. Triagers need it for verification.
 - **No CVE cross-references** — if the finding matches a CVE, cite it. It adds credibility and helps the client understand the risk.
 
+---
+
+## Verification
+- Every finding follows Subject / Observations / Description / Impact / Recommendation / PoC and the PoC reproduces in under five minutes.
+- The CVSS score matches the demonstrated impact and the DOCX embeds every referenced image.
+- The rendered document and source markdown are stored beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

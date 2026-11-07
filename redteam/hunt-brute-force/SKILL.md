@@ -4,8 +4,10 @@ description: "Hunt Missing/Weak Rate Limiting — login brute force, OTP/2FA bru
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [brute-force, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [brute-force, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-BRUTE-FORCE — Rate Limiting / Brute Force / Enumeration
@@ -15,6 +17,46 @@ tags: [brute-force, hunt, redteam]
 > not cite an exact payout or report ID you cannot verify. Where a public case is
 > well-documented (e.g. Laxman Muthiyah's Instagram password-reset OTP race/rotation
 > research, 2019–2021), it is named below as a *technique reference*, not a payout claim.
+
+## When to Use
+
+- A login, OTP/2FA, reset-token, or enumeration endpoint is reachable and rate limiting is unknown or weak.
+- You need to distinguish lockout, soft throttle, CAPTCHA injection, and silent shadow-throttling before claiming a missing rate limit.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `hydra`, `nuclei`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+SESSION_COOKIE="session=..."   # cookie from your approved test session
+
+# Seed: position 500 in the brute set is the REAL OTP for your own test account.
+# If the loop reaches 500 and the correct code no longer authenticates,
+# the endpoint is silently throttling/dropping — NOT unprotected.
+KNOWN_GOOD="123456"   # the actual current OTP for YOUR test account
+for n in $(seq 0 600); do
+  CODE=$([ "$n" = "500" ] && echo "$KNOWN_GOOD" || printf "%06d" "$n")
+  CODE_RESP=$(curl --max-time 30 --connect-timeout 10 -s -o /tmp/bf_body -w "%{http_code} %{time_total}" \
+    -X POST "https://$TARGET/api/verify-otp" \
+    -H "Content-Type: application/json" -H "Cookie: $SESSION_COOKIE" \
+    -d "{\"otp\":\"$CODE\"}")
+  echo "$n $CODE $CODE_RESP $(wc -c </tmp/bf_body)"
+done
+# Three columns to watch: status, time_total, body size.
+# Rising time_total or a body-size change with status unchanged = shadow throttle.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -159,7 +201,7 @@ for i in $(seq 1 60); do
     -d "{\"email\":\"test@$TARGET\",\"password\":\"wrong$i\"}" -o /dev/null -w "%{http_code}")
   echo "Attempt $i (IP $RAND_IP): $RESP"
 done
-# Also try: multiple comma-joined XFF values ("[REDACTED_IP], [REDACTED_IP]"), and appending your real IP
+# Also try: multiple comma-joined XFF values ("203.0.113.10, 198.51.100.23"), and appending your real IP
 # AFTER a spoofed one — some parsers take first, some last.
 # CONFIRM the bypass: re-run Phase 1 WITHOUT rotation to show the 429 returns. The delta is the proof.
 ```
@@ -275,6 +317,17 @@ Before writing the report, each must hold:
 - ReDoS with reproducible meaningful server lag: **Medium–High**
 - Attacker-triggerable hard lockout (account DoS): **Medium**
 
+## Pitfalls
+
+- **Testing without rate-limit awareness** — brute-forcing without `-rate` and `-t` flags triggers account lockouts and IP bans. Always test with conservative settings first.
+- **Single-account testing** — brute-forcing your own test account proves nothing. Need two accounts to demonstrate the attack works against a victim.
+- **HTTP status code alone as oracle** — 200 vs 403 differential can be misleading. Always diff response bodies; some apps return 200 with different content for valid vs invalid credentials.
+- **Response timing as sole evidence** — single-sample timing differentials are jitter. Need n>=10 interleaved trials per group with 2-sigma threshold.
+- **Lockout policy not documented** — if the target has account lockout after N attempts, document it. Brute-force with lockout is high-risk and low-reward.
+- **Token entropy claims without measurement** — claiming a token is predictable requires actual measurement (Burp Sequencer effective-bits, ent, or demonstrated counter/timestamp structure).
+
+---
+
 ## Verification
 
 Run this self-test to confirm brute-force readiness:
@@ -289,17 +342,6 @@ Run this self-test to confirm brute-force readiness:
    PASS: SecLists present
 
 All 3 tests verify brute-force probing readiness.
-
----
-
-## Pitfalls
-
-- **Testing without rate-limit awareness** — brute-forcing without `-rate` and `-t` flags triggers account lockouts and IP bans. Always test with conservative settings first.
-- **Single-account testing** — brute-forcing your own test account proves nothing. Need two accounts to demonstrate the attack works against a victim.
-- **HTTP status code alone as oracle** — 200 vs 403 differential can be misleading. Always diff response bodies; some apps return 200 with different content for valid vs invalid credentials.
-- **Response timing as sole evidence** — single-sample timing differentials are jitter. Need n>=10 interleaved trials per group with 2-sigma threshold.
-- **Lockout policy not documented** — if the target has account lockout after N attempts, document it. Brute-force with lockout is high-risk and low-reward.
-- **Token entropy claims without measurement** — claiming a token is predictable requires actual measurement (Burp Sequencer effective-bits, ent, or demonstrated counter/timestamp structure).
 
 ---
 

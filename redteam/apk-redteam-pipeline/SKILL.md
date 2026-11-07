@@ -4,25 +4,41 @@ description: End-to-end Android APK red-team pipeline — automated APK acquisit
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [apk, android, mobile, reverse-engineering, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [apk, android, mobile, reverse-engineering, redteam]
+  category: redteam
 ---
 
-## When to use this skill
+## When to Use
 
-Trigger when:
-- Recon surfaces 1+ mobile apps under the target's developer name (Play Store dev page)
-- A web app hosts `*.apk` files directly (e.g. `Recruitz.apk` found on a subdomain during one engagement)
-- APK package IDs leaked via stealer logs (e.g. `com.<brand>.app`, `com.<brand>.<sub-brand>` patterns in stealer dump format)
-- Customer-facing app, dealer/partner portal, or employee mobile companion app is in scope
-- Bug bounty program lists Android in scope
+- Target has a mobile app catalogue (Play Store developer page), or you find an APK URL hosted on a web server.
+- Post-recon mentions "mobile app" in scope, or a customer-facing, dealer/partner, or employee companion app is listed.
+- APK package IDs surface in stealer logs (`com.<brand>.app`, `com.<brand>.<sub-brand>`).
+- A bug bounty program lists Android in scope.
 
-DO NOT use for:
-- iOS-only targets (different pipeline — IPA reverse, MobSF, frida-ios-dump)
-- React Native / Flutter web apps already covered by JS bundle analysis
-- Server-side only assessments
+Do not use for iOS-only targets (IPA/MobSF/frida-ios-dump), React Native/Flutter web apps already covered by JS bundle analysis, or server-side-only assessments.
 
----
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `mitmproxy`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Find developer page from the target's brand name
+curl --max-time 30 --connect-timeout 10 -sk -A "Mozilla/5.0" "https://play.google.com/store/apps/developer?id=<Brand+Name>" -o /tmp/dev.html
+
+# Extract package IDs
+grep -oE 'id=[a-zA-Z0-9._]+' /tmp/dev.html | sort -u
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Stage 0 — Inventory all org-owned apps
 
@@ -52,7 +68,7 @@ Stealer-log format includes package names like `*@com.<corp>.<app>` — extract 
 ### Brand permutation guesses (multi-brand conglomerate patterns)
 ```
 com.<brand>.app
-com.<brand>.mobile  
+com.<brand>.mobile
 com.<brand>.android
 com.<brand>connect.app
 in.<brand>.dealer
@@ -91,15 +107,16 @@ curl --max-time 30 --connect-timeout 10 -sk "https://apkpure.com/search?q=<brand
 
 ```bash
 # Standard unzip (works for clean APK)
-unzip -o <package>.apk -d extracted_<package>/
+PKG="com.example.app"
+unzip -o "$PKG.apk" -d "extracted_$PKG/"
 
 # For truncated/repaired XAPK
-7z x -y <package>.apk -o"extracted_<package>"
+7z x -y "$PKG.apk" -o"extracted_$PKG"
 
 # For nested XAPK
-for inner in extracted_<package>/*.apk; do
-  mkdir -p "extracted_<package>/$(basename "$inner" .apk)"
-  unzip -o "$inner" -d "extracted_<package>/$(basename "$inner" .apk)"
+for inner in "extracted_$PKG"/*.apk; do
+  mkdir -p "extracted_$PKG/$(basename "$inner" .apk)"
+  unzip -o "$inner" -d "extracted_$PKG/$(basename "$inner" .apk)"
 done
 ```
 
@@ -114,11 +131,12 @@ brew install jadx          # macOS
 wget https://github.com/skylot/jadx/releases/latest/download/jadx-1.5.x.zip
 
 # Decompile
-jadx -d decompiled_<package>/ <package>.apk
+PKG="com.example.app"
+jadx -d "decompiled_$PKG/" "$PKG.apk"
 
 # For XAPK that contains multiple APKs
-for inner in extracted_<package>/*.apk; do
-  jadx -d decompiled_<package>_$(basename "$inner" .apk)/ "$inner"
+for inner in "extracted_$PKG"/*.apk; do
+  jadx -d "decompiled_${PKG}_$(basename "$inner" .apk)/" "$inner"
 done
 ```
 
@@ -291,7 +309,7 @@ Java.perform(function() {
     var OkHttpClient = Java.use('okhttp3.OkHttpClient');
     var Request = Java.use('okhttp3.Request');
     var Call = Java.use('okhttp3.Call');
-    
+
     OkHttpClient.newCall.implementation = function(req) {
         var url = req.url().toString();
         var headers = req.headers().toString();

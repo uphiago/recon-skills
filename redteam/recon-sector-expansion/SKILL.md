@@ -4,8 +4,10 @@ description: "Multi-sector batch domain expansion — identify untested/under-te
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [recon, sector, expansion, redteam]
+platforms: [linux]
+metadata:
+  tags: [recon, sector, expansion, redteam]
+  category: redteam
 ---
 
 # RECON-SECTOR-EXPANSION — Batch Discovery Across Untapped Sectors
@@ -18,6 +20,29 @@ Use within authorized engagements to **expand coverage into fresh sectors** — 
 - "Discover 20 more domains in non-regulated sectors"
 - "We need to expand coverage; what haven't we tested?"
 - "Find fresh targets outside the usual sectors"
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `httpx`, `mysql`, `nmap`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+QUERY="roofing"
+curl -s --max-time 40 --connect-timeout 10 \
+  "https://crt.sh/?q=${QUERY}&excluded=expired&dedup=Y" \
+  -H 'User-Agent: Mozilla/5.0' 2>/dev/null | \
+  grep -oE '>[A-Za-z0-9][A-Za-z0-9.-]*\.com<' | \
+  sed 's/^>//;s/<$//' | \
+  sort -u >> /tmp/all_crt_domains.txt
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## The Sector Expansion Workflow
 
@@ -194,11 +219,11 @@ def run(cmd, timeout=15):
 def test_domain(domain, sector):
     findings = {"domain": domain, "sector": sector, "wp": False, "wp_users": 0,
                 "cors_reflected": False, "xmlrpc_open": False}
-    
+
     # STEP 1: httpx probe
     r = run(f"httpx -sc -title -tech-detect -server -no-color -u https://{domain} -timeout 10")
     findings["http"] = r.strip()
-    
+
     # STEP 2: WordPress REST API check (3 paths)
     for path in ["/wp-json/wp/v2/users", "/wp-json/", "/?rest_route=/wp/v2/users"]:
         r = run(f'curl -sk -o /dev/null -w "%{{http_code}}" --max-time 10 --connect-timeout 10 "https://{domain}{path}"')
@@ -215,33 +240,33 @@ def test_domain(domain, sector):
             except:
                 pass
             break
-    
+
     # Fallback: check page source for WP markers
     if not findings["wp"]:
         r = run(f'curl -sk --max-time 10 --connect-timeout 10 "https://{domain}"', timeout=12)
         if "/wp-content/" in r or "/wp-includes/" in r:
             findings["wp"] = True
-    
+
     # STEP 3: CORS test
     target_url = f"https://{domain}/wp-json/wp/v2/users" if findings["wp"] else f"https://{domain}/"
     r = run(f'curl -sk -H "Origin: https://evil.com" -D- --max-time 10 --connect-timeout 10 "{target_url}" | grep -i access-control', timeout=12)
     if "Access-Control-Allow-Origin" in r:
         findings["cors_reflected"] = True
         findings["cors_credentialed"] = "Access-Control-Allow-Credentials" in r
-    
+
     # STEP 4: XMLRPC check
     r = run(f'curl -sk -o /dev/null -w "%{{http_code}}" --max-time 10 --connect-timeout 10 -X POST "https://{domain}/xmlrpc.php"', timeout=12)
     findings["xmlrpc_open"] = (r.strip() == "200")
-    
+
     # STEP 5: Port scan (top 20)
     r = run(f'nmap --top-ports 20 -T4 --open -n {domain}', timeout=120)
     ports = [line.split('/')[0] for line in r.split('\n') if re.search(r'^\d+/tcp\s+open', line)]
     findings["ports"] = ports
-    
+
     # Severity calculation
     score = sum([findings["wp"], bool(findings["wp_users"] > 0), findings["cors_reflected"], findings["xmlrpc_open"]])
     findings["vuln"] = "HIGH" if score >= 3 else ("MEDIUM" if score >= 2 else ("LOW" if score >= 1 else "NONE"))
-    
+
     return findings
 
 # Usage

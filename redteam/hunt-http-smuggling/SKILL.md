@@ -4,9 +4,32 @@ description: "Hunt HTTP request smuggling (CL.TE, TE.CL, H2.CL, H2.TE). Cause: f
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [http-smuggling, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [http-smuggling, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting H1 paid programs running CDN+origin stacks, when targeting load balancer / WAF bypass.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `httpx`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sI https://target/ | grep -i "Server:"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 17. HTTP REQUEST SMUGGLING
 > Lowest dup rate. $5K–$30K. PortSwigger research by James Kettle.
@@ -513,36 +536,20 @@ if __name__ == "__main__":
 
 ---
 
-## Verification
-
-Run this self-test to confirm http-smuggling hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-http-smuggling" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **HTTP smuggling without two-tier architecture** — smuggling requires a front-end proxy and back-end server that disagree on request boundaries. Single-tier apps are immune.
 - **TE.CL vs CL.TE confusion** — these are opposite attacks. Fingerprint the specific disagreement before attempting.
 - **Smuggling probe without confirmable side effect** — a 200 or 400 on a probe request doesn't confirm smuggling. Need a visible side effect (cache poison, request queue poisoning, response queue).
 - **HTTP/2 downgrade smuggling** — H2C downgrade smuggling requires the backend to accept HTTP/1.1 over the same connection. Test if the backend speaks HTTP/1.1.
 - **WAF bypass via smuggling** — many WAFs don't reassemble smuggled requests. This is the primary value prop of smuggling attacks.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

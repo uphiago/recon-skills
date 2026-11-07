@@ -4,25 +4,41 @@ description: Microsoft 365 / Entra ID red-team attack chain — current 2026 rea
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [m365, entra, azure, attack, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [m365, entra, azure, attack, redteam]
+  category: redteam
 ---
 
-## When to use this skill
+## When to Use
 
-Trigger when:
-- Target uses M365 / Entra ID (autodiscover.* records, login.microsoftonline.com redirects, "Microsoft Office 365" in tech-stack notes)
-- You have a list of corporate emails or stealer-leaked creds
-- Engagement involves "credential spray", "password spray", "Entra attack", "ATO via M365"
-- You see `*.onmicrosoft.com`, `*-my.sharepoint.com`, `enterpriseregistration.*`, `enterpriseenrollment.*` in recon
-- Client mentions "Conditional Access", "MFA bypass", "compliant device"
+- Any M365/Entra credential attack, password spray, user enumeration, or CA-bypass exploration.
+- The target uses M365/Entra (autodiscover records, `login.microsoftonline.com` redirects, "Microsoft Office 365" in tech-stack notes, `*.onmicrosoft.com`, `*-my.sharepoint.com`, `enterpriseregistration.*`, or `enterpriseenrollment.*`).
+- You have corporate emails or stealer-leaked credentials, or the engagement mentions "Conditional Access", "MFA bypass", or "compliant device".
+- Active-attacker-detection scenario via Smart Lockout differential.
 
-DO NOT use for:
-- On-prem-only Active Directory (use a separate AD-attack skill)
-- Service-to-service token attacks (different threat model)
-- Phishing-required attack chains (covered by phishing skills) — but you can prep for the credential-validation step here
+Do not use for on-prem-only Active Directory, service-to-service token attacks, or phishing-required chains (though you can prepare the credential-validation step here).
 
----
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `playwright`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="client.example"   # an owned domain, not the login host
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Resolve tenant and federation mode before any credential attempt
+msftrecon -d "$TARGET"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Tenant discovery (msftrecon)
 
@@ -376,6 +392,16 @@ Pre-built `m365_validator.py` template at engagement working directory `engageme
 
 ---
 
+## Pitfalls
+- **Credential spray without lockout awareness** — Entra ID has Smart Lockout. Spraying without understanding lockout thresholds triggers account locks and alarms.
+- **Device code flow phishing** — the user must enter a code at `microsoft.com/devicelogin`. Without demonstrated victim interaction, this is theoretical.
+- **Managed vs Federated domain confusion** — managed domains authenticate against Entra ID directly; federated domains go to on-prem ADFS. Different attack surfaces.
+- **Guest user enumeration** — B2B guest inviter permissions can enumerate external users. Test the specific guest inviter role, not just any authenticated user.
+- **OAuth app consent phishing (illicit consent grant)** — user must click "Accept" on the consent screen. Without demonstrated consent, this is theoretical.
+- **Conditional Access bypass** — if the policy requires MFA, test if the MFA prompt can be bypassed via legacy auth, app passwords, or device-based exceptions.
+
+---
+
 ## Verification
 
 1. **Entra ID endpoint probe** — confirm well-known endpoints:
@@ -387,17 +413,6 @@ Pre-built `m365_validator.py` template at engagement working directory `engageme
    curl --max-time 30 --connect-timeout 10 -s "https://login.microsoftonline.com/example.com/.well-known/openid-configuration" -o /dev/null -w "HTTP %{http_code}" && echo " PASS" || echo " FAIL"
    ```
 All tests verify M365/Entra readiness.
-
----
-
-## Pitfalls
-- **Credential spray without lockout awareness** — Entra ID has Smart Lockout. Spraying without understanding lockout thresholds triggers account locks and alarms.
-- **Device code flow phishing** — the user must enter a code at `microsoft.com/devicelogin`. Without demonstrated victim interaction, this is theoretical.
-- **Managed vs Federated domain confusion** — managed domains authenticate against Entra ID directly; federated domains go to on-prem ADFS. Different attack surfaces.
-- **Guest user enumeration** — B2B guest inviter permissions can enumerate external users. Test the specific guest inviter role, not just any authenticated user.
-- **OAuth app consent phishing (illicit consent grant)** — user must click "Accept" on the consent screen. Without demonstrated consent, this is theoretical.
-- **Conditional Access bypass** — if the policy requires MFA, test if the MFA prompt can be bypassed via legacy auth, app passwords, or device-based exceptions.
-
 
 ---
 

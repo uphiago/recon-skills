@@ -4,8 +4,10 @@ description: Skill-set loader for /hunt orchestrator. Fingerprints the target, p
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [dispatch, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [dispatch, hunt, redteam]
+  category: redteam
 ---
 
 # hunt-dispatch
@@ -19,6 +21,43 @@ hunt-dispatch mode=redteam
 hunt-dispatch mode=wapt box=blackbox
 hunt-dispatch mode=wapt box=greybox
 ```
+
+## When to Use
+
+- /hunt has just received a mode answer (redteam or wapt + blackbox|greybox) and needs to load the appropriate skills and print the taxonomy.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `kubectl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+HOSTS="$TARGET"
+if [ -f "recon/$TARGET/live-hosts.txt" ]; then
+  HOSTS=$(cat "recon/$TARGET/live-hosts.txt")
+fi
+for H in $HOSTS; do
+  echo "=== $H ==="
+  # -L follow redirects, -D - dump headers, -o body; cap body to keep context small
+  curl --max-time 30 --connect-timeout 10 -sSL -D - -o /tmp/fp_body "https://$H" 2>/dev/null | tr -d '\r'
+  # surface body-only platform markers
+  grep -aoE '__NEXT_DATA__|/_next/|VIEWSTATE|rO0[AB]|laravel_session|Ignition|Telescope|Whitelabel|/actuator|application/grpc|socket\.io|swagger|\.js\.map' \
+    /tmp/fp_body | sort -u
+done
+rm -f /tmp/fp_body
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## step 1 — fingerprint (red team only)
 
@@ -71,11 +110,11 @@ OTP | /verify | /2fa | no-rate-limit        →  hunt-brute-force
 Set-Cookie session | PHPSESSID              →  hunt-session
 Active Directory | LDAP | OpenLDAP | ADFS  →  hunt-ldap
 __NEXT_DATA__ | /_next/ | buildId           →  hunt-nextjs
-X-Powered-By: Express | Node.js | .js stack →  hunt-nodejs
+X-Powered-By: Express | Node.js | .js stack →  hunt-frameworks
 postMessage | dangerouslySetInnerHTML        →  hunt-dom
 WebSocket | ws:// | socket.io               →  hunt-websocket
 gRPC | :50051 | application/grpc            →  hunt-grpc
-laravel_session | Ignition | Telescope       →  hunt-laravel
+laravel_session | Ignition | Telescope       →  hunt-frameworks
 X-Application-Context | Whitelabel | /actuator → hunt-springboot
 :6443 | :10250 | :2379 | kubectl            →  hunt-k8s
 .github/workflows | Jenkins | GitLab CI     →  hunt-cicd
@@ -100,7 +139,7 @@ tier 2  perimeter appliances     enterprise-vpn-attack, vmware-vcenter-attack
         (pre-auth RCE / direct internal foothold)
 tier 3  cloud / IAM              cloud-iam-deep, hunt-cloud-misconfig
         (credential → lateral movement)
-tier 4  app framework / stack    hunt-nextjs, hunt-nodejs, hunt-laravel,
+tier 4  app framework / stack    hunt-nextjs, hunt-frameworks,
         hunt-springboot, hunt-aspnet, hunt-sharepoint
 tier 5  protocol / class signals hunt-nosqli, hunt-lfi, hunt-deserialization,
         hunt-cors, hunt-host-header, hunt-open-redirect, hunt-grpc,
@@ -194,8 +233,8 @@ hunt-aspnet          hunt-sharepoint      hunt-ntlm-info
 hunt-lfi             hunt-nosqli          hunt-deserialization
 hunt-cors            hunt-host-header     hunt-open-redirect
 hunt-brute-force     hunt-session         hunt-ldap
-hunt-nextjs          hunt-nodejs          hunt-dom
-hunt-websocket       hunt-grpc            hunt-laravel
+hunt-nextjs          hunt-frameworks      hunt-dom
+hunt-websocket       hunt-grpc            hunt-frameworks
 hunt-springboot      hunt-k8s             hunt-cicd
 hunt-source-leak     hunt-tls-network
 ```
@@ -289,20 +328,6 @@ never echo back, log, or persist:
 
 ---
 
-## Verification
-
-1. **Hunt taxonomy check** — confirm the dispatch taxonomy is complete:
-   ```bash
-   grep -c "hunt-" SKILL.md && echo "PASS: hunt-* references present" || echo "FAIL"
-   ```
-2. **Tech fingerprint patterns** — confirm fingerprint signals exist:
-   ```bash
-   grep -q "X-Powered-By\|Set-Cookie\|wp-json\|GraphQL" SKILL.md && echo "PASS: fingerprint signals present" || echo "FAIL"
-   ```
-All tests verify dispatch readiness.
-
----
-
 ## Pitfalls
 
 - **Wrong platform classification** — misidentifying a React app as Next.js or a Django app as Flask leads to loading wrong hunt-* skills. Always verify with multiple fingerprint signals.
@@ -310,6 +335,12 @@ All tests verify dispatch readiness.
 - **Over-classification** — some apps don't fit neatly into one category. Multi-stack apps (React frontend + Django API) need both skill sets loaded.
 - **Assuming framework version from headers** — `X-Powered-By` can be spoofed or removed. Cross-validate with JS bundle analysis, cookie names, and error page signatures.
 
+---
+
+## Verification
+- The dispatch record lists the observed fingerprints and the skills selected; dispatch alone never produces a finding.
+- Each routed skill's own Verification section governs its findings.
+- The routing decision and observed fingerprints are recorded beneath `${OUTPUT_DIR:-./output}`.
 
 ---
 

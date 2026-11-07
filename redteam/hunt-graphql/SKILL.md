@@ -4,9 +4,35 @@ description: Hunting skill for graphql vulnerabilities. Built from 12 public bug
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [graphql, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [graphql, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting graphql on any target.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"query":"{ __schema { queryType { name } } }"}' | jq .
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -158,7 +184,7 @@ curl --max-time 30 --connect-timeout 10 -X PUT https://api.target.com/repos/ORG/
   -H "Authorization: token ADMIN_TOKEN" \
   -d '{"permission":"admin"}'
 
-# Step 2: Revoke via REST  
+# Step 2: Revoke via REST
 curl --max-time 30 --connect-timeout 10 -X DELETE https://api.target.com/repos/ORG/REPO/teams/TEAM \
   -H "Authorization: token ADMIN_TOKEN"
 
@@ -174,7 +200,7 @@ curl --max-time 30 --connect-timeout 10 https://api.target.com/repos/ORG/REPO/te
 
 **Grep for GraphQL in JS bundles:**
 ```bash
-grep -Eo '(query|mutation|subscription)\s+\w+\s*[\({]' bundle.js
+grep -Po '(query|mutation|subscription)\s+\w+\s*[\({]' bundle.js
 grep -Eo '"(/[a-z0-9/_-]*graphql[a-z0-9/_-]*)"' bundle.js
 ```
 
@@ -250,7 +276,7 @@ A common claim is "alias batching defeats per-user rate limits and double-spend 
 - 10 aliased `redeemCoupon` mutations in one request → only `r1` succeeds, r2-r10 fail with `already_redeemed`. Alias batching alone is insufficient.
 - The same 10 mutations as **20 parallel HTTP POSTs** → 20 successes ($2000 from a $100 coupon).
 
-**Operator rule:** treat alias batching as a single-RTT recon primitive. For race-target exploitation, combine with `hunt-race-condition`'s parallel-HTTP / Turbo Intruder single-packet attack. Verified in `docs/verification/phase2e-jwt-graphql-race.md` Test 11 vs Test 12.
+**Operator rule:** treat alias batching as a single-RTT recon primitive. For race-target exploitation, combine with `hunt-race-condition`'s parallel-HTTP / Turbo Intruder single-packet attack. (Verified during skill development; the verification log is internal and not shipped with the repository.)
 
 ---
 
@@ -316,7 +342,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 9. **EXNESS — SSRF in GraphQL `allTicks` query** ([H1 #1864188](https://hackerone.com/reports/1864188))
     - Subclass: SSRF via GraphQL argument
-    - Payload: `query { allTicks(source:"http://[REDACTED_IP]/latest/meta-data/") { … } }` — `source` arg fed into a server-side HTTP client
+    - Payload: `query { allTicks(source:"http://169.254.169.254/latest/meta-data/") { … } }` — `source` arg fed into a server-side HTTP client
     - Root cause: GraphQL field accepted a URL arg and dereferenced it without scheme/host allowlist
     - Year: 2023 — **$3,000**, 249 upvotes
 
@@ -340,36 +366,20 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ---
 
-## Verification
-
-Run this self-test to confirm graphql hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-graphql" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Introspection enabled without sensitive mutations** — introspection alone is informational. Need to demonstrate exploitable queries/mutations via the revealed schema.
 - **Field-level auth missing but only on public data** — if the exposed field is already public, there's no bug. Needs to expose data the user shouldn't see.
 - **Batching attacks without rate limit bypass** — GraphQL batching can amplify brute-force but only if rate limits are per-request not per-operation.
 - **Depth/complexity attacks without DoS proof** — high query depth is a primitive. Need to demonstrate actual server resource exhaustion.
 - **Persisted queries allowlist bypass** — bypassing APQ to reach introspection is the real finding, not schema visibility.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

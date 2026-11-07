@@ -4,11 +4,53 @@ description: "Hunt WebSocket vulnerabilities — Cross-Site WebSocket Hijacking 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [websocket, hunt, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [websocket, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-WEBSOCKET — WebSocket Security
+
+## When to Use
+
+- Target has WebSocket endpoints (ws:// or wss://), socket.io / SignalR / Phoenix Channels, real-time features, chat, live dashboards, notifications.
+- Trading platforms.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `nmap`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Grep JS for WS connections (handshake URLs, socket.io clients)
+grep -rE "new WebSocket|io\(|io\.connect|socket\.io|new SockJS|signalr|Phoenix\.Socket|wss?://" \
+  recon/$TARGET/ --include="*.js" 2>/dev/null | \
+  grep -oE "(wss?://[^'\"]+|/[a-zA-Z0-9/_.-]*socket[^'\"]*|/signalr[^'\"]*|/cable\b)" | sort -u
+
+# Crawl URLs for realtime hints
+grep -iE "socket|/ws\b|websocket|stream|realtime|live|chat|events|/cable|/signalr|notifications" \
+  recon/$TARGET/urls.txt | sort -u
+
+# Probe handshake (101 = upgrade supported)
+curl --max-time 30 --connect-timeout 10 -sI -o /dev/null -w "%{http_code}\n" \
+  -H "Connection: Upgrade" -H "Upgrade: websocket" \
+  -H "Sec-WebSocket-Version: 13" \
+  -H "Sec-WebSocket-Key: $(head -c16 /dev/urandom | base64)" \
+  "https://$TARGET/"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -281,30 +323,6 @@ brew install websocat                # alt client; supports text/binary + autore
 - Financial message tampering (server-confirmed): **Critical**
 - Namespace/room subscription bypass (cross-tenant): **High**
 
-## Verification
-
-Run this self-test to confirm websocket hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-websocket" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **WebSocket without auth** — if the WebSocket endpoint doesn't require auth tokens, anyone can connect. Test post-connection auth requirements.
 - **ws:// instead of wss://** — plaintext WebSocket on public services allows MITM. This is Medium if the WebSocket carries sensitive data.
@@ -313,11 +331,18 @@ All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 
+## Verification
+- The handshake returns 101 with `Upgrade: websocket` and a valid `Sec-WebSocket-Accept` hash.
+- A data-frame round-trip proves the channel; CSWSH additionally requires the server to accept an attacker `Origin` while carrying the victim cookie.
+- The handshake and frame exchange are recorded beneath `${OUTPUT_DIR:-./output}`.
+
+---
+
 ## Related Skills
 
 - **`hunt-csrf`** — CSWSH is structurally a CSRF + WebSocket upgrade combo. Chain primitive: handshake authenticates via ambient cookie + no CSRF token + missing Origin check → attacker-origin page opens WS as victim and streams messages → same impact model as CSRF (state change without consent) but bidirectional.
 - **`hunt-http-smuggling`** — Handshake-layer Upgrade smuggling (malformed Upgrade/Connection headers) makes front proxy and origin disagree on whether an upgrade occurred. Chain primitive: smuggling tunnel through WAF → internal endpoint access or cache poisoning.
-- **`hunt-ssrf`** — WebSocket endpoints that accept URL params or connection-target overrides are SSRF surfaces. Chain primitive: WS client connects to wss://target/ws?proxy=attacker-host → server-side proxy follows → cloud metadata on [REDACTED_IP].
+- **`hunt-ssrf`** — WebSocket endpoints that accept URL params or connection-target overrides are SSRF surfaces. Chain primitive: WS client connects to wss://target/ws?proxy=attacker-host → server-side proxy follows → cloud metadata on 169.254.169.254.
 - **`hunt-session`** — WebSocket connections that don't re-validate session on reconnection create persistence bugs. Chain primitive: stolen session cookie replayed on new WS connection → reconnection inherits all subscribed channels without re-auth.
 - **`hunt-tls-network`** — WebSocket connections over wss:// vs ws:// (plaintext) determine whether PII in frames is readable on the wire. Chain primitive: ws:// on non-standard port → TLS downgrade → credential interception.
 - **`security-arsenal`** — Reach for the WebSocket CSWSH PoC template, socket.io/signalr namespace discovery payloads, and the WS message tampering frame construction guide.

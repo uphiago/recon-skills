@@ -4,8 +4,10 @@ description: "Bugcrowd-specific reporting tactics complementing report-writing: 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [bugcrowd, reporting, bug-bounty, redteam]
+platforms: [linux]
+metadata:
+  tags: [bugcrowd, reporting, bug-bounty, redteam]
+  category: redteam
 ---
 
 # BUGCROWD REPORTING — Program-Specific Tactics
@@ -15,6 +17,33 @@ tags: [bugcrowd, reporting, bug-bounty, redteam]
 This skill encodes patterns that apply specifically to Bugcrowd's submission flow. For the generic per-platform templates (HackerOne / Bugcrowd / Intigriti / Immunefi report bodies), use the `report-writing` skill. For the 7-Question Gate before deciding to report at all, use `triage-validation`.
 
 ---
+
+## When to Use
+
+- Filing a Bugcrowd submission, when VRT default seems wrong, when triager closes as OOS or downgrades severity, when chaining linked submissions.
+- When scope distinguishes production from QA.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="example.com"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR/reports"
+
+# Write the VRT-mapped submission from the template in this skill
+$EDITOR "$OUTPUT_DIR/reports/bugcrowd-submission.md"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 1. VRT Category Selection — Search & Fallback Strategy
 
@@ -314,6 +343,14 @@ Maintain a simple text file with each submission's UUID, severity, and one-line 
 
 ---
 
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---
+
 ## 9. Pairing with Other Skills
 
 | For this question / task | Use this skill |
@@ -326,42 +363,6 @@ Maintain a simple text file with each submission's UUID, severity, and one-line 
 | "How do I redact cookies / PII in screenshots?" | `evidence-hygiene` |
 | "Where do I find the payload for this exploitation step?" | `security-arsenal` |
 | "Where do I find recon probes for this asset class?" | `offensive-osint` |
-
----
-
-## Verification
-
-Run this self-test to confirm reporting readiness:
-
-1. **VRT search test** — verify you can navigate the Bugcrowd VRT interface:
-   - Open a Bugcrowd submission draft
-   - Search for "IDOR", "XSS", and "Broken Access Control" in the VRT dropdown
-   - Confirm at least one match appears for each search term
-
-2. **Severity-request template test** — verify the template renders correctly:
-   ```bash
-   grep -q "Severity request — please review carefully" SKILL.md && echo "PASS: template present" || echo "FAIL"
-   grep -q "The closest VRT category" SKILL.md && echo "PASS: justification structure present" || echo "FAIL"
-   ```
-
-3. **OOS rebuttal availability** — confirm all 5 rebuttal templates exist:
-   ```bash
-   for clause in "Rate limiting on non-authentication" "Debug information disclosure" "User enumeration with low-risk" "Theoretical issues" "end-to-end proof"; do
-     grep -q "$clause" SKILL.md && echo "  OK: $clause" || echo "  MISSING: $clause"
-   done
-   ```
-
-4. **Cross-reference UUID format** — confirm UUID pattern for chain links is documented:
-   ```bash
-   grep -q "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" SKILL.md && echo "PASS: UUID format documented" || echo "FAIL"
-   ```
-
-5. **Bugcrowdninja alias awareness** — verify alias usage is documented:
-   ```bash
-   grep -q "bugcrowdninja.com" SKILL.md && echo "PASS: alias documented" || echo "FAIL"
-   ```
-
-All 5 tests verify the skill's critical templates are intact.
 
 ---
 

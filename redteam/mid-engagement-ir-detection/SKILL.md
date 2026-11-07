@@ -4,27 +4,59 @@ description: Methodology for detecting client SOC patches, attacker activity, an
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ir, detection, mid-engagement, redteam]
+platforms: [linux]
+metadata:
+  tags: [ir, detection, mid-engagement, redteam]
+  category: redteam
 ---
 
-## When to use this skill
+## When to Use
 
-Trigger when:
-- Running active testing against a target with active SOC monitoring
-- A confirmed-vulnerable finding stops reproducing on recheck
-- Baseline timing shifts unexpectedly (3× slower, sudden errors, new headers)
-- Response sizes change between test windows
-- New WAF cookies or headers appear that weren't there at session start
-- Lockout / error rates change between test windows (especially LOCKED count for credential attacks)
-- Engagement is "assume breach" or "white box" — client knows you're testing
+- Running any active test against a target with active SOC monitoring, including assume-breach or white-box engagements.
+- A previously-confirmed finding stops reproducing, or baseline timing shifts unexpectedly.
+- Response sizes change between test windows, or new WAF cookies/headers appear that were not there at session start.
+- Lockout or error rates change between test windows, especially LOCKED counts for credential attacks.
 
-DO NOT use for:
-- Bug bounty (client doesn't know you're there; no real-time IR)
-- Pure recon (no state-change happening)
-- One-off vulnerability scanning (no temporal dimension)
+Do not use for bug bounty (the client does not know you are there), pure recon with no state change, or one-off vulnerability scanning with no temporal dimension.
 
----
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Bash watcher — runs every 5 min during engagement, alerts on shifts
+
+cd "$ENGAGEMENT_DIR"
+
+# Re-measure baseline timing on key targets
+for target in "$@"; do
+  ms=$(curl -sk -o /dev/null -w "%{time_total}" "$target" --max-time 30 --connect-timeout 10)
+  ms_int=$(echo "$ms * 1000" | bc | cut -d. -f1)
+  echo "$(date -u +%FT%TZ) $target $ms_int" >> baseline_history.log
+done
+
+# Diff against pre-session baseline
+python3 - << 'PY'
+import json, time
+baseline = json.load(open("engagement_log/baseline.json"))
+for line in open("baseline_history.log"):
+    parts = line.strip().split()
+    ts, target, ms = parts[0], parts[1], int(parts[2])
+    if target in baseline["targets"]:
+        pre = baseline["targets"][target]["baseline_response_time_ms"]
+        if abs(ms - pre) > pre * 0.5:  # >50% shift
+            print(f"ALERT {ts} {target} time {pre} -> {ms}")
+PY
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## The core insight
 
@@ -347,20 +379,6 @@ This is a more valuable deliverable than "I confirmed SQLi" alone, because it ca
 
 ---
 
-## Verification
-
-1. **Detection signals** — confirm common IDS/IPS signatures are recognized:
-   ```bash
-   grep -q "Snort\|Suricata\|WAF block\|rate-limit\|account lockout" SKILL.md && echo "PASS: detection signals present" || echo "FAIL"
-   ```
-2. **Timeline template** — confirm timeline documentation is covered:
-   ```bash
-   grep -q "timeline\|T+[0-9]" SKILL.md && echo "PASS: timeline documentation present" || echo "FAIL"
-   ```
-All tests verify IR detection readiness.
-
----
-
 ## Pitfalls
 - **IR detection but no response plan** — detecting the blue team is reacting to you is intel. Without a plan to adapt, it's just observation.
 - **False positives from normal operations** — increased logging during business hours is normal. Distinguish IR-specific signals (new IPS rules, account lockouts, SIEM correlation alerts).
@@ -368,6 +386,12 @@ All tests verify IR detection readiness.
 - **Assuming detection means you're caught** — detection is one step in the IR kill chain. Containment, eradication, and recovery follow. You may still have time.
 - **Not documenting timeline** — the exact time detection occurred, what changed, and how you adapted is the deliverable. Without timeline, you have no evidence.
 
+---
+
+## Verification
+- Every observation carries UTC timestamps before and after the change, plus the original PoC captured before the shift.
+- The mitigation is classified as WAF rule, rate limit, or code fix; a changed response alone is not a finding.
+- Baseline and post-change samples are stored beneath `${OUTPUT_DIR:-./output}` so the delta is reproducible.
 
 ---
 

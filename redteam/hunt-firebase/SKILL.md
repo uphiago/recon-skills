@@ -4,11 +4,52 @@ description: "Hunt Firebase / Firestore / GCP exploitation — Firebase API key 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [firebase, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [firebase, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-FIREBASE — Firebase / Firestore / GCP Exploitation
+
+## When to Use
+
+- A JS bundle, APK.
+- .env file reveals a Firebase API key (AIzaSy...) or when target uses firebaseio.com / firestore.googleapis.com endpoints.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gcloud`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Download the main page and its JS bundles
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" -o /tmp/index.html
+grep -Eo 'src="[^"]*\.js"' /tmp/index.html | cut -d'"' -f2 | while read js; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$js" -o "/tmp/$(basename $js)"
+done
+
+# Search for Firebase API keys in all downloaded JS
+grep -rEn 'AIza[0-9A-Za-z_-]{35}' /tmp/*.js
+
+# Search for firebaseConfig
+grep -rEn 'firebaseConfig|firebase.initializeApp|apiKey|authDomain' /tmp/*.js --include="*.js"
+
+# Search for Firebase URLs
+grep -rEn 'firebaseio|firestore|firebasestorage|firebaseapp' /tmp/*.js --include="*.js"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -428,33 +469,19 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'fireba
 
 ---
 
-## Verification
-
-Run this self-test to confirm firebase hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-firebase" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Public Firebase config without sensitive data** — the Firebase config object is intentionally public. Only report when the database/storage is writable or contains PII.
 - **Realtime DB rules test without write** — reading `.json` is recon. Writing to `.json` and having it persist proves misconfiguration.
 - **Firestore public read** — test `/documents/users` for PII, not `/documents/public_config`.
 - **Storage bucket listing without object read** — listable buckets are informational. Need readable objects with sensitive content.
 - **API key scope testing** — Firebase API keys are not secrets. They're identifiers. Test what the key grants access to, not just that it exists.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
+
+---

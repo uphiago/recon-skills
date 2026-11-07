@@ -4,8 +4,10 @@ description: "Hunt public /metrics, /health, and actuator endpoints leaking AI u
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [metrics, exposure, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [metrics, exposure, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
@@ -13,6 +15,35 @@ tags: [metrics, exposure, hunt, redteam]
 The target uses modern observability tooling (Go, .NET, Java, Node.js). These frameworks often expose `/metrics`, `/health`, and `/status` endpoints that are forgotten behind auth. Unlike application data leaks, metrics leaks reveal the ENTIRE operational profile: which AI models are used, how many users are active, database connection exhaustion, and third-party service dependencies.
 
 ---
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="https://target.com"
+
+# Common observability paths
+for ep in metrics health status ready live readyz healthz \
+  actuator/health actuator/metrics actuator/prometheus \
+  Telescope telescope horizon debug; do
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -o /tmp/metrics_${ep}.txt -w "%{http_code}" \
+    "${TARGET}/${ep}" 2>/dev/null)
+  if [ "$code" = "200" ]; then
+    size=$(wc -c < /tmp/metrics_${ep}.txt)
+    echo "  /${ep}: HTTP 200 (${size} bytes)"
+  fi
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Phase 1 — Discover Metrics Endpoints
 
@@ -89,12 +120,20 @@ curl --max-time 30 --connect-timeout 10 -sk "${TARGET}/telescope/requests" | hea
 
 ---
 
+## Pitfalls
+- **Prometheus /metrics without secrets** — metrics endpoints exposing request counts are informational. Need labels containing PII, internal hostnames, or credentials.
+- **Spring Boot Actuator /actuator/metrics** — metrics are intentionally exposed for monitoring. Only report if they leak sensitive data (usernames in labels, internal IPs).
+- **JMX without auth** — JMX exposure without authentication is critical only if write operations (MBean invocation) are possible. Read-only JMX is informational.
+- **Health endpoint without sensitive data** — `/health`, `/status`, `/ready` endpoints are designed to be public. Need leaked internal data.
+
+---
+
 ## Verification
 
 - **Confirmed exposure**: `/metrics` returns Prometheus text format (lines starting with `# HELP` or `# TYPE`)
 - **Actuator exposure**: `/actuator/health` returns JSON with component statuses
 - **False positive**: Endpoint returns `{"status":"ok"}` only (minimal health check, not a metrics leak)
-- **Severity upgrade**: If `/actuator/env` or `/actuator/configprops` is exposed → CRITICAL (environment variables leaked)
+- **Severity upgrade**: `/actuator/env` or `/actuator/configprops` exposed → HIGH/CRITICAL only if the response contains unredacted secrets (Spring Boot 2.2+ redacts `password`/`secret`/`key` values by default — check the body before scoring)
 
 ---
 
@@ -106,33 +145,3 @@ curl --max-time 30 --connect-timeout 10 -sk "${TARGET}/telescope/requests" | hea
 - Combine with `hunt-schema-enumeration` for full target profile
 
 ---
-
-## Verification
-
-Run this self-test to confirm metrics-exposure hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-metrics-exposure" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
-## Pitfalls
-- **Prometheus /metrics without secrets** — metrics endpoints exposing request counts are informational. Need labels containing PII, internal hostnames, or credentials.
-- **Spring Boot Actuator /actuator/metrics** — metrics are intentionally exposed for monitoring. Only report if they leak sensitive data (usernames in labels, internal IPs).
-- **JMX without auth** — JMX exposure without authentication is critical only if write operations (MBean invocation) are possible. Read-only JMX is informational.
-- **Health endpoint without sensitive data** — `/health`, `/status`, `/ready` endpoints are designed to be public. Need leaked internal data.

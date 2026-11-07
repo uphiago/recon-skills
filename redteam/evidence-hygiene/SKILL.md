@@ -4,8 +4,10 @@ description: "Evidence-capture and PoC-redaction discipline for bug-bounty submi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [evidence, hygiene, reporting, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [evidence, hygiene, reporting, redteam]
+  category: redteam
 ---
 
 # EVIDENCE HYGIENE — PoC Capture & Redaction Discipline
@@ -15,6 +17,40 @@ tags: [evidence, hygiene, reporting, redteam]
 The core principle: **Bug-bounty evidence is meant to convince a triager. Anything beyond that — live cookies, real-user PII, internal trace IDs that aren't useful — should not be in the evidence.**
 
 ---
+
+## When to Use
+
+- You are about to capture screenshots, HAR files, or Burp history for a report or bounty submission.
+- A PoC contains cookies, tokens, PII, or internal identifiers that must be redacted before sharing.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`, `mysql`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="example.com"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR/evidence"
+
+# Sanitize every exported HAR before attaching; raw copies stay private
+for f in "$OUTPUT_DIR"/evidence/*.har; do
+  jq '.log.entries |= map(
+        (.request.headers |= map(if (.name|ascii_downcase|IN("cookie","authorization","x-csrf-token")) then .value="<REDACTED>" else . end)) |
+        (.response.headers |= map(if (.name|ascii_downcase)=="set-cookie" then .value="<REDACTED>" else . end)) |
+        (.request.cookies |= map(.value="<REDACTED>")) |
+        (.response.cookies |= map(.value="<REDACTED>")))' \
+    "$f" > "${f%.har}.sanitized.har"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 1. Two Categories of Sensitive Data
 
@@ -193,7 +229,7 @@ If the HAR captured cross-account data (e.g., during an IDOR demo), additionally
 
 ```jq
 (.response.content.text |= (
-  if . then 
+  if . then
     (fromjson? // .) | tostring | gsub("real.first.name.example"; "<REDACTED>")
   else . end
 ))
@@ -396,19 +432,6 @@ Quarterly, sweep your `~/security-research/` and `~/Downloads/` for stale HARs /
 
 ---
 
-## 9. Pairing with Other Skills
-
-| For this question / task | Use this skill |
-|---|---|
-| "Should I report this finding at all?" | `triage-validation` |
-| "What's the report body template?" | `report-writing` |
-| "What VRT / severity / OOS rebuttal for Bugcrowd?" | `bugcrowd-reporting` |
-| "How do I redact / sanitize this evidence?" | This skill (`evidence-hygiene`) |
-| "How do I demonstrate the bug actually fires?" | `security-arsenal` |
-| "Where are the recon probes for this asset class?" | `offensive-osint` |
-
----
-
 ## Verification
 
 Run this self-test to confirm evidence-hygiene readiness:
@@ -442,6 +465,19 @@ Run this self-test to confirm evidence-hygiene readiness:
    ```
 
 All 5 tests verify the critical evidence-hygiene safeguards are present.
+
+---
+
+## 9. Pairing with Other Skills
+
+| For this question / task | Use this skill |
+|---|---|
+| "Should I report this finding at all?" | `triage-validation` |
+| "What's the report body template?" | `report-writing` |
+| "What VRT / severity / OOS rebuttal for Bugcrowd?" | `bugcrowd-reporting` |
+| "How do I redact / sanitize this evidence?" | This skill (`evidence-hygiene`) |
+| "How do I demonstrate the bug actually fires?" | `security-arsenal` |
+| "Where are the recon probes for this asset class?" | `offensive-osint` |
 
 ---
 

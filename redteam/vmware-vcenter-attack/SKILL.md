@@ -4,9 +4,46 @@ description: VMware vSphere / vCenter Server external attack matrix — version 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [vmware, vcenter, attack, redteam]
+platforms: [linux]
+metadata:
+  tags: [vmware, vcenter, attack, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Recon shows port 443 with vCenter banner, `/ui` redirect, `/websso/SAML2/Metadata`.
+- VMware product fingerprints.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ldapsearch`, `nuclei`, `openssl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="vcenter.target.com"
+
+# Build info endpoint (often public; revealing exact patch level)
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/sdk/vimServiceVersions.xml"
+
+# UI build (visible in page source)
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/ui/login" | grep -oE 'build[^"]{0,40}'
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/ui/" | grep -oE 'vsphere[^"]{0,40}'
+
+# REST API version (vSphere 7+)
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/api/appliance/system/version"
+
+# Cert metadata
+echo | openssl s_client -connect "$TARGET:443" -servername "$TARGET" 2>/dev/null | openssl x509 -noout -text | grep -A1 "Subject Alt"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## When to use
 
@@ -233,7 +270,7 @@ Pair with `mid-engagement-ir-detection` skill — vCenter is monitored heavily i
 
 ## External-only boundary check
 
-If recon reveals vCenter only via VPN (not direct internet) → STOP. That is internal infrastructure and outside the external-only AI scope per `feedback_skill_boundaries`. The user handles internal vCenter work directly.
+If recon reveals vCenter only via VPN (not direct internet) → STOP. That is internal infrastructure and outside the external-only scope of this skill. Internal vCenter work requires a separately authorized engagement.
 
 Internet-exposed vCenter is unfortunately common on the perimeter — and frequently outdated by years. The 2021-21972 / 21985 / 22954 trifecta still pays in 2026 because patching cycles for hypervisor management are slow and vendor-managed.
 
@@ -270,17 +307,6 @@ Internet-exposed vCenter is unfortunately common on the perimeter — and freque
 
 ---
 
-## Verification
-
-1. **vCenter fingerprint** — confirm vCenter URL patterns:
-   ```bash
-   echo "/ui/login" | grep -q "ui/login" && echo "PASS: vCenter UI path recognized" || echo "FAIL"
-   echo "/sdk" | grep -q "sdk" && echo "PASS: vCenter SDK path recognized" || echo "FAIL"
-   ```
-All tests verify vCenter attack readiness.
-
----
-
 ## Pitfalls
 - **vCenter version disclosure without CVE** — knowing the vCenter version is recon. Need a pre-auth CVE affecting that specific version.
 - **Post-exploitation assumed** — vCenter attacks typically require initial foothold. The finding is what you can do ONCE inside, not how you got there.
@@ -289,6 +315,16 @@ All tests verify vCenter attack readiness.
 - **SSO domain administrator** — vCenter SSO `administrator@vsphere.local` has unlimited power. This account is the primary target.
 - **Log insight / vRealize** — vCenter add-ons (Log Insight, vRealize Operations) have their own CVEs. Don't stop at the vCenter web UI.
 
+---
+
+## Verification
+
+1. **vCenter fingerprint** — confirm vCenter URL patterns:
+   ```bash
+   echo "/ui/login" | grep -q "ui/login" && echo "PASS: vCenter UI path recognized" || echo "FAIL"
+   echo "/sdk" | grep -q "sdk" && echo "PASS: vCenter SDK path recognized" || echo "FAIL"
+   ```
+All tests verify vCenter attack readiness.
 
 ---
 
@@ -328,14 +364,14 @@ These are the load-bearing public references for every CVE called out in the mat
 - **References:** https://www.vmware.com/security/advisories/VMSA-2021-0020.html ; https://www.cisa.gov/news-events/alerts/2021/09/24/vmware-vcenter-server-vulnerability-cve-2021-22005-under-active-exploit ; https://www.rapid7.com/blog/post/2021/09/21/critical-vcenter-server-file-upload-vulnerability-cve-2021-22005/ ; https://www.bleepingcomputer.com/news/security/working-exploit-released-for-vmware-vcenter-cve-2021-22005-bug/
 
 ### 4. CVE-2022-22954 — Workspace ONE Access / Identity Manager FreeMarker SSTI → RCE
-- **Affected:** Workspace ONE Access [REDACTED_IP], [REDACTED_IP], [REDACTED_IP], [REDACTED_IP]; Identity Manager 3.3.3 → 3.3.6; vRealize Automation 7.6.
+- **Affected:** Workspace ONE Access 25.01.x, 24.07.x, 23.10.x, 22.09.x; Identity Manager 3.3.3 → 3.3.6; vRealize Automation 7.6.
 - **Attack flow:** Unauth GET to `/catalog-portal/ui/oauth/verify?deviceUdid=${...}` injects a FreeMarker template; `freemarker.template.utility.Execute` runs OS commands as the `horizon` service account. Single-request RCE.
 - **Root cause:** Catalog-portal endpoint passed attacker-controlled query parameter into FreeMarker render without sandboxing the Execute utility.
 - **Disclosure:** Reported by Steven Seeley (mr_me) of Source Incite; VMware advisory VMSA-2022-0011 published 2022-04-06. PoCs public within 48h; widespread mass-exploitation followed. **CISA KEV:** added 2022-04-14. CISA AA22-138B (May 2022) documents IR engagements at "large organizations" exploited via this CVE. Year discovered 2022, patched 2022.
 - **References:** https://www.vmware.com/security/advisories/VMSA-2022-0011.html ; https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-138b ; https://srcincite.io/blog/2022/04/19/cve-2022-22954-vmware-workspace-one-access-pre-auth-rce.html ; https://www.crowdsec.net/blog/new-surge-in-vmware-cve-2022-22954-exploit-attempts
 
 ### 5. CVE-2022-22972 — Workspace ONE Access / Identity Manager / vRealize Automation Host-header authentication bypass
-- **Affected:** Workspace ONE Access [REDACTED_IP]; Identity Manager 3.3.3–3.3.6; vRealize Automation 7.6 (and downstream Cloud Foundation bundles).
+- **Affected:** Workspace ONE Access 25.01.x–22.09.x; Identity Manager 3.3.3–3.3.6; vRealize Automation 7.6 (and downstream Cloud Foundation bundles).
 - **Attack flow:** Manipulate the HTTP `Host` header during local-domain login flow; the server routes its internal validation request to the attacker-controlled hostname → returns admin session without legitimate credentials.
 - **Root cause:** Host header used unvalidated as the target for the internal auth-validation request — classic SSRF-into-self with trust elevation.
 - **Disclosure:** Reported by Bruno López of Innotec Security; VMware advisory VMSA-2022-0014 published 2022-05-18. **CISA Emergency Directive 22-03** (2022-05-18) ordered all U.S. federal civilian agencies to patch or remove affected VMware installations by 2022-05-24 — the same agencies that had just been told the same thing for CVE-2022-22954 six weeks earlier. Year discovered 2022, patched 2022.

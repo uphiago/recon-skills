@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, screenshot, visual, triage, fingerprinting, technology]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - web-enumeration
-  - cms-detection
-  - port-service-discovery
+metadata:
+  tags: [recon, screenshot, visual, triage, fingerprinting, technology]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - source-leak-hunt
+    - cms-detection
+    - port-service-discovery
 ---
 
 # Visual Recon
@@ -32,6 +33,25 @@ Automatically screenshot every live host to triage hundreds of subdomains visual
 - `terminal` gowitness, httpx, and curl.
 - `gowitness` installed: `go install github.com/sensepost/gowitness@latest`.
 - A list of alive subdomains from `subdomain-enumeration`.
+
+## How to Run
+
+```bash
+# gowitness — fast, Go-based screenshot tool
+gowitness file -f alive_subs.txt \
+  -P ./screenshots/ \
+  --no-http \
+  --timeout 15 \
+  --resolution-x 1440 \
+  --resolution-y 900
+
+# With database for searchable results
+gowitness file -f alive_subs.txt -P ./screenshots/ --no-http \
+  --db gowitness.db --chrome-window-x 1440 --chrome-window-y 900
+
+# Query results
+gowitness report list --db gowitness.db
+```
 
 ## Quick Start
 
@@ -171,8 +191,10 @@ gowitness report list --db gowitness.db \
 3. Technology detection matches the visual fingerprint (WordPress favicon = WordPress CMS).
 4. Priority targets (login panels, admin dashboards, dev environments) are identified and moved to next phase.
 
+---
+
 ## Related Skills
 
 - **`subdomain-enumeration`** — Generate the list of alive subdomains.
-- **`web-enumeration`** — Deep dive into individual hosts found via screenshots.
+- **`source-leak-hunt`** — Deep dive into individual hosts found via screenshots.
 - **`cms-detection`** — Automated CMS and framework detection on discovered hosts.

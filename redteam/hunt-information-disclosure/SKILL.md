@@ -1,18 +1,19 @@
 ---
 name: hunt-information-disclosure
 description: Hunt error leakage, DVCS exposure, source maps, config files, and differential oracles.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3, httpx
-tags: [redteam, information-disclosure, error-leakage, source-maps, config, enumeration]
-related_skills:
-  - source-leak-hunt
-  - js-secrets-extraction
-  - error-log-mining
-  - web-enumeration
+metadata:
+  tags: [redteam, information-disclosure, error-leakage, source-maps, config, enumeration]
+  category: redteam
+  related_skills:
+    - source-leak-hunt
+    - js-secrets-extraction
+    - error-log-mining
+    - source-leak-hunt
 ---
 
 # Information Disclosure Hunting
@@ -26,6 +27,22 @@ Hunt for information exposure through stack traces, debug endpoints, versioned p
 - Versioned static assets reveal framework/CMS versions.
 - API responses differ by object existence (user enumeration by status/length/time).
 - Debug endpoints, health checks, or status pages expose internal state.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Trigger errors on common paths
+for path in "/nonexistent" "/%00" "/.." "/error" "/debug"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com$path" | grep -iE "stack|trace|exception|error|warning|debug|line [0-9]+" | head -5
+done
+```
 
 ## Quick Detection
 
@@ -85,7 +102,7 @@ done
 
 ```bash
 # Find .js.map files
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo '[^"\s]+\.js\.map' | sort -u
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Po '[^"\s]+\.js\.map' | sort -u
 
 # Download and extract
 wget "https://target.com/static/app.js.map"
@@ -130,7 +147,7 @@ done
 ```bash
 # Framework version from static assets
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/static/admin/css/base.css" | head -5
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo '(?:Django|Laravel|Rails|Express|Next\.js|Nuxt)[\s/]*v?[0-9.]+'
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Po '(?:Django|Laravel|Rails|Express|Next\.js|Nuxt)[\s/]*v?[0-9.]+'
 
 # Package manager lock files
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/composer.lock" | jq -r '.packages[] | select(.version) | "\(.name)@\(.version)"' 2>/dev/null
@@ -168,9 +185,11 @@ Each disclosure type provides inputs for other attack vectors:
 4. Chain the disclosure to another vulnerability before reporting — standalone info disclosure is rarely critical.
 5. For config files: the leaked data must contain credentials, API keys, or connection strings (not just generic config).
 
+---
+
 ## Related Skills
 
 - **`source-leak-hunt`** — Focused on `.env`, `.git`, and config file leakage.
 - **`js-secrets-extraction`** — API keys and tokens in JavaScript bundles.
 - **`error-log-mining`** — PHP error logs with credential and query leakage.
-- **`web-enumeration`** — Path discovery that reveals sensitive endpoints.
+- **`source-leak-hunt`** — Path discovery that reveals sensitive endpoints.

@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, masscan
-tags: [recon, port-scan, masscan, rustscan, nmap, infrastructure]
-category: recon
-related_skills:
-  - port-service-discovery
-  - iot-camera-recon
-  - exchange-owa-attack
+metadata:
+  tags: [recon, port-scan, masscan, rustscan, nmap, infrastructure]
+  category: recon
+  related_skills:
+    - port-service-discovery
+    - iot-camera-recon
+    - exchange-owa-attack
 ---
 
 # Port Mass Scan Skill
@@ -119,8 +120,8 @@ masscan -p1-10000 --rate=5000 --banners --source-ip "$SOURCE_IP" \
 
 # Alternative: two-phase (Masscan ports → Nmap services)
 masscan -p1-65535 --rate=10000 "$TARGET" -oG "$OUTDIR/${TARGET}_grepable.txt" --wait=10
-OPEN_PORTS=$(grep -Eo 'Host: \S+ \(\)\s+Ports:\s+\K[^#]+' "$OUTDIR/${TARGET}_grepable.txt" | \
-  grep -Eo '\d+/open' | cut -d/ -f1 | tr '\n' ',' | sed 's/,$//')
+OPEN_PORTS=$(grep -Po 'Host: \S+ \(\)\s+Ports:\s+\K[^#]+' "$OUTDIR/${TARGET}_grepable.txt" | \
+  grep -Po '\d+/open' | cut -d/ -f1 | tr '\n' ',' | sed 's/,$//')
 
 if [[ -n "$OPEN_PORTS" ]]; then
   echo "[*] Nmap service detection on ports: $OPEN_PORTS"
@@ -134,11 +135,11 @@ fi
 # Scan Brazilian ISP ranges for cameras (from Vivo, Claro, Oi)
 echo "[*] Camera hunt on Claro 3G/4G ranges"
 masscan -p554,80,8010,8011 --rate=50000 \
-  --range [REDACTED_IP]-[REDACTED_IP] -oJ cameras_claro.json
+  --range 187.44.0.0-187.44.255.255 -oJ cameras_claro.json
 
 echo "[*] Camera hunt on Vivo ranges"
 masscan -p554,80,8010,8011 --rate=50000 \
-  --range [REDACTED_IP]-[REDACTED_IP] -oJ cameras_vivo.json
+  --range 179.191.0.0-179.191.255.255 -oJ cameras_vivo.json
 
 # Post-process: probe discovered cameras for snapshots
 grep -Eo '"ip":"[^"]+"' cameras_*.json | sed 's/"ip":"//;s/"//' | sort -u | \

@@ -4,8 +4,10 @@ description: Finding validation before writing any report — 7-Question Gate (a
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [triage, validation, redteam]
+platforms: [linux]
+metadata:
+  tags: [triage, validation, redteam]
+  category: redteam
 ---
 
 # TRIAGE & VALIDATION
@@ -17,6 +19,33 @@ One wrong answer = STOP **this finding**. Kill **the finding**. Move on **to the
 > "N/A hurts your validity ratio. Informative is neutral. Only submit what passes all 7 questions."
 
 ---
+
+## When to Use
+
+- A candidate finding exists and must be proven or killed before writing the report.
+- You need the 7-question gate, pre-severity gate, always-rejected list, or a retraction template.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="example.com"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR/triage"
+
+# Answer the 7-question gate in writing before promoting a candidate
+$EDITOR "$OUTPUT_DIR/triage/finding-01.md"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## THE 7-QUESTION GATE
 
@@ -307,20 +336,6 @@ When a previously-claimed finding fails reproduction — **never silently drop i
 
 ---
 
-## Verification
-
-1. **7-Question Gate** — confirm all 7 questions are documented:
-   ```bash
-   grep -c "Question [1-7]" SKILL.md && echo "PASS: all 7 questions present" || echo "FAIL"
-   ```
-2. **OOB Gate** — confirm OOB validation is required:
-   ```bash
-   grep -q "OOB\|out-of-band\|Collaborator\|interactsh" SKILL.md && echo "PASS: OOB validation documented" || echo "FAIL"
-   ```
-All tests verify triage validation readiness.
-
----
-
 ## Pitfalls
 - **Skipping the 7-Question Gate** — the #1 cause of rejected findings. If you can't answer all 7 questions confidently, don't file.
 - **Question 1 failure: "Can an attacker do this RIGHT NOW?"** — if the answer requires "if," "could," "might," or "theoretically," it's not a finding.
@@ -329,6 +344,12 @@ All tests verify triage validation readiness.
 - **Severity inflation** — calling every IDOR "Critical" damages credibility. Match severity to demonstrated impact, not bug class.
 - **Premature reporting** — filing before confirming the bug still works at time of submission. Always re-test hours before hitting submit.
 
+---
+
+## Verification
+- All seven gate answers are written per candidate, including the negative control that kills it.
+- OOB claims attach the callback log; killed findings record the reason and are not silently deleted.
+- The completed gate is stored beneath `${OUTPUT_DIR:-./output}/triage/`.
 
 ---
 

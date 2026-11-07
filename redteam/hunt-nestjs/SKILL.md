@@ -1,18 +1,19 @@
 ---
 name: hunt-nestjs
 description: "Hunt NestJS-specific vulnerabilities: guard bypass, decorator gaps, and microservice auth drift."
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, nestjs, TypeScript, decorator, guard, microservice, GraphQL]
-related_skills:
-  - hunt-graphql
-  - hunt-api-misconfig
-  - hunt-idor
-  - hunt-write-gap
+metadata:
+  tags: [redteam, nestjs, TypeScript, decorator, guard, microservice, GraphQL]
+  category: redteam
+  related_skills:
+    - hunt-graphql
+    - hunt-api-misconfig
+    - hunt-idor
+    - hunt-write-gap
 ---
 
 # NestJS Security Hunting
@@ -26,6 +27,25 @@ Hunt NestJS-specific vulnerabilities in guard bypass via decorator stack gaps, R
 - Microservice transports (TCP, Redis, NATS, MQTT, gRPC) are configured.
 - Swagger/OpenAPI docs are exposed at `/api` or `/api-json`.
 - CRUD endpoints follow predictable NestJS naming conventions.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `grpcurl`, `jq`, `redis-cli`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# NestJS fingerprinting
+curl --max-time 30 --connect-timeout 10 -skI "https://target.com/api" | grep -iE "x-powered-by|server"
+# Look for: x-powered-by: NestJS
+
+# Swagger docs
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api" -w "%{http_code}\n" -o /dev/null
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api-json" | jq '.paths | keys[]' 2>/dev/null
+```
 
 ## Quick Detection
 
@@ -162,6 +182,8 @@ curl --max-time 30 --connect-timeout 10 -sk -X DELETE "https://target.com/api/us
 2. Serializer interceptor absence reveals internal fields (password hash, internal notes, tokens).
 3. Microservice handler processes requests without any authentication while HTTP equivalent requires JWT.
 4. CRUD auto-endpoints expose create/update/delete operations without explicit authorization.
+
+---
 
 ## Related Skills
 

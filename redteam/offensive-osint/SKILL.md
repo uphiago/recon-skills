@@ -1,17 +1,40 @@
 ---
 name: offensive-osint
 description: "Operational arsenal for authorized external red-team and bug-bounty recon. Concrete probes, wordlists, regexes, dorks, curl one-liners for: subdomain enum, GraphQL/Swagger/REST discovery, identity fabric (Entra/Okta/ADFS/Google/SAML/M365 deep — Teams/SharePoint/OneDrive), cloud bucket enum (S3/GCS/Azure), CDN/WAF bypass, origin discovery, vendor fingerprinting (Citrix/F5/Pulse/Fortinet/PaloAlto/Cisco/VMware), CI/CD exposure, 48-pattern secret-scan catalog, Postman workspaces, breach correlation, TLS/JA3 audit, secret triage. Detail content in 15 modular reference files. Use for any authorized recon: scoping, asset discovery, attack-path mapping, secret triage, severity scoring."
-license: MIT
-revision_date: 2026-07-25
-category: redteam
-tags: [osint, offensive, recon, redteam]
 version: 3.0.0
+revision_date: 2026-07-25
+license: MIT
+platforms: [linux]
+metadata:
+  tags: [osint, offensive, recon, redteam]
+  category: redteam
 ---
 
 # Offensive OSINT — External Red-Team Arsenal
 
 > **v3.0** — Refactored 2026-05-02 from a 4,168-line monolith into a lean SKILL.md (~400 lines) plus 15 modular reference files in `references/`. Detail content loads on demand — Claude reads only the reference files relevant to the current task.
 
+## When to Use
+
+- Any authorized recon: scoping, asset discovery, attack-path mapping, secret triage, severity scoring.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `amass`, `censys`, `curl`, `dnsx`, `gau`, `git-dumper`, `gowitness`, `httpx`, `katana`, `kubectl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   curl --max-time 30 --connect-timeout 10 -s "https://crt.sh/?q=example.com&output=json" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'{len(d)} certs found')" 2>/dev/null || echo "NOTE: crt.sh may be rate-limited"
+
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 0. When to use / When NOT
 
@@ -164,9 +187,6 @@ Apps below threshold are tagged `mobile_review_pending` and shown but not analyz
 
 ---
 
-
----
-
 ## 39. Attack-Path Hint Patterns
 
 When emitting a HIGH/CRITICAL API endpoint finding (score ≥ 70), include a one-sentence `attack_path_hint` in evidence so the operator knows where to start exploiting. Templates:
@@ -205,9 +225,6 @@ When emitting a HIGH/CRITICAL API endpoint finding (score ≥ 70), include a one
 | Open Docker registry | *"Public Docker registry at {host} — `GET /v2/_catalog` lists images; pull and scan layers for embedded secrets."* |
 | Telegram bot token live | *"Telegram bot token validated — `getUpdates` reveals bot recipients (admin chats); if `getMe` shows bot is in channels, full message read access."* |
 | Sourcemap with `sourcesContent[]` | *"Sourcemap on {host} includes embedded original sources — full frontend code reconstructable; grep for inline secrets and internal hostnames."* |
-
----
-
 
 ---
 
@@ -266,6 +283,15 @@ Drop these prompts into a fresh Claude session to verify the skill loads correct
 
 ---
 
+## Pitfalls
+- **OSINT collection without scope validation** — scraping LinkedIn/Shodan/crunchbase for employee names and tech stacks is recon, not a finding. The finding is what you DO with that data.
+- **Breach data possession** — possessing actual breach corpora (email:pass combos) is legally risky. Use hashes or redacted samples in reports.
+- **Certificate transparency log mining** — finding subdomains via crt.sh is highly automated now. The value is in what the subdomains expose, not just their existence.
+- **Google dorks returning cached/outdated results** — dork results may show pages that no longer exist. Verify each finding is live before reporting.
+- **Social media scraping without authorization** — some programs explicitly exclude social engineering and social media profiling. Check scope first.
+
+---
+
 ## Verification
 
 1. **crt.sh probe** — confirm certificate transparency lookup:
@@ -277,16 +303,6 @@ Drop these prompts into a fresh Claude session to verify the skill loads correct
    curl --max-time 30 --connect-timeout 10 -s "https://web.archive.org/cdx/search/cdx?url=example.com&output=text&limit=3" | head -3
    ```
 All tests verify OSINT readiness.
-
----
-
-## Pitfalls
-- **OSINT collection without scope validation** — scraping LinkedIn/Shodan/crunchbase for employee names and tech stacks is recon, not a finding. The finding is what you DO with that data.
-- **Breach data possession** — possessing actual breach corpora (email:pass combos) is legally risky. Use hashes or redacted samples in reports.
-- **Certificate transparency log mining** — finding subdomains via crt.sh is highly automated now. The value is in what the subdomains expose, not just their existence.
-- **Google dorks returning cached/outdated results** — dork results may show pages that no longer exist. Verify each finding is live before reporting.
-- **Social media scraping without authorization** — some programs explicitly exclude social engineering and social media profiling. Check scope first.
-
 
 ---
 

@@ -5,15 +5,16 @@ version: 2.0.0
 license: MIT
 platforms: [linux, macos]
 compatibility: Requires curl, a browser, approved test identities, and WordPress component evidence
-tags: [chains, wordpress, validation, attack-path]
-category: chains
-related_skills:
-  - cross-attack-chains
-  - hunt-wordpress
-  - triage-validation
-  - wordpress-cors-xmlrpc-rce-chain
-  - wordpress-plugin-hunt
-  - xmlrpc-exploitation
+metadata:
+  tags: [chains, wordpress, validation, attack-path]
+  category: chains
+  related_skills:
+    - cross-attack-chains
+    - hunt-wordpress
+    - triage-validation
+    - wordpress-cors-xmlrpc-rce-chain
+    - wordpress-plugin-hunt
+    - xmlrpc-exploitation
 ---
 
 # WordPress Compromise Path Analysis

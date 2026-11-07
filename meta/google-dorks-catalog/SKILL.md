@@ -6,9 +6,9 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: N/A (reference catalog)
-disable-model-invocation: true
-tags: [meta, google-dorks, secrets, passive-recon, osint]
-category: meta
+metadata:
+  tags: [meta, google-dorks, secrets, passive-recon, osint]
+  category: meta
 ---
 
 # Google Dorks Catalog -- Exposed Configs & Secrets
@@ -19,6 +19,30 @@ category: meta
 - After crt.sh subdomain enumeration
 - Before any active scanning
 - Validated against 100+ real targets
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Set once per engagement; every step below uses these.
+TARGET="example.com"   # or the engagement target
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+
+# Test dork results manually
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/.env" | head -5
+# Verify GitHub found secrets
+python3 -c "import json; print(json.loads(open('result.json').read()))"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## High-Precision Dorks
 

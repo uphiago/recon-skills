@@ -4,13 +4,40 @@ description: Hunting skill for idor vulnerabilities. Built from 26 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [idor, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [idor, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
 
 Use when the target has any endpoint that references user-owned resources by ID — API paths with user/order/invoice/message IDs, GraphQL queries with id arguments, file download endpoints, or any multi-tenant SaaS feature. IDOR is one of the most common and highest-paying vulnerabilities because it directly exposes other users' data without authentication bypass. Every feature that displays or acts on a resource by identifier is a candidate. Highest-value targets: financial documents/billing APIs, private repositories, user messages, account management endpoints, and cross-tenant business/org administration features.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Get User A's resource ID while authenticated as A
+curl --max-time 30 --connect-timeout 10 -s -H "Cookie: session=USER_A_SESSION" \
+  https://target.com/api/v1/invoices/12345
+
+# Replay with User B's session
+curl --max-time 30 --connect-timeout 10 -s -H "Cookie: session=USER_B_SESSION" \
+  https://target.com/api/v1/invoices/12345
+
+# Success = 200 OK with User A's data
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -223,7 +250,7 @@ done
    ```javascript
    // VULNERABLE: fetches any record
    const invoice = await Invoice.findById(req.params.id);
-   
+
    // SECURE: scopes to authenticated user
    const invoice = await Invoice.findOne({ _id: req.params.id, userId: req.user.id });
    ```
@@ -304,7 +331,7 @@ Before writing the report, answer all three:
    - Exact HTTP request documented with victim's ID ✓
    - 200 OK response showing victim's data (or confirmed state change) ✓
    - No reliance on pre-existing state or timing ✓
-   
+
    If you can't demo it reproducibly, do not file the report.
 
 ---
@@ -387,36 +414,20 @@ Cross-references:
 
 ---
 
-## Verification
-
-Run this self-test to confirm idor hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-idor" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **UUID-based IDOR** — UUIDs are not guessable, so reading a known UUID from another user is IDOR only if the UUID itself was leaked. Document the leak source.
 - **Read-only IDOR without sensitive data** — accessing another user's public profile via IDOR is Low. Need PII, credentials, or private data.
 - **Self-IDOR** — accessing your own data with another identifier you own is not IDOR. Need cross-account access.
 - **IDOR on public resources** — if the resource is intentionally public (no auth check by design), there's no IDOR. Verify auth was expected.
 - **POST/PUT IDOR without CSRF** — write IDOR needs a CSRF vector or the attacker needs the victim's session. Distinguish standalone vs chained exploitability.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

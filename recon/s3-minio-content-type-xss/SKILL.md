@@ -6,13 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, S3, MinIO, bucket, XSS, Content-Type, cloud, storage]
-category: recon
-related_skills:
-  - hunt-xss
-  - hunt-cloud-misconfig
-  - firebase-supabase-attack
-  - js-secrets-extraction
+metadata:
+  tags: [recon, S3, MinIO, bucket, XSS, Content-Type, cloud, storage]
+  category: recon
+  related_skills:
+    - hunt-xss
+    - hunt-cloud-misconfig
+    - hunt-firebase
+    - hunt-supabase
+    - js-secrets-extraction
 ---
 
 # S3/MinIO Content-Type Override to Stored XSS
@@ -32,6 +34,16 @@ Exploit public cloud storage buckets (S3, MinIO, and compatible) by overriding t
 - `terminal` with curl and python3.
 - Identify at least one public object URL served from storage.
 - For S3 exploitation: your own AWS account credentials (free tier sufficient).
+
+## How to Run
+
+```bash
+# Test if an object's Content-Type can be overridden (MinIO and compatible)
+curl --max-time 30 --connect-timeout 10 -skI "https://cdn.target.com/uploads/avatar123.png?response-content-type=text/html" | grep -i content-type
+
+# If you get 'text/html', the override works — proceed to exploitation
+# If you get 'Request specific response headers cannot be used for anonymous GET requests', it's S3 — use signed URL approach
+```
 
 ## Quick Detection
 
@@ -56,7 +68,7 @@ for path in /uploads/ /media/ /static/uploads/ /cdn/ /files/ /assets/img/ /stora
 done
 
 # Look for S3/MinIO signatures in URLs
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Eo '(?:s3\.|amazonaws\.|minio|storage\.googleapis)[^"'\''\s]{5,60}'
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Po '(?:s3\.|amazonaws\.|minio|storage\.googleapis)[^"'\''\s]{5,60}'
 ```
 
 ### Phase 2 — Test Content-Type Override
@@ -160,9 +172,11 @@ echo "$OBJECT_URL" | grep -qE "^https?://(www\.)?target\.com" && echo "SAME-ORIG
 4. Confirm same-origin: the object URL shares the target's domain (not a third-party storage domain).
 5. Document the full chain: upload bypass technique → override parameter → same-origin XSS.
 
+---
+
 ## Related Skills
 
 - **`hunt-xss`** — General XSS detection methodology and bypass tables.
 - **`hunt-cloud-misconfig`** — Public bucket discovery and cloud storage misconfigurations.
-- **`firebase-supabase-attack`** — Firebase/Supabase storage bucket exploitation.
+- **`hunt-firebase`** / **`hunt-supabase`** — Firebase/Supabase storage bucket exploitation.
 - **`js-secrets-extraction`** — Finding bucket names and storage endpoints in JavaScript bundles.

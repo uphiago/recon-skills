@@ -34,7 +34,6 @@ objective. Older skills are being migrated incrementally to the complete
 
 ```text
 recon-skills/
-|-- auth/       Authentication and SSO testing
 |-- chains/     Multi-step attack-path analysis
 |-- infra/      Infrastructure-focused techniques
 |-- meta/       Engagement planning and cross-skill workflows
@@ -56,7 +55,7 @@ rg -n "SSRF|OAuth|GraphQL|Kubernetes" --glob 'SKILL.md'
 
 For a broad external web assessment, useful entry points are
 `redteam/web2-recon`, `recon/subdomain-enumeration`,
-`recon/web-enumeration`, and `redteam/bb-methodology`. Add vulnerability or
+`recon/source-leak-hunt`, and `redteam/bb-methodology`. Add vulnerability or
 platform skills only when discovery produces a relevant signal.
 
 Set a writable output location before running examples:
@@ -80,7 +79,7 @@ remain the operator's responsibility.
 | `redteam/offensive-osint` | External intelligence and asset pivots |
 | `recon/subdomain-enumeration` | Passive and active subdomain discovery |
 | `recon/port-service-discovery` | Port and service classification |
-| `recon/web-enumeration` | Web paths, files, and technology enumeration |
+| `recon/source-leak-hunt` | Sensitive-file and source-leak detection |
 | `recon/js-secrets-extraction` | Client-side bundle and secret analysis |
 | `chains/cross-attack-chains` | Evidence-based attack-path construction |
 | `redteam/triage-validation` | Finding validation before reporting |

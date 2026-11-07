@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, grep, python3
-tags: [recon, error-log, credentials, wordpress, data-mining]
-category: recon
-related_skills:
-  - deep-invade
-  - source-leak-hunt
-  - phpinfo-to-rce
-  - wordpress-full-compromise
+metadata:
+  tags: [recon, error-log, credentials, wordpress, data-mining]
+  category: recon
+  related_skills:
+    - deep-invade
+    - source-leak-hunt
+    - phpinfo-to-rce
+    - wordpress-full-compromise
 ---
 
 # Error Log Mining Skill
@@ -177,12 +178,12 @@ for logfile in "$OUTDIR"/*.txt "$OUTDIR"/*_sample.txt; do
   # 6. Internal IPs
   echo ""
   echo "[INTERNAL IPs]"
-  grep -Eo '(?:10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)\d{1,3}\.\d{1,3}' "$logfile" 2>/dev/null | sort -u | head -10
+  grep -Po '(?:10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)\d{1,3}\.\d{1,3}' "$logfile" 2>/dev/null | sort -u | head -10
 
   # 7. WordPress specific
   echo ""
   echo "[WORDPRESS PATHS]"
-  grep -Eo '/wp-content/(?:plugins|themes|uploads)/[a-zA-Z0-9_/.-]+' "$logfile" 2>/dev/null | sort -u | head -15
+  grep -Po '/wp-content/(?:plugins|themes|uploads)/[a-zA-Z0-9_/.-]+' "$logfile" 2>/dev/null | sort -u | head -15
 
   # 8. PHP Error Summary
   echo ""
@@ -205,11 +206,11 @@ for logfile in "$OUTDIR"/*.txt "$OUTDIR"/*_sample.txt; do
   # 10. Plugin/Theme Names from Paths
   echo ""
   echo "[PLUGINS FROM ERRORS]"
-  grep -Eo '/wp-content/plugins/\K[a-zA-Z0-9_-]+' "$logfile" 2>/dev/null | sort -u | head -20
+  grep -Po '/wp-content/plugins/\K[a-zA-Z0-9_-]+' "$logfile" 2>/dev/null | sort -u | head -20
 
   echo ""
   echo "[THEMES FROM ERRORS]"
-  grep -Eo '/wp-content/themes/\K[a-zA-Z0-9_-]+' "$logfile" 2>/dev/null | sort -u | head -10
+  grep -Po '/wp-content/themes/\K[a-zA-Z0-9_-]+' "$logfile" 2>/dev/null | sort -u | head -10
   sleep 0.3
 done
 ```
@@ -255,7 +256,7 @@ done
 
 echo "" >> "$SUMMARY"
 echo "## Plugins Discovered" >> "$SUMMARY"
-grep -Eo '/wp-content/plugins/\K[a-zA-Z0-9_-]+' "$OUTDIR"/*.txt 2>/dev/null | sort -u | while read -r line; do
+grep -Po '/wp-content/plugins/\K[a-zA-Z0-9_-]+' "$OUTDIR"/*.txt 2>/dev/null | sort -u | while read -r line; do
   echo "- $line" >> "$SUMMARY"
 done
 
@@ -267,15 +268,15 @@ echo "[+] Intelligence summary saved to $SUMMARY"
 
 ```bash
 # Does error log reveal the DB name? Cross-ref with wp-config leak
-DB_NAME=$(grep -Eo 'DB_NAME["\x27\s:=]+["\x27][a-zA-Z0-9_]+' $OUTDIR/error_logs/*/intel_summary.md 2>/dev/null)
+DB_NAME=$(grep -Po 'DB_NAME["\x27\s:=]+["\x27][a-zA-Z0-9_]+' $OUTDIR/error_logs/*/intel_summary.md 2>/dev/null)
 echo "DB name from logs: $DB_NAME"
 
 # Does it reveal internal hostnames?
-HOSTNAMES=$(grep -Eo '(?:[a-zA-Z0-9-]+\.(?:internal|local|lan|corp|priv))' $OUTDIR/error_logs/*/*.txt 2>/dev/null | sort -u)
+HOSTNAMES=$(grep -Po '(?:[a-zA-Z0-9-]+\.(?:internal|local|lan|corp|priv))' $OUTDIR/error_logs/*/*.txt 2>/dev/null | sort -u)
 [[ -n "$HOSTNAMES" ]] && echo "Internal hostnames:" && echo "$HOSTNAMES"
 
 # Are there file inclusion paths that indicate LFI potential?
-LFI_PATHS=$(grep -Eo '(?:include|require|include_once|require_once)\s*\(\s*[\x27"]([^\x27"]+\.php)' $OUTDIR/error_logs/*/*.txt 2>/dev/null | sort -u)
+LFI_PATHS=$(grep -Po '(?:include|require|include_once|require_once)\s*\(\s*[\x27"]([^\x27"]+\.php)' $OUTDIR/error_logs/*/*.txt 2>/dev/null | sort -u)
 [[ -n "$LFI_PATHS" ]] && echo "Potential LFI paths:" && echo "$LFI_PATHS"
 ```
 

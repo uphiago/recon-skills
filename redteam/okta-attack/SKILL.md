@@ -4,26 +4,44 @@ description: Okta-as-IdP red-team attack chain — tenant discovery, user enumer
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [okta, sso, attack, redteam]
+platforms: [linux]
+metadata:
+  tags: [okta, sso, attack, redteam]
+  category: redteam
 ---
 
-## When to use this skill
+## When to Use
 
-Trigger when:
-- DNS shows `<tenant>.okta.com` or `<tenant>.okta-emea.com` (EMEA region)
-- Login flow redirects to `<tenant>.okta.com/login` or `/app/<app_id>/sso/saml`
-- Web pages reference `/signin/customize`, `oktapreview.com`, or `auth-js-sdk`
-- Recon notes "uses Okta for SSO"
-- A target has `*.okta.com` SAN in TLS cert
-- Identity-fabric mapping returns Okta as IdP for a corporate app
+- Recon shows `<tenant>.okta.com`, `<tenant>.okta-emea.com`, or `<tenant>.oktapreview.com`.
+- Login flow redirects to `/login` or `/app/<app_id>/sso/saml`, pages reference `/signin/customize` or `auth-js-sdk`, DNS has an `okta.com` SAN in the TLS certificate, or identity-fabric mapping returns Okta as the IdP.
+- Autodiscover-style records point at an Okta IdP, or recon notes "uses Okta for SSO".
 
-DO NOT use for:
-- Entra ID (use `m365-entra-attack` instead)
-- Google Workspace (use `google-workspace-attack` — not yet built)
-- ADFS (different protocol, on-prem)
+Do not use for Entra ID (`m365-entra-attack`), Google Workspace, or ADFS (different protocol, on-prem).
 
----
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dnsx`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Tenant subdomains often match the brand
+# Replace these with your target's actual tenant slug candidates:
+for tenant in target-brand target-brand-ltd target-sister-brand target-brand-short target-other-variant; do
+  for region in okta okta-emea oktapreview; do
+    host="$tenant.$region.com"
+    code=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 8 --connect-timeout 8 "https://$host/")
+    [ "$code" != "404" ] && [ "$code" != "000" ] && echo "  $host  $code"
+  done
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Tenant discovery
 
@@ -103,7 +121,7 @@ curl --max-time 30 --connect-timeout 10 -sk "https://<tenant>.okta.com/api/v1/se
 Some Okta orgs use email-as-username; others use `firstname.lastname` or employee-id. Test pattern guesses:
 ```
 firstname.lastname@target.com
-firstname_lastname@target.com  
+firstname_lastname@target.com
 flastname@target.com
 employeeID@target.com
 ```
@@ -399,6 +417,15 @@ These are the canonical public references that justify the techniques in this sk
 
 ---
 
+## Pitfalls
+- **Okta tenant discovery without impact** — knowing the Okta org URL is recon. Need demonstrated phishing, credential testing, or misconfiguration.
+- **Okta API key in source code** — Okta API tokens have specific scopes. Document the exact scope before claiming impact.
+- **SAML/OIDC misconfig at Okta level** — if Okta is the IdP, misconfigs there affect all downstream apps. This is higher impact than per-app misconfigs.
+- **Okta Verify bypass** — Okta FastPass and device trust policies have specific bypass vectors (device registration without verification). Test those specifically.
+- **Okta Classic vs OIE** — Okta Identity Engine has different policies and bypass vectors than Okta Classic. Identify the org type before testing.
+
+---
+
 ## Verification
 
 1. **Okta tenant detection** — confirm Okta URL patterns:
@@ -407,16 +434,6 @@ These are the canonical public references that justify the techniques in this sk
    echo "https://company.oktapreview.com" | grep -q "oktapreview" && echo "PASS: Okta Preview recognized" || echo "FAIL"
    ```
 All tests verify Okta attack readiness.
-
----
-
-## Pitfalls
-- **Okta tenant discovery without impact** — knowing the Okta org URL is recon. Need demonstrated phishing, credential testing, or misconfiguration.
-- **Okta API key in source code** — Okta API tokens have specific scopes. Document the exact scope before claiming impact.
-- **SAML/OIDC misconfig at Okta level** — if Okta is the IdP, misconfigs there affect all downstream apps. This is higher impact than per-app misconfigs.
-- **Okta Verify bypass** — Okta FastPass and device trust policies have specific bypass vectors (device registration without verification). Test those specifically.
-- **Okta Classic vs OIE** — Okta Identity Engine has different policies and bypass vectors than Okta Classic. Identify the org type before testing.
-
 
 ---
 

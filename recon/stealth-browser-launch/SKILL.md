@@ -6,13 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, nuclei, python3
-tags: [recon, stealth, browser, anti-bot, fingerprint, chromium, playwright]
-category: recon
-related_skills:
-  - humanize-automation
-  - tls-fingerprint-impersonation
-  - http2-header-impersonation
-  - proxy-geoip-automation
+metadata:
+  tags: [recon, stealth, browser, anti-bot, fingerprint, chromium, playwright]
+  category: recon
+  related_skills:
+    - humanize-automation
+    - tls-fingerprint-impersonation
+    - http2-header-impersonation
+    - ops-proxyns
+    - evasion-stack-guide
 ---
 
 # Stealth Browser Launch
@@ -33,6 +35,20 @@ Launch a patched Chromium binary with C++ source-level fingerprint modifications
 - `playwright` installed: `pip install playwright && playwright install-deps chromium`.
 - Residential proxy (datacenter IPs are reputation-blocked regardless of browser fingerprint).
 - Optional: `cloakbrowser[geoip]` for automatic timezone/locale resolution from proxy exit IP.
+
+## How to Run
+
+```bash
+pip install cloakbrowser
+python3 -c "
+from cloakbrowser import launch
+browser = launch()
+page = browser.new_page()
+page.goto('https://target.com')
+print(page.title())
+browser.close()
+"
+```
 
 ## Quick Start
 
@@ -186,7 +202,7 @@ cp /path/to/windows/fonts/SegoeUI*.ttf ~/.local/share/fonts/windows/
 fc-cache -f
 
 # Then launch with:
-browser = launch(args=["--fingerprint-fonts-dir=/home/user/.local/share/fonts/windows"])
+# browser = launch(args=["--fingerprint-fonts-dir=/home/user/.local/share/fonts/windows"])
 ```
 
 ## Fingerprint Flag Reference
@@ -227,6 +243,8 @@ browser = launch(args=["--fingerprint-fonts-dir=/home/user/.local/share/fonts/wi
 3. Test against reCAPTCHA v3: `https://antcpt.com/eng/information/demo-form/recaptcha-3-test-score.html` — score should be ≥ 0.7.
 4. Test against `https://deviceandbrowserinfo.com` — `isBot` should be false with 0 true flags.
 5. Verify `navigator.webdriver` is `false` with `page.evaluate("navigator.webdriver")`.
+
+---
 
 ## Related Skills
 

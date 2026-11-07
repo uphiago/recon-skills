@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3, subfinder, dnsx
-tags: [recon, subdomain, takeover, CNAME, DNS, cloud, Heroku, S3, Azure]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - origin-ip-discovery
-  - port-service-discovery
+metadata:
+  tags: [recon, subdomain, takeover, CNAME, DNS, cloud, Heroku, S3, Azure]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - origin-ip-discovery
+    - port-service-discovery
 ---
 
 # Subdomain Takeover Detection
@@ -30,6 +31,16 @@ Detect subdomains pointing to unregistered or unclaimed third-party cloud servic
 - `terminal` with curl, dnsx, subfinder.
 - `subzy` or `subjack` installed for automated detection.
 - List of alive subdomains from `subdomain-enumeration`.
+
+## How to Run
+
+```bash
+# DNS resolution with CNAME extraction
+dnsx -retry 3 -a -cname -resp -silent -l alive_subs.txt | tee dns_records.txt
+
+# Automated takeover scan
+subzy run --targets alive_subs.txt --hide_fails --vuln
+```
 
 ## Quick Detection
 
@@ -140,6 +151,8 @@ subfinder -d target.com -silent \
 2. `curl --max-time 30 --connect-timeout 10 -sk https://SUBDOMAIN` returns the service-specific error page indicating the resource is available.
 3. The CNAME target is NOT resolving to a CDN or load balancer.
 4. Document the exact error message and service type before reporting.
+
+---
 
 ## Related Skills
 

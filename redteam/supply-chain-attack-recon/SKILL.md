@@ -4,9 +4,44 @@ description: External recon for software supply-chain attack surface — package
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [supply-chain, attack, recon, redteam]
+platforms: [linux, macos]
+metadata:
+  tags: [supply-chain, attack, recon, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- The target has a public GitHub org, when their build artifacts/SBOMs are reachable, when their docker images are on Docker Hub/GHCR.
+- When you find internal package names in their JS bundles.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `jq`, `nuclei`, `python3`, `semgrep`, `trufflehog`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="<brand>"  # set to target brand name
+
+# Direct guesses
+for guess in $TARGET "${TARGET}-tech" "${TARGET}corp" "${TARGET}-io" "${TARGET}-eng"; do
+  curl --max-time 30 --connect-timeout 10 -sI "https://github.com/$guess" | grep -E "HTTP|status" | head -1
+done
+
+# Via WHOIS / email-domain → GitHub search
+gh search users --owner-affiliations=organization --query "$TARGET" --limit 10
+
+# Via employees → reverse from social media + GitHub profile
+# Many employees list their employer org on their GitHub profile
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## When to use
 
@@ -155,7 +190,7 @@ For each external public dependency the target uses:
 ```bash
 # Common typosquat patterns:
 # Original: "react-router-dom"
-# Typos: 
+# Typos:
 #   "react-router-doms" (extra s)
 #   "react-routter-dom" (double t)
 #   "react-rotuer-dom" (transposed)
@@ -194,26 +229,26 @@ for repo in $(gh repo list "$ORG" --limit 50 --json name --jq '.[].name'); do
   for wf in $workflows; do
     content=$(gh api "repos/$ORG/$repo/contents/.github/workflows/$wf" --jq '.content' 2>/dev/null | base64 -d 2>/dev/null)
     echo "=== $repo/$wf ==="
-    
+
     # High-risk patterns:
     # 1. pull_request_target (runs with secrets on PR from forks)
     echo "$content" | grep -E 'pull_request_target'
-    
+
     # 2. Untrusted context interpolation
     echo "$content" | grep -E '\$\{\{[^}]*github\.(event|head_ref|pull_request)[^}]*\}\}'
-    
+
     # 3. ${{ github.event.* }} into shell run blocks
     echo "$content" | grep -B1 -A2 'run:' | grep -E '\$\{\{ ?github\.event\.'
-    
+
     # 4. checkout of PR head with elevated perms
     echo "$content" | grep -E 'ref:.*pull_request|head_ref'
-    
+
     # 5. Self-hosted runner without isolation
     echo "$content" | grep -E 'runs-on:.*self-hosted'
 
     # 6. Unpinned third-party actions — mutable tag (@v1, @main) vs pinned (@<40-char sha>)
     #    Mutable tags can be repointed by a compromised action repo (see case #9, tj-actions/changed-files).
-    echo "$content" | grep -E 'uses: *[^ ]+/[^ ]+@(v?[0-9]+([.][0-9]+)*|main|master|latest)\b' | grep -v '@[0-9a-f]\{40\}'
+    echo "$content" | grep -P 'uses: *[^ ]+/[^ ]+@(v?[0-9]+([.][0-9]+)*|main|master|latest)\b' | grep -v '@[0-9a-f]\{40\}'
   done
 done
 ```
@@ -378,7 +413,7 @@ A supply-chain finding needs ALL of:
 
 ## External-only boundary check
 
-This skill is squarely external — all targets are public registries / public GitHub. If the engagement involves the client's internal artifact registry (internal Nexus, JFrog, Sonatype), that is internal infrastructure and OUT OF SCOPE per `feedback_skill_boundaries`. Report internal-registry URL exposure as a finding; do not attempt to enumerate it.
+This skill is squarely external — all targets are public registries / public GitHub. If the engagement involves the client's internal artifact registry (internal Nexus, JFrog, Sonatype), that is internal infrastructure and OUT OF SCOPE for this external-only skill (confirm the engagement scope if in doubt). Report internal-registry URL exposure as a finding; do not attempt to enumerate it.
 
 ---
 
@@ -568,6 +603,15 @@ Twelve well-documented public cases, mapped to the recon surface above. Each ent
 
 ---
 
+## Pitfalls
+- **Assuming all third-party dependencies are in scope** — check the bug bounty scope. Third-party services (Zendesk, Intercom, statuspage) are typically out of scope.
+- **Dependency version without CVE** — knowing a library version without a matching exploitable CVE is informational.
+- **npm/pip package typosquatting without proof** — demonstrating a typosquatted package EXISTS doesn't prove the target uses it. Need package.json/requirements.txt evidence.
+- **CI/CD supply chain vs runtime supply chain** — poisoning a build-time dependency and a runtime dependency have different impacts. Distinguish them.
+- **Vendor email compromise as supply chain** — compromising a vendor's email to send malicious updates is different from code dependency attacks. Both are supply chain but different TTPs.
+
+---
+
 ## Verification
 
 1. **Dependency scanning** — confirm tool availability:
@@ -576,16 +620,6 @@ Twelve well-documented public cases, mapped to the recon surface above. Each ent
    pip3 show pip-audit 2>/dev/null | grep -q "Name:" && echo "PASS: pip-audit installed" || echo "NOTE: pip-audit not installed"
    ```
 All tests verify supply chain readiness.
-
----
-
-## Pitfalls
-- **Assuming all third-party dependencies are in scope** — check the bug bounty scope. Third-party services (Zendesk, Intercom, statuspage) are typically out of scope.
-- **Dependency version without CVE** — knowing a library version without a matching exploitable CVE is informational.
-- **npm/pip package typosquatting without proof** — demonstrating a typosquatted package EXISTS doesn't prove the target uses it. Need package.json/requirements.txt evidence.
-- **CI/CD supply chain vs runtime supply chain** — poisoning a build-time dependency and a runtime dependency have different impacts. Distinguish them.
-- **Vendor email compromise as supply chain** — compromising a vendor's email to send malicious updates is different from code dependency attacks. Both are supply chain but different TTPs.
-
 
 ---
 

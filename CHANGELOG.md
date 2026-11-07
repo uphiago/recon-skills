@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-07 — Catalog quality sweep
+
+- Repaired broken snippets catalog-wide (unclosed heredocs and quotes,
+  unfinished payloads, unquoted placeholders, `grep -E` on PCRE patterns).
+- Replaced cosmetic self-test Verification blocks with evidence checklists.
+- Normalized section order (Pitfalls before Verification), removed duplicated
+  trigger sections, and sharpened generic When-to-Use text.
+- Defined `TARGET`/`OUTPUT_DIR` in How-to-Run blocks, expanded portable
+  platform declarations, and consolidated duplicate skills into owners.
+
 ## 2026-07-29 — Methodology and portability review
 
 - Reframed the catalog around external web, API, authentication, and focused

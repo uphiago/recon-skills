@@ -4,9 +4,39 @@ description: Hunt ASP.NET-specific surface — ViewState deserialization (signed
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [aspnet, hunt, redteam, web]
+platforms: [linux]
+metadata:
+  tags: [aspnet, hunt, redteam, web]
+  category: redteam
 ---
+
+## When to Use
+
+- The stack is ASP.NET/WebForms/WCF, or responses expose `__VIEWSTATE`, `.aspx`, `trace.axd`, or `elmah.axd`.
+- You need ViewState/machineKey preconditions, parser differentials, or request-validator bypasses.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ysoserial`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.example/page.aspx" \
+  --data "__VIEWSTATE=AAAA&__VIEWSTATEGENERATOR=AAAA"
+# Inspect body for:
+#  - "Validation of viewstate MAC failed" → confirms signed ViewState
+#  - "The state information is invalid for this page" → confirms ALTERNATE parser path
+#  - "Version Information: Microsoft .NET Framework Version:X.X.XXXXX" → exact patch level
+#  - "Microsoft.SharePoint.Client.ServerStub..." → SharePoint farm
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -271,34 +301,6 @@ Before writing the report, confirm:
 
 ---
 
-## Verification
-
-Run this self-test to confirm ASP.NET hunting readiness:
-
-1. **ViewState detection** — confirm __VIEWSTATE pattern recognition:
-   ```bash
-   echo '<input type="hidden" name="__VIEWSTATE" value="dDwtMTc5MjU3NjY0Mzt0PDtsPGk8MT47PjtsPHQ8O2w8aTwxPjs+O2w8dDw7bDxpPDE+Oz47bDx0PDtsPGk8MT47PjtAPDEyMzQ1Njc4OTA7Pj47Oz47Pj47Pj47Pg==" />' | grep -q "__VIEWSTATE" && echo "PASS: ViewState pattern detected" || echo "FAIL"
-   ```
-
-2. **ViewState encryption check** — confirm encrypted-vs-signed differentiation:
-   ```bash
-   echo '__VIEWSTATEENCRYPTED=""' | grep -q 'VIEWSTATEENCRYPTED=""' && echo "PASS: signed-only recognized" || echo "FAIL"
-   ```
-
-3. **trace.axd probe syntax** — confirm the probe would work:
-   ```bash
-   echo "trace.axd" | grep -q "trace.axd" && echo "PASS: trace.axd path syntax correct" || echo "FAIL"
-   ```
-
-4. **Telerik RAU endpoint syntax** — confirm the Telerik handler path:
-   ```bash
-   echo "/Telerik.Web.UI.WebResource.axd?type=rau" | grep -q "rau" && echo "PASS: Telerik RAU path syntax correct" || echo "FAIL"
-   ```
-
-All 4 tests verify the ASP.NET surface detection capability.
-
----
-
 ## Pitfalls
 
 - **Confusing signed-only ViewState with encrypted ViewState** — `__VIEWSTATEENCRYPTED=""` or absent means signed-only. This is a primitive, not RCE. Full RCE requires machineKey recovery.
@@ -309,6 +311,14 @@ All 4 tests verify the ASP.NET surface detection capability.
 - **SharePoint ToolPane accessible anonymously but FormDigest required** — reachable ToolPane is a precondition, not the bug. Need the full chain: ToolPane + anonymous FormDigest + signed-only ViewState + machineKey.
 - **Telerik version from JS bundle != exploitable** — the JS bundle version is the client-side library version, not the server-side Telerik DLL. Verify the server version via `WebResource.axd` response headers.
 - **customErrors mode="On" handling** — stack traces hidden by customErrors may still leak via parser-level exceptions below the handler layer. Test malformed Content-Length, oversized ViewState, and encoding errors.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

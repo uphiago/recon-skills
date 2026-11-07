@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, dnsx, httpx
-tags: [recon, ASN, CIDR, IP-range, TLD, reverse-DNS, infrastructure]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - origin-ip-discovery
-  - vhost-enumeration
-  - port-mass-scan
+metadata:
+  tags: [recon, ASN, CIDR, IP-range, TLD, reverse-DNS, infrastructure]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - origin-ip-discovery
+    - vhost-enumeration
+    - port-mass-scan
 ---
 
 # ASN Infrastructure Mapping
@@ -32,6 +33,16 @@ Map an organization's entire IP infrastructure by pivoting from domain to ASN (A
 - `terminal` whois, dnsx, mapcidr, httpx, and asnmap.
 - The target domain and/or a known IP belonging to the organization.
 - Shodan API key (optional, for deeper OSINT).
+
+## How to Run
+
+```bash
+# Start: domain → IP → ASN → CIDR ranges
+IP=$(dig target.com +short | head -1)
+ASN=$(whois $IP | grep -i "origin\|OriginAS" | awk '{print $NF}' | head -1)
+echo "ASN: $ASN"
+whois -h whois.radb.net -- "-i origin $ASN" | grep -Eo "([0-9.]+){4}/[0-9]+" | sort -u
+```
 
 ## Quick Detection
 
@@ -147,7 +158,7 @@ done > ip_to_domain_map.txt
 # Identify shared infrastructure (one IP serving multiple domains — CDN or reverse proxy)
 awk '{if (NF > 2) print}' ip_to_domain_map.txt > shared_infra.txt
 
-# Scan non-web ports on ALL discovered IPs  
+# Scan non-web ports on ALL discovered IPs
 naabu -l all_ips.txt -p - -rate 1000 -c 50 -exclude-ports 80,443 -o all_services.txt
 ```
 
@@ -180,6 +191,8 @@ done
 3. TLD expansion found live domains on sibling TLDs.
 4. Web service scan identified unique applications on non-standard ports.
 5. Map the full infrastructure: domains → IPs → services → vulnerabilities.
+
+---
 
 ## Related Skills
 

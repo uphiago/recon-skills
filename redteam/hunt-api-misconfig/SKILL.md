@@ -4,9 +4,35 @@ description: "Hunt API security misconfiguration — mass assignment, JWT attack
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [api, misconfiguration, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [api, misconfiguration, hunt, redteam]
+  category: redteam
 ---
+
+## When to Use
+
+- Hunting API misconfigs, JWT flaws, mass-assignment, prototype pollution.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `httpx`, `jq`, `kiterunner`, `python3`, `shodan`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test: reflected origin + credentials
+curl --max-time 30 --connect-timeout 10 -s -I -H "Origin: https://evil.com" https://target.com/api/user/me
+# If: Access-Control-Allow-Origin: https://evil.com + Access-Control-Allow-Credentials: true
+# → CRITICAL: attacker reads credentialed responses
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 12. API SECURITY MISCONFIGURATION
 
@@ -262,7 +288,7 @@ curl --max-time 30 --connect-timeout 10 -X POST "https://target.com/api/users/ba
 ```bash
 # Register multiple API keys / accounts, rotate across them:
 for key in "key1" "key2" "key3" "key4" "key5"; do
-  curl --max-time 30 --connect-timeout 10 -s -H "X-API-Key: *** "https://target.com/api/resource"
+  curl --max-time 30 --connect-timeout 10 -s -H "X-API-Key: ***" "https://target.com/api/resource"
 done
 # For JWT-based APIs, request multiple short-lived tokens from different sessions
 ```
@@ -363,6 +389,19 @@ done
 
 ---
 
+## Pitfalls
+
+- **Mass assignment without side effects** — sending `{is_admin:true}` and getting 200 doesn't prove the field was applied. Verify by reading back the profile and confirming the escalated value persists.
+- **JWT alg:none only on test servers** — many production JWKS endpoints enforce algorithm validation. Test with the actual production token endpoint, not localhost.
+- **Prototype pollution without a sink** — polluting `__proto__` proves nothing unless you can reach a gadget (RCE sink, XSS sink, or auth bypass via polluted comparison). Map the pollution to a specific exploitable side effect.
+- **HTTP verb tampering on read-only endpoints** — bypassing CSRF via GET on a read endpoint is not exploitable. Need a state-changing action (POST/PUT/DELETE) that accepts GET.
+- **CORS confusion** — `Access-Control-Allow-Origin: *` without credentials is NOT exploitable. Only origin-reflection + credentials matters.
+- **Rate limit bypass via header aliases** — `X-Forwarded-For: 127.0.0.1` may bypass rate limits but also bypass geo-restrictions and IP-based auth. Test both outcomes.
+- **Shadow APIs on different port/base path** — the production API at `/api/v2/` may be guarded while `/api/` on the same host isn't. Always probe for legacy/unversioned paths.
+- **PDO emulated prepares crash != RCE** — a 502 on malformed multibyte input confirms emulated prepares but not exploitability. Need a full deserialization/injection chain.
+
+---
+
 ## Verification
 
 Run this self-test to confirm API misconfig hunting readiness:
@@ -402,19 +441,6 @@ All 4 tests verify the core API misconfig probing capability.
 
 ---
 
-## Pitfalls
-
-- **Mass assignment without side effects** — sending `{is_admin:true}` and getting 200 doesn't prove the field was applied. Verify by reading back the profile and confirming the escalated value persists.
-- **JWT alg:none only on test servers** — many production JWKS endpoints enforce algorithm validation. Test with the actual production token endpoint, not localhost.
-- **Prototype pollution without a sink** — polluting `__proto__` proves nothing unless you can reach a gadget (RCE sink, XSS sink, or auth bypass via polluted comparison). Map the pollution to a specific exploitable side effect.
-- **HTTP verb tampering on read-only endpoints** — bypassing CSRF via GET on a read endpoint is not exploitable. Need a state-changing action (POST/PUT/DELETE) that accepts GET.
-- **CORS confusion** — `Access-Control-Allow-Origin: *` without credentials is NOT exploitable. Only origin-reflection + credentials matters.
-- **Rate limit bypass via header aliases** — `X-Forwarded-For: 127.0.0.1` may bypass rate limits but also bypass geo-restrictions and IP-based auth. Test both outcomes.
-- **Shadow APIs on different port/base path** — the production API at `/api/v2/` may be guarded while `/api/` on the same host isn't. Always probe for legacy/unversioned paths.
-- **PDO emulated prepares crash != RCE** — a 502 on malformed multibyte input confirms emulated prepares but not exploitability. Need a full deserialization/injection chain.
-
----
-
 ## Related Skills & Chains
 
 ### Phase X — PDO Emulated Prepares Risk
@@ -441,4 +467,3 @@ When emulated prepares are active, treat ALL user input as potentially binary-un
 - **`hunt-subdomain`** — CORS regex with wildcard subdomain trusts a takeoverable host. Chain primitive: CORS allowlist `*.target.com` + subdomain takeover → attacker-controlled origin reads credentialed API responses.
 - **`security-arsenal`** — Load the JWT Attack Payloads section (alg=none, kid path traversal, JWK injection, embedded JWK) and the Mass-Assignment Field Wordlist (`is_admin`, `role`, `verified`, `permissions`, `org_id`, `tenant_id`).
 - **`triage-validation`** — Apply the Server-Policy-vs-State gate: a permissive CORS header alone is informational; demonstrate actual cross-origin credentialed read of sensitive data before reporting.
-

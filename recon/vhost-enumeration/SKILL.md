@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, ffuf, dnsx
-tags: [recon, vhost, virtual-host, Host-header, fuzzing, SSL, PTR]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - origin-ip-discovery
-  - web-enumeration
+metadata:
+  tags: [recon, vhost, virtual-host, Host-header, fuzzing, SSL, PTR]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - origin-ip-discovery
+    - source-leak-hunt
 ---
 
 # Virtual Host Enumeration
@@ -31,6 +32,16 @@ Discover hidden virtual hosts on IP addresses by fuzzing the `Host` header. Many
 - `terminal` with curl, ffuf, dnsx, and httpx.
 - A DNS wordlist for hostname fuzzing.
 - A list of target IP addresses.
+
+## How to Run
+
+```bash
+# Basic VHOST fuzz on a single IP
+ffuf -u http://TARGET_IP \
+  -w /path/to/wordlist.txt \
+  -H "Host: FUZZ.target.com" \
+  -fs 0 -mc 200,301,302,401,403
+```
 
 ## Quick Detection
 
@@ -106,13 +117,13 @@ echo "http://dev.target.com" | httpx -silent
 # Extract hostnames from SSL certificate
 echo | openssl s_client -connect TARGET_IP:443 -servername target.com 2>/dev/null \
   | openssl x509 -noout -text \
-  | grep -Eo 'DNS:[^,\s]+' | cut -d: -f2 | sort -u
+  | grep -Po 'DNS:[^,\s]+' | cut -d: -f2 | sort -u
 
 # Batch: extract hostnames from all discovered IPs
 cat unique_ips.txt | while read ip; do
   echo | timeout 5 openssl s_client -connect $ip:443 2>/dev/null \
     | openssl x509 -noout -text 2>/dev/null \
-    | grep -Eo 'DNS:[^,\s]+' | cut -d: -f2 | sort -u >> ssl_hostnames.txt
+    | grep -Po 'DNS:[^,\s]+' | cut -d: -f2 | sort -u >> ssl_hostnames.txt
   sleep 0.5
 done
 
@@ -159,8 +170,10 @@ done | sort
 4. SSL certificate SAN field confirms the hostname belongs on this server.
 5. Take a screenshot and confirm it's a distinct application or service.
 
+---
+
 ## Related Skills
 
 - **`subdomain-enumeration`** — Generate the DNS wordlist and existing subdomains.
 - **`origin-ip-discovery`** — Find the origin IPs that need VHOST scanning.
-- **`web-enumeration`** — Once VHOSTs are found, fuzz directories and endpoints.
+- **`source-leak-hunt`** — Once VHOSTs are found, fuzz directories and endpoints.

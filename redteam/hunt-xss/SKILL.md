@@ -4,8 +4,10 @@ description: "Hunting skill for xss vulnerabilities. Built from 174 public bug b
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [xss, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [xss, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
@@ -40,6 +42,24 @@ grep -rEn 'dangerouslySetInnerHTML|innerHTML|outerHTML|v-html|\[innerHTML\]|\{@h
 # If NONE appear near the reflected field → NOT exploitable XSS
 # If found → verify the specific field reaches that sink
 ```
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/search?q=XSSCANARY" | grep -i "XSSCANARY"
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/page?utm_source=XSSCANARY" | grep -i "XSSCANARY"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -439,36 +459,20 @@ Cross-references:
 
 ---
 
-## Verification
-
-Run this self-test to confirm xss hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-xss" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
 - **Self-XSS** — XSS that only affects the attacker's own session is informational. Need stored XSS or reflected XSS affecting other users.
 - **XSS without HttpOnly bypass** — if the session cookie is HttpOnly, XSS can't steal it. Need to demonstrate impact via other means (CSRF token theft, keylogging, page modification).
 - **DOM XSS without exploitable sink** — `location.hash` reaching `innerHTML` is exploitable. `location.hash` reaching `console.log` is not.
 - **CSP bypass without XSS** — finding a CSP bypass technique is not a vulnerability without working XSS to bypass. Distinguish the two.
 - **MIME-type confusion** — uploading HTML as image/png that renders as HTML is MIME confusion, not classic XSS. May be blocked by X-Content-Type-Options.
+
+---
+
+## Verification
+
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

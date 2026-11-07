@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, gitlab, source-code, secrets, internal-IPs]
-category: recon
-related_skills:
-  - js-secrets-extraction
-  - source-leak-hunt
-  - api-noauth-hunt
+metadata:
+  tags: [recon, gitlab, source-code, secrets, internal-IPs]
+  category: recon
+  related_skills:
+    - js-secrets-extraction
+    - source-leak-hunt
+    - api-noauth-hunt
 ---
 
 # GitLab Public Recon Skill

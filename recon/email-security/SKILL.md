@@ -4,8 +4,10 @@ description: "DMARC/SPF/DKIM check, email spoofing, SMTP test, and security head
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: recon
-tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
+platforms: [linux]
+metadata:
+  tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
+  category: recon
 ---
 
 # Email Security -- DMARC, SPF, DKIM
@@ -14,8 +16,35 @@ tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
 
 - During passive reconnaissance (Phase 1)
 - After initial DNS enumeration
-- DMARC p=none means the domain can be totally spoofed
+- DMARC p=none means DMARC enforcement is off; actual spoofability still depends on SPF/DKIM and the receiver's local policy
 - Critical for identifying phishing/business email compromise risks
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `dig`, `swaks`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# SPF
+dig +short TXT $target | grep "v=spf1"
+
+# DMARC
+dig +short TXT _dmarc.$target
+
+# DKIM (common selector: google)
+dig +short TXT google._domainkey.$target
+
+# MX
+dig +short MX $target
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## DMARC/SPF/DKIM Check Commands
 
@@ -76,11 +105,11 @@ With `v=spf1 include:amazonses.com ~all`:
 2. Configure SES with your own domain (verified)
 3. Send email with From: admin@target.com
 4. SPF PASSES (because of include:amazonses.com)
-5. DMARC p=none -- provider delivers normally
+5. DMARC p=none -- the receiver applies no DMARC policy; delivery then depends on SPF/DKIM and local filters
 
 ## Real-World Cases
 
-**Real-world case (CRITICAL)**: Political party -- DMARC p=none on both domains (DOMAIN_PLACEHOLDER_A, DOMAIN_PLACEHOLDER_B). SPF with include:amazonses.com (any SES account can send as the domain). Total email spoofing.
+**Field observation (reported as CRITICAL after delivery proof)**: an organization with DMARC p=none on both domains and SPF `include:amazonses.com`, where a message spoofed via a separate SES account was delivered to a controlled inbox. The inbox-delivery evidence, not the p=none record alone, justified the severity.
 
 ## Pitfalls
 
@@ -93,8 +122,13 @@ With `v=spf1 include:amazonses.com ~all`:
 ## Verification
 
 ```bash
-# Verify email spoofing is possible
-# Send test email and check headers:
+# Check the DMARC policy first
 dig +short TXT _dmarc.target.com
-# If p=none -> confirmed spoofable
+# p=none means no DMARC enforcement — it does NOT by itself prove spoofing.
+# Proof = a spoofed message actually delivered to an inbox you control:
+swaks --to you@your-inbox.example --from ceo@target.com \
+  --server <an-smtp-relay-you-control-or-localhost> --header-From "ceo@target.com"
+# Then inspect the delivered message's Authentication-Results header:
+# dmarc=none or dmarc=pass with an attacker-controlled source = confirmed.
+# Reject/quarantine or spam-folder delivery = not demonstrated.
 ```

@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, dnsx, python3, subfinder
-tags: [recon, origin-ip, CDN, WAF, bypass, Cloudflare, favicon, DNS]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - vhost-enumeration
-  - port-mass-scan
+metadata:
+  tags: [recon, origin-ip, CDN, WAF, bypass, Cloudflare, favicon, DNS]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - vhost-enumeration
+    - port-mass-scan
 ---
 
 # Origin IP Discovery
@@ -31,6 +32,16 @@ Discover the real server IP behind CDN/WAF protections (Cloudflare, Akamai, Fast
 - `terminal` with curl, python3, and shodan CLI.
 - Shodan API key: `shodan init <KEY>`.
 - Target favicon file or URL.
+
+## How to Run
+
+```bash
+# Check Cloudflare presence
+curl --max-time 30 --connect-timeout 10 -sI "https://target.com" | grep -i "cf-ray\|server: cloudflare"
+
+# If Cloudflare detected, check for common origin leaks
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/cdn-cgi/trace" | grep -E "ip=|colo="
+```
 
 ## Quick Detection
 
@@ -110,7 +121,7 @@ shodan search "ssl.cert.subject.cn:target.com" --fields ip_str,port,org
 
 ```bash
 # Extract Analytics ID from target pages
-curl --max-time 30 --connect-timeout 10 -s "https://target.com" | grep -Eo '(?:UA-|G-|GTM-)[A-Z0-9]+'
+curl --max-time 30 --connect-timeout 10 -s "https://target.com" | grep -Po '(?:UA-|G-|GTM-)[A-Z0-9]+'
 
 # Find all domains sharing the same GA ID
 curl --max-time 30 --connect-timeout 10 -s "https://api.hackertarget.com/analyticslookup/?q=UA-XXXXXXXX-X"
@@ -124,7 +135,7 @@ cat subdomains.txt | analyticsrelationships
 
 ```bash
 # Direct IP in page source
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo '\b(?:\d{1,3}\.){3}\d{1,3}\b' | sort -u
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Po '\b(?:\d{1,3}\.){3}\d{1,3}\b' | sort -u
 
 # DNS CNAME chain — may expose origin
 dig target.com ANY +noall +answer
@@ -134,7 +145,7 @@ dig www.target.com CNAME +short
 dig target.com MX +short
 
 # SPF records — may contain non-CDN IPs
-dig target.com TXT +short | grep -Eo '\b(?:\d{1,3}\.){3}\d{1,3}\b'
+dig target.com TXT +short | grep -Po '\b(?:\d{1,3}\.){3}\d{1,3}\b'
 
 # Subdomain with different IP pattern
 subfinder -d target.com -silent | dnsx -silent -a -resp-only | sort -u > all_ips.txt
@@ -174,6 +185,8 @@ naabu -host ORIGIN_IP -p - -rate 2000
 2. HTTPS request to origin IP with `Host: target.com` returns the same page content.
 3. Open ports on origin differ from CDN-proxied ports (origin exposes SSH, MySQL, etc.).
 4. SSL certificate on the origin IP lists the target domain in SAN.
+
+---
 
 ## Related Skills
 

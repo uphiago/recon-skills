@@ -6,11 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, HTTP2, headers, fingerprint, impersonation, browser, JA4]
-category: recon
-related_skills:
-  - tls-fingerprint-impersonation
-  - stealth-browser-launch
+metadata:
+  tags: [recon, HTTP2, headers, fingerprint, impersonation, browser, JA4]
+  category: recon
+  related_skills:
+    - tls-fingerprint-impersonation
+    - stealth-browser-launch
+    - evasion-stack-guide
 ---
 
 # HTTP/2 Header Impersonation
@@ -31,6 +33,34 @@ Spoof HTTP/2 SETTINGS frames, pseudo-header ordering, and browser-specific HTTP 
 - `pip install impit` (includes HTTP/2 impersonation via patched h2 library).
 - Or standalone: use the header lists below to configure curl/httpx manually.
 
+## How to Run
+
+```bash
+# Compare default client headers with a browser profile
+export TARGET="https://target.com"
+
+python3 - <<'PY'
+import os
+import requests
+
+url = os.environ["TARGET"]
+default = requests.get(url, timeout=15)
+browser = requests.get(url, timeout=15, headers={
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-User": "?1",
+    "Sec-Fetch-Dest": "document",
+})
+print(f"default: {default.status_code} {len(default.content)}b")
+print(f"browser: {browser.status_code} {len(browser.content)}b")
+if default.status_code != browser.status_code or len(default.content) != len(browser.content):
+    print("DIFFERENTIAL — header-based detection likely")
+PY
+```
+
 ## Quick Detection
 
 ```bash
@@ -46,7 +76,7 @@ print(f'Default: {r1.status_code}')
 
 # Browser-like headers
 r2 = requests.get('https://target.com', headers={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[REDACTED_IP] Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -89,14 +119,14 @@ For curl/httpx without impit, configure headers manually to match browser profil
 
 ```bash
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com" \
-  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[REDACTED_IP] Safari/537.36" \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36" \
   -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" \
   -H "Accept-Language: en-US,en;q=0.9" \
   -H "Accept-Encoding: gzip, deflate, br, zstd" \
   -H "sec-ch-ua: \"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not?A_Brand\";v=\"99\"" \
   -H "sec-ch-ua-arch: \"x86\"" \
   -H "sec-ch-ua-bitness: \"64\"" \
-  -H "sec-ch-ua-full-version-list: \"Chromium\";v=\"142.0.7444.176\", \"Google Chrome\";v=\"142.0.7444.176\", \"Not?A_Brand\";v=\"[REDACTED_IP]\"" \
+  -H "sec-ch-ua-full-version-list: \"Chromium\";v=\"142.0.7444.176\", \"Google Chrome\";v=\"142.0.7444.176\", \"Not?A_Brand\";v=\"99.0.0.0\"" \
   -H "sec-ch-ua-mobile: ?0" \
   -H "sec-ch-ua-model: \"\"" \
   -H "sec-ch-ua-platform: \"Windows\"" \
@@ -230,6 +260,8 @@ Browser Accept-Encoding values differ significantly:
 2. For HTTP/2 SETTINGS verification, use `https://nghttp2.org/httpbin/headers` or a local nghttp2 server.
 3. Compare response size/content between browser-impostor and real browser — identical responses indicate the headers are accepted.
 4. Check Cloudflare `cf-ja4` header — it encodes HTTP/2 fingerprint along with TLS.
+
+---
 
 ## Related Skills
 

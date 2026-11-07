@@ -4,8 +4,10 @@ description: "Analyze JS bundles and source maps for hardcoded secrets, API keys
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: recon
-tags: [js, secrets, API-key, jwt, source-map, recon]
+platforms: [linux]
+metadata:
+  tags: [js, secrets, API-key, jwt, source-map, recon]
+  category: recon
 ---
 
 # JS Bundle & Source Map Analysis -- Secret Extraction
@@ -16,6 +18,29 @@ tags: [js, secrets, API-key, jwt, source-map, recon]
 - When you find modern SPA (React, Angular, Vue)
 - When target uses Firebase, Supabase, Auth0
 - Higher yield than directory scanning on many targets
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`, `waybackurls`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s "https://target.com" > index.html
+grep -Eo 'src="[^"]*\.js"' index.html | cut -d'"' -f2 | while read js; do
+  curl --max-time 30 --connect-timeout 10 -s "https://target.com$js" > "$(basename $js)"
+done
+
+# Search for secrets in bundles
+grep -rEn "(apiKey|api_key|API_KEY|token|secret|password|clientId|client_id|auth0|firebase|supabase)[\"'\"]?[[:space:]]*[:=][[:space:]]*[\"'\'][^\"'\']{8,}" *.js
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Why Analyze JS Bundles
 
@@ -259,17 +284,17 @@ curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo 'src
 for chunk in chunks/*.js; do
   echo "=== $chunk ==="
   # eval / new Function (arbitrary code execution)
-  grep -Eon 'eval\s*\(|new\s+Function\s*\(' "$chunk"
+  grep -Pon 'eval\s*\(|new\s+Function\s*\(' "$chunk"
   # Hardcoded API keys/secrets
-  grep -Eon '(?:api[_-]?key|secret|token|password|bearer)\s*[:=]\s*["\x27][^"\x27]{8,}' "$chunk"
+  grep -Pon '(?:api[_-]?key|secret|token|password|bearer)\s*[:=]\s*["\x27][^"\x27]{8,}' "$chunk"
   # postMessage without origin check
-  grep -Eon 'postMessage\s*\(' "$chunk"
+  grep -Pon 'postMessage\s*\(' "$chunk"
   # Prototype pollution patterns
   grep -Eon '__proto__|constructor\.prototype' "$chunk"
   # Debug/test code in production
   grep -Eoin 'debug|test|staging|localhost' "$chunk"
   # Client-trusted flags
-  grep -Eon '(?:isAdmin|isVip|isPremium|isModerator|role)\s*[=:]\s*true' "$chunk"
+  grep -Pon '(?:isAdmin|isVip|isPremium|isModerator|role)\s*[=:]\s*true' "$chunk"
 done > ai_review_findings.txt
 
 # 3. Review findings — each is a CANDIDATE, not confirmed

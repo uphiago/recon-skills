@@ -4,8 +4,10 @@ description: "Hunting skill for csrf vulnerabilities. Built from 15 public bug b
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [csrf, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [csrf, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use
@@ -44,6 +46,27 @@ Use when the target has any state-changing endpoint that a logged-in user can tr
 | Not set (default) | Treated as `Lax` in modern browsers |
 
 ---
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Capture a valid request, then replay without token
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/settings/email \
+  -H "Cookie: session=YOUR_SESSION" \
+  -d "email=attacker@evil.com" \
+  -v 2>&1 | grep -E "HTTP|location|error"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Crown Jewel Targets
 
@@ -177,7 +200,7 @@ curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/settings/e
 ```bash
 # Get token from session A
 TOKEN_A=$(curl --max-time 30 --connect-timeout 10 -s https://target.com/settings -H "Cookie: session=SESSION_A" \
-  | grep -Eo 'authenticity_token[^"]*value="\K[^"]+')
+  | grep -Po 'authenticity_token[^>]*value="\K[^"]+')
 
 # Use token A in session B's request
 curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/settings/update \
@@ -354,6 +377,16 @@ No Duende.BFF-direct CVE exists as of 2026-05. The three classes above are **des
 
 ---
 
+## Pitfalls
+
+- **CSRF on logout** — logout CSRF is informational at best. No real impact unless chained with session fixation.
+- **SameSite=Lax bypass assumptions** — Lax cookies are sent on top-level GET navigations. CSRF via form GET may still work.
+- **Anti-CSRF token without validation test** — removing the token and getting 200 doesn't prove missing validation. The endpoint may use a different mechanism (double-submit cookie, custom header).
+- **Content-Type bypass** — if the server only checks `Content-Type: application/json`, try `text/plain` with JSON body or form-encoded with JSON-like structure.
+- **CORS preflight bypass != CSRF** — bypassing the OPTIONS preflight for CORS doesn't automatically enable CSRF. Different attack classes.
+
+---
+
 ## Verification
 
 1. **CSRF form generation** — verify HTML form template:
@@ -365,17 +398,6 @@ No Duende.BFF-direct CVE exists as of 2026-05. The three classes above are **des
    echo "Set-Cookie: session=abc; SameSite=Lax" | grep -q "SameSite" && echo "PASS: SameSite recognized" || echo "FAIL"
    ```
 All tests verify CSRF probing.
-
----
-
-## Pitfalls
-
-- **CSRF on logout** — logout CSRF is informational at best. No real impact unless chained with session fixation.
-- **SameSite=Lax bypass assumptions** — Lax cookies are sent on top-level GET navigations. CSRF via form GET may still work.
-- **Anti-CSRF token without validation test** — removing the token and getting 200 doesn't prove missing validation. The endpoint may use a different mechanism (double-submit cookie, custom header).
-- **Content-Type bypass** — if the server only checks `Content-Type: application/json`, try `text/plain` with JSON body or form-encoded with JSON-like structure.
-- **CORS preflight bypass != CSRF** — bypassing the OPTIONS preflight for CORS doesn't automatically enable CSRF. Different attack classes.
-
 
 ---
 

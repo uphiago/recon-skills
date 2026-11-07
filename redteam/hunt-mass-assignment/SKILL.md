@@ -1,17 +1,18 @@
 ---
 name: hunt-mass-assignment
 description: Hunt mass assignment via sensitive field injection and ORM framework exploitation.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, mass-assignment, API, ORM, authorization, field-injection]
-related_skills:
-  - hunt-api-misconfig
-  - hunt-idor
-  - hunt-write-gap
+metadata:
+  tags: [redteam, mass-assignment, API, ORM, authorization, field-injection]
+  category: redteam
+  related_skills:
+    - hunt-api-misconfig
+    - hunt-idor
+    - hunt-write-gap
 ---
 
 # Mass Assignment Hunting
@@ -24,6 +25,22 @@ Hunt for mass assignment vulnerabilities where API endpoints blindly bind user-s
 - User profile updates, registration, checkout, or resource creation endpoints.
 - Framework ORMs (Rails ActiveRecord, Laravel Eloquent, Django ORM, Mongoose, Prisma) where bulk assignment is the default.
 - PATCH endpoints that accept sparse updates — may skip per-field authorization.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Inject sensitive fields into profile update
+curl --max-time 30 --connect-timeout 10 -sk -X PATCH "https://target.com/api/user/profile" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"test","isAdmin":true,"role":"admin"}'
+```
 
 ## Quick Detection
 
@@ -169,6 +186,8 @@ mutation UpdateProfile {
 3. Confirm the field change grants elevated access (e.g., access admin panel, view other users).
 4. Test with multiple naming conventions to rule out framework-level field rejection.
 5. Check batch and patch-format endpoints which may use different serializers.
+
+---
 
 ## Related Skills
 
