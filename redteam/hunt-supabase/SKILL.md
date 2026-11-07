@@ -141,7 +141,12 @@ for table in users profiles user_profiles customers orders products messages pos
   response=$(curl --max-time 30 --connect-timeout 10 -sk -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/$table?limit=1" \
     -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY")
   if [ "$response" = "200" ]; then
-    echo "[+] PUBLIC TABLE: $table"
+    # Row count without fetching rows: HEAD + Prefer: count=exact leaks the
+    # total via the Content-Range header even when row reads are limited
+    count=$(curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/$table?limit=0" \
+      -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
+      -H "Prefer: count=exact" -I 2>/dev/null | grep -i "content-range" | grep -Po '\d+(?=/\d+$)')
+    echo "[+] PUBLIC TABLE: $table (${count:-?} rows)"
     # Sample the data
     curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/$table?limit=2" \
       -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" | python3 -m json.tool | head -20

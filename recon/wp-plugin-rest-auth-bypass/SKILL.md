@@ -10,7 +10,8 @@ metadata:
   tags: [recon, wordpress, rest-api, auth-bypass, plugin-exploit, unauthorized-access, content-publishing]
   category: recon
   related_skills:
-    - firebase-supabase-attack
+    - hunt-firebase
+    - hunt-supabase
     - js-secrets-extraction
     - hunt-api-misconfig
     - source-leak-hunt

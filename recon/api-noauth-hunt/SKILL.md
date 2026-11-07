@@ -10,7 +10,8 @@ metadata:
   tags: [recon, API, no-auth, data-breach, CRUD]
   category: recon
   related_skills:
-    - firebase-supabase-attack
+    - hunt-firebase
+    - hunt-supabase
     - js-secrets-extraction
     - port-service-discovery
     - source-leak-hunt
@@ -29,7 +30,7 @@ explicit authorization immediately before execution.
 - Target has an API subdomain (api.target.com, backend.target.com).
 - JavaScript bundles reference internal API endpoints.
 - After `port-service-discovery` finds HTTP on unexpected ports.
-- After `firebase-supabase-attack` identifies backend APIs.
+- After `hunt-firebase` or `hunt-supabase` identifies backend APIs.
 
 ## Prerequisites
 

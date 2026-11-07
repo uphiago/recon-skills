@@ -12,7 +12,8 @@ metadata:
   related_skills:
     - hunt-xss
     - hunt-cloud-misconfig
-    - firebase-supabase-attack
+    - hunt-firebase
+    - hunt-supabase
     - js-secrets-extraction
 ---
 
@@ -175,5 +176,5 @@ echo "$OBJECT_URL" | grep -qE "^https?://(www\.)?target\.com" && echo "SAME-ORIG
 
 - **`hunt-xss`** — General XSS detection methodology and bypass tables.
 - **`hunt-cloud-misconfig`** — Public bucket discovery and cloud storage misconfigurations.
-- **`firebase-supabase-attack`** — Firebase/Supabase storage bucket exploitation.
+- **`hunt-firebase`** / **`hunt-supabase`** — Firebase/Supabase storage bucket exploitation.
 - **`js-secrets-extraction`** — Finding bucket names and storage endpoints in JavaScript bundles.

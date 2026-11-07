@@ -205,4 +205,4 @@ for url in re.findall(r'https?://[^\s\"<>]+\.(?:supabase\.co|amazonaws\.com|stor
 - **`hardcoded-credential-hunt`** — Finding passwords that unlock privileged steps within the flow.
 - **`hunt-write-gap`** — POST/PUT endpoints that accept writes without requiring read authentication.
 - **`hunt-idor`** — Exploiting insecure direct object references within flow session IDs.
-- **`firebase-supabase-attack`** — If uploads go to Supabase/Firebase storage.
+- **`hunt-firebase`** / **`hunt-supabase`** — If uploads go to Firebase/Supabase storage.

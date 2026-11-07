@@ -12,7 +12,8 @@ metadata:
   related_skills:
     - api-noauth-hunt
     - js-secrets-extraction
-    - firebase-supabase-attack
+    - hunt-firebase
+    - hunt-supabase
 ---
 
 # JWT Attack Skill
