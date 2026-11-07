@@ -10,7 +10,7 @@ metadata:
   tags: [redteam, prototype-pollution, XSS, RCE, JavaScript, Node.js, jQuery]
   category: redteam
   related_skills:
-    - hunt-nodejs
+    - hunt-frameworks
     - hunt-xss
     - hunt-api-misconfig
 ---
@@ -172,6 +172,6 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/prof
 
 ## Related Skills
 
-- **`hunt-nodejs`** — Node.js-specific vulnerabilities including prototype pollution in Express/Next.js.
+- **`hunt-frameworks`** — Node.js-specific vulnerabilities including prototype pollution in Express/Next.js.
 - **`hunt-xss`** — DOM XSS often exploitable through client-side prototype pollution.
 - **`hunt-api-misconfig`** — Object merge on request bodies without `hasOwnProperty` checks.

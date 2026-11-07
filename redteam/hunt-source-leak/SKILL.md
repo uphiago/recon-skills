@@ -464,7 +464,7 @@ trufflehog filesystem /tmp/repo/
 - hunt-wordpress — wp-config.php, debug.log, wp-content/uploads exposure
 - hunt-firebase — Firebase API key discovery in JS bundles
 - hunt-supabase — Supabase URL/key discovery in JS and .env
-- hunt-laravel — .env, storage/logs/laravel.log, APP_KEY exposure
+- hunt-frameworks — Laravel .env, storage/logs/laravel.log, APP_KEY exposure
 - hunt-nextjs — _next/static, buildId, source map analysis
 - security-arsenal — regex patterns for API keys, JWT, cloud credentials
 - offensive-osint — GitHub dorking, exposed repos, Shodan/Censys

@@ -106,11 +106,11 @@ OTP | /verify | /2fa | no-rate-limit        →  hunt-brute-force
 Set-Cookie session | PHPSESSID              →  hunt-session
 Active Directory | LDAP | OpenLDAP | ADFS  →  hunt-ldap
 __NEXT_DATA__ | /_next/ | buildId           →  hunt-nextjs
-X-Powered-By: Express | Node.js | .js stack →  hunt-nodejs
+X-Powered-By: Express | Node.js | .js stack →  hunt-frameworks
 postMessage | dangerouslySetInnerHTML        →  hunt-dom
 WebSocket | ws:// | socket.io               →  hunt-websocket
 gRPC | :50051 | application/grpc            →  hunt-grpc
-laravel_session | Ignition | Telescope       →  hunt-laravel
+laravel_session | Ignition | Telescope       →  hunt-frameworks
 X-Application-Context | Whitelabel | /actuator → hunt-springboot
 :6443 | :10250 | :2379 | kubectl            →  hunt-k8s
 .github/workflows | Jenkins | GitLab CI     →  hunt-cicd
@@ -135,7 +135,7 @@ tier 2  perimeter appliances     enterprise-vpn-attack, vmware-vcenter-attack
         (pre-auth RCE / direct internal foothold)
 tier 3  cloud / IAM              cloud-iam-deep, hunt-cloud-misconfig
         (credential → lateral movement)
-tier 4  app framework / stack    hunt-nextjs, hunt-nodejs, hunt-laravel,
+tier 4  app framework / stack    hunt-nextjs, hunt-frameworks,
         hunt-springboot, hunt-aspnet, hunt-sharepoint
 tier 5  protocol / class signals hunt-nosqli, hunt-lfi, hunt-deserialization,
         hunt-cors, hunt-host-header, hunt-open-redirect, hunt-grpc,
@@ -229,8 +229,8 @@ hunt-aspnet          hunt-sharepoint      hunt-ntlm-info
 hunt-lfi             hunt-nosqli          hunt-deserialization
 hunt-cors            hunt-host-header     hunt-open-redirect
 hunt-brute-force     hunt-session         hunt-ldap
-hunt-nextjs          hunt-nodejs          hunt-dom
-hunt-websocket       hunt-grpc            hunt-laravel
+hunt-nextjs          hunt-frameworks      hunt-dom
+hunt-websocket       hunt-grpc            hunt-frameworks
 hunt-springboot      hunt-k8s             hunt-cicd
 hunt-source-leak     hunt-tls-network
 ```
