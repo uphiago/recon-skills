@@ -553,25 +553,9 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/api/file?path=/proc/
 
 ### Verification
 
-Run this self-test to confirm nodejs hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-nodejs" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
+- Prototype pollution is confirmed when the polluted key appears server-side without being sent (see `hunt-prototype-pollution`), not from a reflection of the payload.
+- `trust proxy` spoofing is confirmed when the same action is allowed from a spoofed `X-Forwarded-For` and denied from the real IP.
+- Command-execution claims require observable output (`id`, OOB callback), not a 200.
 
 ---
 

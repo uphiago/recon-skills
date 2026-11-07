@@ -34,7 +34,6 @@ objective. Older skills are being migrated incrementally to the complete
 
 ```text
 recon-skills/
-|-- auth/       Authentication and SSO testing
 |-- chains/     Multi-step attack-path analysis
 |-- infra/      Infrastructure-focused techniques
 |-- meta/       Engagement planning and cross-skill workflows
