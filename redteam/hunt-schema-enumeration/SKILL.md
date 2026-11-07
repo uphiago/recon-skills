@@ -12,7 +12,7 @@ tags: [schema, enumeration, hunt, redteam]
 
 The target API returns structured error messages (JSON) that hint at valid table names, field names, or endpoint paths. This is the single most productive black-box recon technique for REST/GraphQL APIs — one fuzz request reveals the entire database schema.
 
-Most common on: PostgREST (Supabase), FastAPI (.NET), Zod (Next.js/Node), tRPC, GraphQL, and any framework with validation error details enabled in production.
+Most common on: PostgREST (Supabase), FastAPI (Python), Zod (Next.js/Node), tRPC, GraphQL, and any framework with validation error details enabled in production.
 
 ---
 
@@ -58,7 +58,7 @@ done
 
 Modern frameworks return detailed validation errors exposing all expected fields.
 
-### FastAPI (.NET/Go)
+### FastAPI (Python)
 ```bash
 # POST with empty body or wrong fields
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://api.target.com/endpoint" \

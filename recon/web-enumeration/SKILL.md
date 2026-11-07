@@ -64,7 +64,7 @@ for f in files:
         # Catch-all detection: SPA/commerce sites return HTML homepage for any path
         body_sample = r.text[:300].lower()
         is_catchall_html = any(marker in body_sample
-                               for marker in ['<!doctype', '<html', '<!DOCTYPE'])
+                               for marker in ['<!doctype', '<html'])
         if r.status_code == 200 and len(r.text) > 20:
             if is_catchall_html and len(r.text) > 500 and not any(
                 kw in body_sample for kw in

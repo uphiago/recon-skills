@@ -250,7 +250,7 @@ SIGNUP=$(curl --max-time 30 --connect-timeout 10 -sk -X POST "$SUPABASE_URL/auth
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.com","password":"TestPassword123!"}')
 
-ACCESS_TOKEN=*** "$SIGNUP" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token', 'NONE'))")
+ACCESS_TOKEN=$(echo "$SIGNUP" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token', 'NONE'))")
 
 # Use this JWT for authenticated API calls
 curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/users?select=*" \

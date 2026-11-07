@@ -254,18 +254,21 @@ TABLE="$3"  # from table discovery above
 
 echo "[*] CRUD testing on $TABLE"
 
+# Probe marker shared by INSERT/UPDATE/DELETE so each step targets the same row
+PROBE="rls_bypass_probe_$(date +%s)"
+
 # INSERT
 echo -n "  INSERT: "
 curl --max-time 30 --connect-timeout 10 -sk -X POST "$SUPABASE_URL/rest/v1/$TABLE" \
   -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
   -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-  -d '{"test":"rls_bypass_probe_'$(date +%s)'"}' \
+  -d "{\"test\":\"$PROBE\"}" \
   -o /dev/null -w "%{http_code}" 2>/dev/null
 echo ""
 
 # UPDATE (PATCH)
 echo -n "  UPDATE: "
-curl --max-time 30 --connect-timeout 10 -sk -X PATCH "$SUPABASE_URL/rest/v1/$TABLE?test=eq.RLS_BYPASS" \
+curl --max-time 30 --connect-timeout 10 -sk -X PATCH "$SUPABASE_URL/rest/v1/$TABLE?test=eq.$PROBE" \
   -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
   -H "Content-Type: application/json" -H "Prefer: return=minimal" \
   -d '{"test":"rls_updated"}' \
@@ -274,7 +277,7 @@ echo ""
 
 # DELETE
 echo -n "  DELETE: "
-curl --max-time 30 --connect-timeout 10 -sk -X DELETE "$SUPABASE_URL/rest/v1/$TABLE?test=eq.RLS_BYPASS" \
+curl --max-time 30 --connect-timeout 10 -sk -X DELETE "$SUPABASE_URL/rest/v1/$TABLE?test=eq.$PROBE" \
   -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
   -H "Prefer: return=minimal" \
   -o /dev/null -w "%{http_code}" 2>/dev/null

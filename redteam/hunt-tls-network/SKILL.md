@@ -130,8 +130,9 @@ for selector in default google mail k1 selector1 selector2 s1 s2 dkim; do
 done
 
 # --- Spoofability evaluation (heuristic only; PROOF is the swaks test below) ---
-SPF=$(dig +short  # Bulk: dnsx -silent -l file -a -resp-only TXT $TARGET | tr -d '"' | grep -i "v=spf1")
-DMARC=$(dig +short  # Bulk: dnsx -silent -l file -a -resp-only TXT _dmarc.$TARGET | tr -d '"' | grep -i "v=DMARC1")
+SPF=$(dig +short TXT "$TARGET" | tr -d '"' | grep -i "v=spf1")
+DMARC=$(dig +short TXT "_dmarc.$TARGET" | tr -d '"' | grep -i "v=DMARC1")
+# Bulk alternative: dnsx -silent -l targets.txt -txt -resp-only | grep -iE "v=spf1|v=DMARC1"
 
 # SPF "+all" / "all" with no qualifier = pass-everything = spoofable from any IP
 echo "$SPF" | grep -Eq '[+ ]all($|[^-~?])' && echo "[CRITICAL] SPF passes all senders (+all)"
@@ -224,7 +225,8 @@ This is the highest-impact item in the whole skill. A CNAME/A record pointing at
 ```bash
 # For each subdomain from CT logs, resolve the CNAME chain and check for a live origin
 while read sub; do
-  CNAME=$(dig +short  # Bulk: dnsx -silent -l file -a -resp-only CNAME "$sub" | head -1)
+  CNAME=$(dig +short CNAME "$sub" | head -1)
+  # Bulk: dnsx -silent -l file -cname -resp-only
   [ -z "$CNAME" ] && continue
   CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 --connect-timeout 8 "https://$sub/" 2>/dev/null)
   echo "$sub -> $CNAME  [http $CODE]"
