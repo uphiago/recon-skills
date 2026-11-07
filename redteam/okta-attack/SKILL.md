@@ -121,7 +121,7 @@ curl --max-time 30 --connect-timeout 10 -sk "https://<tenant>.okta.com/api/v1/se
 Some Okta orgs use email-as-username; others use `firstname.lastname` or employee-id. Test pattern guesses:
 ```
 firstname.lastname@target.com
-firstname_lastname@target.com  
+firstname_lastname@target.com
 flastname@target.com
 employeeID@target.com
 ```

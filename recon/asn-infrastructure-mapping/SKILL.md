@@ -158,7 +158,7 @@ done > ip_to_domain_map.txt
 # Identify shared infrastructure (one IP serving multiple domains — CDN or reverse proxy)
 awk '{if (NF > 2) print}' ip_to_domain_map.txt > shared_infra.txt
 
-# Scan non-web ports on ALL discovered IPs  
+# Scan non-web ports on ALL discovered IPs
 naabu -l all_ips.txt -p - -rate 1000 -c 50 -exclude-ports 80,443 -o all_services.txt
 ```
 

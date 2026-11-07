@@ -411,7 +411,7 @@ nuclei -u https://target.com \
   -p socks5://127.0.0.1:9050 \
   -t nuclei-templates/http/
 
-# httpx through Tor  
+# httpx through Tor
 cat alive_subs.txt | httpx -silent -proxy socks5://127.0.0.1:9050
 
 # curl through Tor

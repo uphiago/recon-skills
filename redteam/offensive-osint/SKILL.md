@@ -29,7 +29,7 @@ metadata:
 
 ```bash
    curl --max-time 30 --connect-timeout 10 -s "https://crt.sh/?q=example.com&output=json" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'{len(d)} certs found')" 2>/dev/null || echo "NOTE: crt.sh may be rate-limited"
-   
+
 ```
 
 ## Procedure

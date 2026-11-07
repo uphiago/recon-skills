@@ -112,14 +112,14 @@ for step in range(1, 20):
         "answer": "test response",
         "data": {"key": "value"}
     })
-    
+
     resp = r.json()
     print(f"Step {step}: {resp.get('currentStep', '?')} — {resp.get('message', '')[:80]}")
-    
+
     # Check for completion or blocked paths
     if resp.get("complete") or resp.get("error"):
         break
-    
+
     # Extract any requirements from the message
     if "required" in str(resp).lower() or "invalid" in str(resp).lower():
         print(f"  Validation: {json.dumps(resp)[:200]}")

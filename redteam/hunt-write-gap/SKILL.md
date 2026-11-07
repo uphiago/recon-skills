@@ -86,7 +86,7 @@ curl --max-time 30 --connect-timeout 10 -sk -X PATCH "${TARGET}/subscribers?user
   -H "Content-Type: application/json" \
   -d '{"tier_id":"<PRO_TIER_ID>","subscribed":true}'
 
-# Balance manipulation  
+# Balance manipulation
 curl --max-time 30 --connect-timeout 10 -sk -X POST "${TARGET}/movements" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \

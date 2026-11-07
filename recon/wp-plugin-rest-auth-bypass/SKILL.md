@@ -165,22 +165,22 @@ for ns in plugins:
     if r.status_code != 200:
         continue
     routes = r.json().get('routes', {})
-    
+
     for path, cfg in routes.items():
         methods = cfg.get('methods', [])
         for method in methods:
             if method not in ['POST', 'PUT', 'PATCH', 'DELETE']:
                 continue
-            
+
             # Test without auth
             r = requests.request(method, f"{BASE}/wp-json{path}", json={}, timeout=10)
-            
+
             if r.status_code == 200:
                 text = r.text.lower()
                 if 'forbidden' not in text and 'not allowed' not in text and 'rest_cannot' not in text:
                     print(f"\n⚠️ UNPROTECTED: [{method}] {ns}{path}")
                     print(f"   {r.text[:300]}")
-                    
+
                     # Try common payloads
                     for payload in [
                         {"title": "test", "content": "test", "status": "publish", "post_type": "page"},

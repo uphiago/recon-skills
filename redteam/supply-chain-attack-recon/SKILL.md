@@ -190,7 +190,7 @@ For each external public dependency the target uses:
 ```bash
 # Common typosquat patterns:
 # Original: "react-router-dom"
-# Typos: 
+# Typos:
 #   "react-router-doms" (extra s)
 #   "react-routter-dom" (double t)
 #   "react-rotuer-dom" (transposed)
@@ -229,20 +229,20 @@ for repo in $(gh repo list "$ORG" --limit 50 --json name --jq '.[].name'); do
   for wf in $workflows; do
     content=$(gh api "repos/$ORG/$repo/contents/.github/workflows/$wf" --jq '.content' 2>/dev/null | base64 -d 2>/dev/null)
     echo "=== $repo/$wf ==="
-    
+
     # High-risk patterns:
     # 1. pull_request_target (runs with secrets on PR from forks)
     echo "$content" | grep -E 'pull_request_target'
-    
+
     # 2. Untrusted context interpolation
     echo "$content" | grep -E '\$\{\{[^}]*github\.(event|head_ref|pull_request)[^}]*\}\}'
-    
+
     # 3. ${{ github.event.* }} into shell run blocks
     echo "$content" | grep -B1 -A2 'run:' | grep -E '\$\{\{ ?github\.event\.'
-    
+
     # 4. checkout of PR head with elevated perms
     echo "$content" | grep -E 'ref:.*pull_request|head_ref'
-    
+
     # 5. Self-hosted runner without isolation
     echo "$content" | grep -E 'runs-on:.*self-hosted'
 

@@ -131,7 +131,7 @@ Two bug classes: (a) **listener** trusts cross-origin data → drive a sink/priv
 ```bash
 # Find handlers and flag the ones with NO origin check
 grep -rnE "addEventListener\(\s*['\"]message['\"]|onmessage\s*=" recon/$TARGET/ --include="*.js" 2>/dev/null \
-  | grep -vE "\.origin\b" 
+  | grep -vE "\.origin\b"
 # Then for each, read +/- 20 lines: where does event.data go? (innerHTML/eval/location/token store)
 # Senders that leak: grep for postMessage(<secret>, '*')
 grep -rnE "postMessage\([^,]+,\s*['\"]\*['\"]\)" recon/$TARGET/ --include="*.js" 2>/dev/null

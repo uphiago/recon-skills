@@ -25,7 +25,7 @@ metadata:
 
 ```bash
    cat subdomains.txt | dnsx -a -cname -o resolved.txt
-   
+
 ```
 
 ## Procedure

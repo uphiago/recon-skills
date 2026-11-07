@@ -68,7 +68,7 @@ Stealer-log format includes package names like `*@com.<corp>.<app>` — extract 
 ### Brand permutation guesses (multi-brand conglomerate patterns)
 ```
 com.<brand>.app
-com.<brand>.mobile  
+com.<brand>.mobile
 com.<brand>.android
 com.<brand>connect.app
 in.<brand>.dealer
@@ -309,7 +309,7 @@ Java.perform(function() {
     var OkHttpClient = Java.use('okhttp3.OkHttpClient');
     var Request = Java.use('okhttp3.Request');
     var Call = Java.use('okhttp3.Call');
-    
+
     OkHttpClient.newCall.implementation = function(req) {
         var url = req.url().toString();
         var headers = req.headers().toString();

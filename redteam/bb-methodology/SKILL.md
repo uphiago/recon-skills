@@ -40,7 +40,7 @@ Master orchestrator for hunting sessions. Combines the 5-phase non-linear workfl
    suspect = 1527
    print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
    " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
-   
+
 ```
 
 ## Procedure

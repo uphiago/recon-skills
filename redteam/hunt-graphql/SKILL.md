@@ -184,7 +184,7 @@ curl --max-time 30 --connect-timeout 10 -X PUT https://api.target.com/repos/ORG/
   -H "Authorization: token ADMIN_TOKEN" \
   -d '{"permission":"admin"}'
 
-# Step 2: Revoke via REST  
+# Step 2: Revoke via REST
 curl --max-time 30 --connect-timeout 10 -X DELETE https://api.target.com/repos/ORG/REPO/teams/TEAM \
   -H "Authorization: token ADMIN_TOKEN"
 

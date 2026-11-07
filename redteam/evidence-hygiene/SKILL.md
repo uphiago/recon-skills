@@ -229,7 +229,7 @@ If the HAR captured cross-account data (e.g., during an IDOR demo), additionally
 
 ```jq
 (.response.content.text |= (
-  if . then 
+  if . then
     (fromjson? // .) | tostring | gsub("real.first.name.example"; "<REDACTED>")
   else . end
 ))

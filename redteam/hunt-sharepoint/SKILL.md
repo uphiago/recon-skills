@@ -37,7 +37,7 @@ metadata:
    # Method 3: /_layouts/15/start.aspx body
    curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_layouts/15/start.aspx" \
      | grep -oE "15\.[0-9]+\.[0-9]+\.[0-9]+|16\.[0-9]+\.[0-9]+\.[0-9]+"
-   
+
 ```
 
 ## Procedure

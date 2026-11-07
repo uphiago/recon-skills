@@ -79,7 +79,7 @@ done
 ```bash
 # Common patterns found in field:
 # - Game apps: hands, scores, sessions, players, items, inventory
-# - SaaS: subscriptions, subscribers, billing, invoices, teams, api_keys  
+# - SaaS: subscriptions, subscribers, billing, invoices, teams, api_keys
 # - Health: patients, appointments, assessments, prescriptions
 # - Gov: citizens, certificates, documents, protocols
 # - Finance: transactions, accounts, wallets, withdrawals, deposits

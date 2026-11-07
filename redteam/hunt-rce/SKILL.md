@@ -369,7 +369,7 @@ data:text/html,<script>alert(1)</script>
 ### Bypass: Path traversal filters
 ```
 # Basic filter bypass
-../           → ..%2F → %2e%2e%2f → ....// 
+../           → ..%2F → %2e%2e%2f → ....//
 # Double encoding
 %252e%252e%252f
 # Unicode normalization

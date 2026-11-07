@@ -250,7 +250,7 @@ done
    ```javascript
    // VULNERABLE: fetches any record
    const invoice = await Invoice.findById(req.params.id);
-   
+
    // SECURE: scopes to authenticated user
    const invoice = await Invoice.findOne({ _id: req.params.id, userId: req.user.id });
    ```
@@ -331,7 +331,7 @@ Before writing the report, answer all three:
    - Exact HTTP request documented with victim's ID ✓
    - 200 OK response showing victim's data (or confirmed state change) ✓
    - No reliance on pre-existing state or timing ✓
-   
+
    If you can't demo it reproducibly, do not file the report.
 
 ---

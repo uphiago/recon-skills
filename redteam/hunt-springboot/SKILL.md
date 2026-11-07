@@ -90,7 +90,7 @@ done
 BASE="https://$TARGET/actuator"
 
 # High-impact endpoints
-ENDPOINTS=("env" "heapdump" "threaddump" "mappings" "beans" "metrics" 
+ENDPOINTS=("env" "heapdump" "threaddump" "mappings" "beans" "metrics"
            "loggers" "info" "health" "configprops" "shutdown" "trace"
            "httptrace" "auditevents" "sessions" "scheduledtasks" "caches"
            "flyway" "liquibase" "refresh" "restart")
