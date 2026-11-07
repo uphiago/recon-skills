@@ -73,23 +73,23 @@ done < "$TARGETS"
 while read plugin version; do
   case "$plugin" in
     revslider)
-      [ "$(printf '%s\n' '6.6.20' "$version" | sort -V | head -1)" != "$version" ] && \
+      [ "$(printf '%s\n' '6.6.20' "$version" | sort -V | tail -1)" != "$version" ] && \
         [ "$version" != "6.6.20" ] && echo "  [!] Revslider < 6.6.20 → CVE-2024-2534 RCE"
-      [ "$(printf '%s\n' '6.5.8' "$version" | sort -V | head -1)" != "$version" ] && \
+      [ "$(printf '%s\n' '6.5.8' "$version" | sort -V | tail -1)" != "$version" ] && \
         [ "$version" != "6.5.8" ] && echo "  [!] Revslider < 6.5.8 → CVE-2022-2944 SQLi"
       ;;
     elementskit)
-      [ "$(printf '%s\n' '2.9.4' "$version" | sort -V | head -1)" != "$version" ] && \
+      [ "$(printf '%s\n' '2.9.4' "$version" | sort -V | tail -1)" != "$version" ] && \
         [ "$version" != "2.9.4" ] && echo "  [!] ElementsKit < 2.9.4 → CVE-2023-6851 SQLi, CVE-2023-6853 File Upload"
-      [ "$(printf '%s\n' '2.9.8' "$version" | sort -V | head -1)" != "$version" ] && \
+      [ "$(printf '%s\n' '2.9.8' "$version" | sort -V | tail -1)" != "$version" ] && \
         [ "$version" != "2.9.8" ] && echo "  [!] ElementsKit < 2.9.8 → CVE-2024-2117 XSS"
       ;;
     gravityforms)
-      [ "$(printf '%s\n' '2.8.2' "$version" | sort -V | head -1)" != "$version" ] && \
+      [ "$(printf '%s\n' '2.8.2' "$version" | sort -V | tail -1)" != "$version" ] && \
         [ "$version" != "2.8.2" ] && echo "  [!] Gravity Forms < 2.8.2 → CVE-2024-6115 PHP Object Injection"
       ;;
     jetpack)
-      [ "$(printf '%s\n' '13.1' "$version" | sort -V | head -1)" != "$version" ] && \
+      [ "$(printf '%s\n' '13.1' "$version" | sort -V | tail -1)" != "$version" ] && \
         [ "$version" != "13.1" ] && echo "  [!] Jetpack < 13.1 → CVE-2024-1782 SSRF"
       ;;
     contact-form-7)
