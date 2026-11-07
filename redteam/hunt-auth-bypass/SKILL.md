@@ -356,7 +356,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 10. **HackerOne — SAML signup domain enforcement bypass via control characters** ([H1 #2101076](https://hackerone.com/reports/2101076))
     - Subclass: partner-portal / SAML domain-binding bypass via unicode control characters
-    - Payload: new user sign-up at SAML-enforced org; append trailing control character (e.g., `\r`, ` `) to email → domain comparison normalises away, signup proceeds → unauthorised access to the org
+    - Payload: new user sign-up at SAML-enforced org; append trailing control character (e.g., `\r`, `\x00`) to email → domain comparison normalises away, signup proceeds → unauthorised access to the org
     - Root cause: inconsistent unicode/control-char normalisation between domain check and identity write
     - Year: 2024 — bounty awarded (amount undisclosed)
 
@@ -477,17 +477,6 @@ All 3 tests verify auth bypass probing capability.
 - **Header-based auth that conflicts with cookie auth** — if both `Authorization: Bearer` and session cookie are sent, one may override the other. Test each independently.
 - **Step-up auth bypass** — bypassing 2FA/MFA after initial login is the most common auth-bypass pattern. Test direct navigation to post-login URLs.
 
-
----
-
-## Related Skills & Chains
-
-- **`hunt-idor`** — Auth bypass without object-level access is half a finding; pair them. Chain primitive: legacy `/v1/users/{id}` route missing both auth middleware AND ownership check = unauthenticated cross-tenant data read via direct ID substitution → full PII dump from "I am nobody" starting position.
-- **`hunt-ato`** — Auth-bypass primitives feed the ATO funnel. Chain primitive: XMLRPC native-cred acceptance + no rate limit on `wp.getUsersBlogs` → credential-stuff with breach corpus from `hunt-misc` recon → `system.multicall` batches 1000 cred pairs per request → one valid pair = ATO bypassing the SSO + MFA the UI enforces.
-- **`hunt-sharepoint`** — The SP equivalent of the WordPress XMLRPC pattern lives here. Chain primitive: `/_vti_bin/Authentication.asmx` anonymous reachable + native Forms-auth credential accepted + zero rate limit = unlimited credential brute-force endpoint bypassing custom-branded `customlogin.aspx` protections → FedAuth cookie → full SharePoint farm access.
-- **`security-arsenal`** — Pull the JWT-attack payloads section (alg=none, kid path-traversal, JWK injection, RS256→HS256 key confusion) when JWT validation is the auth wall; pull the SAML signature-stripping section when the SP accepts unsigned assertions.
-- **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an "auth bypass" that only enumerates usernames or only reveals a 401-vs-403 differential. Username enumeration alone without lockout-amplification is consistently N/A or Informational on H1.
-
 ### Phase X — Auth Provider Confusion
 
 Some applications support multiple authentication providers (local DB, OAuth, LDAP, Apache HTTP Basic, SAML). Changing the `auth_provider` parameter to an alternative handler may skip password verification entirely. Confirmed on phpBB CVE-2026-48611 where `auth_provider=apache` bypassed password check.
@@ -535,8 +524,15 @@ After impersonating a privileged user, check if group/role management is availab
 # 2. Register new attacker account
 # 3. As admin, add attacker to ADMINISTRATORS group via UCP (no password needed)
 # 4. Login as attacker → full ACP access with known password
-
-## Related Skills
-
-- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials
 ```
+
+---
+
+## Related Skills & Chains
+
+- **`hunt-idor`** — Auth bypass without object-level access is half a finding; pair them. Chain primitive: legacy `/v1/users/{id}` route missing both auth middleware AND ownership check = unauthenticated cross-tenant data read via direct ID substitution → full PII dump from "I am nobody" starting position.
+- **`hunt-ato`** — Auth-bypass primitives feed the ATO funnel. Chain primitive: XMLRPC native-cred acceptance + no rate limit on `wp.getUsersBlogs` → credential-stuff with breach corpus from `hunt-misc` recon → `system.multicall` batches 1000 cred pairs per request → one valid pair = ATO bypassing the SSO + MFA the UI enforces.
+- **`hunt-sharepoint`** — The SP equivalent of the WordPress XMLRPC pattern lives here. Chain primitive: `/_vti_bin/Authentication.asmx` anonymous reachable + native Forms-auth credential accepted + zero rate limit = unlimited credential brute-force endpoint bypassing custom-branded `customlogin.aspx` protections → FedAuth cookie → full SharePoint farm access.
+- **`security-arsenal`** — Pull the JWT-attack payloads section (alg=none, kid path-traversal, JWK injection, RS256→HS256 key confusion) when JWT validation is the auth wall; pull the SAML signature-stripping section when the SP accepts unsigned assertions.
+- **`triage-validation`** — Run the Pre-Severity Gate before claiming Critical on an "auth bypass" that only enumerates usernames or only reveals a 401-vs-403 differential. Username enumeration alone without lockout-amplification is consistently N/A or Informational on H1.
+- **`password-spray-methodology`** — Universal password spray pipeline across all protocols + error code differentials
