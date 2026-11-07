@@ -167,15 +167,14 @@ Each finding MUST have reproducible steps. The PoC section is what proves the fi
 ## DOCX generation pipeline (markdown → docx with embedded images)
 
 ```bash
-# Prerequisite: pandoc installed
-brew install pandoc
+# Prerequisite: pandoc installed (apt/dnf/brew install pandoc)
 
 # Convert
 pandoc REPORT_FINAL.md \
   -o REPORT_FINAL.docx \
   --resource-path=engagement_log/poc \
-  --reference-doc=~/.claude/skills/redteam-report-template/templates/reference.docx \
   --toc \
+  # Optional: add --reference-doc=/path/to/your/reference.docx for a branded style template \
   --toc-depth=2 \
   --highlight-style=tango
 
@@ -273,9 +272,9 @@ Each gives the client context about their real-world detection capability, which
 
 ## Template library (where to put canned text)
 
-Maintain reusable boilerplate in:
+Maintain reusable boilerplate in a directory you control, e.g.:
 ```
-~/.claude/skills/redteam-report-template/templates/
+${REPORT_TEMPLATES_DIR:-./templates}/
     executive_summary.md      # Reusable exec summary skeleton
     methodology.md            # Standard methodology section
     cleanup_statement.md      # Standard cleanup language

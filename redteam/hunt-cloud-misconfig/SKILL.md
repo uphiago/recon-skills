@@ -57,7 +57,7 @@ export AWS_ENDPOINT_URL=http://localhost:14566
 export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
 ```
 
-Without those env vars, `aws s3 cp/sync` fails with `InvalidRequest`. Document this for the team. See `docs/verification/phase2j-cloud-localstack.md` for the full reproducible flow.
+Without those env vars, `aws s3 cp/sync` fails with `InvalidRequest`. Document this for the team. The full reproducible flow was validated against LocalStack 3.0 during skill development.
 
 ---
 

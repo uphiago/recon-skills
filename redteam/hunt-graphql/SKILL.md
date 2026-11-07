@@ -250,7 +250,7 @@ A common claim is "alias batching defeats per-user rate limits and double-spend 
 - 10 aliased `redeemCoupon` mutations in one request → only `r1` succeeds, r2-r10 fail with `already_redeemed`. Alias batching alone is insufficient.
 - The same 10 mutations as **20 parallel HTTP POSTs** → 20 successes ($2000 from a $100 coupon).
 
-**Operator rule:** treat alias batching as a single-RTT recon primitive. For race-target exploitation, combine with `hunt-race-condition`'s parallel-HTTP / Turbo Intruder single-packet attack. Verified in `docs/verification/phase2e-jwt-graphql-race.md` Test 11 vs Test 12.
+**Operator rule:** treat alias batching as a single-RTT recon primitive. For race-target exploitation, combine with `hunt-race-condition`'s parallel-HTTP / Turbo Intruder single-packet attack. (Verified during skill development; the verification log is internal and not shipped with the repository.)
 
 ---
 

@@ -168,7 +168,7 @@ All tests verify the skill is properly structured.
 ## Related Skills
 
 - **`hunt-rce`** — General RCE hunting; console-enabled Werkzeug would be RCE
-- **`hunt-python`** — Python-specific vulnerability hunting
+- **`hunt-django`** / **`hunt-fastapi`** — Python-framework vulnerability hunting
 - **`js-secrets-extraction`** — Finding API keys that may work with the Flask API
 - **`source-leak-hunt`** — Finding .env and config files that may contain Flask SECRET_KEY
 - **`cache-attack`** — Cache poisoning via Werkzeug error page (if CDN caches the 500 response)

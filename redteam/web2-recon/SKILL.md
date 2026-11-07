@@ -539,7 +539,7 @@ done < subs.txt
 
 **Trade-off:** Serial vs. concurrent. The fallback handles ~24 subdomains in 14 seconds; the same workload on `httpx` with default 50 threads finishes in 2-3 seconds. For VDP-scale recon (< 100 subdomains) the fallback is fine. For mass recon (1000+) fix the toolchain first.
 
-Verified against HackerOne's own VDP in `docs/verification/recon-hackerone-vdp.md`.
+(Verified against HackerOne's own VDP during skill development; the verification log is internal and not shipped with the repository.)
 
 ---
 

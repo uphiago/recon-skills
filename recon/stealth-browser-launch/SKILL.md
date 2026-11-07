@@ -12,7 +12,7 @@ related_skills:
   - humanize-automation
   - tls-fingerprint-impersonation
   - http2-header-impersonation
-  - proxy-geoip-automation
+  - ops-proxyns
 ---
 
 # Stealth Browser Launch

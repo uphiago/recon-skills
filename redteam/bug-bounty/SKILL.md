@@ -1551,22 +1551,9 @@ When payout is being downgraded, use these counters:
 
 ---
 
-# INSTALLATION (Claude Code Skill)
+# INSTALLATION
 
-To use this as a Claude Code skill, copy this file to your skills directory:
-
-```bash
-# Option A: Clone the repo and link the skill
-git clone https://github.com/shuvonsec/claude-bug-bounty.git ~/.claude/skills/bug-bounty
-ln -s ~/.claude/skills/bug-bounty/SKILL.md ~/.claude/skills/bug-bounty/SKILL.md
-
-# Option B: Direct copy
-mkdir -p ~/.claude/skills/bug-bounty
-curl --max-time 30 --connect-timeout 10 -s https://raw.githubusercontent.com/shuvonsec/claude-bug-bounty/main/SKILL.md \
-  -o ~/.claude/skills/bug-bounty/SKILL.md
-```
-
-Then in Claude Code, this skill loads automatically when you ask about bug bounty, recon, or vulnerability hunting.
+This file is a portable methodology skill. Load it with whichever agent or workflow you use; it assumes only the tools listed in the prerequisites.
 
 ---
 
@@ -1621,7 +1608,7 @@ All 5 tests should pass for a fully operational toolkit.
 
 ### When to use the orchestrator vs a direct skill
 
-The orchestrator (this skill) is for the "I don't yet know what bug class to hunt for" case. If you've already identified the candidate — "the response reflects my Host header into a JavaScript src URL, that's cache poisoning" — load `hunt-cache-poisoning` directly. The orchestrator's value is the initial routing from a fuzzy intent ("there's a chatbot, what should I test") to a concrete skill set (`hunt-llm-ai` + `hunt-api-misconfig`).
+The orchestrator (this skill) is for the "I don't yet know what bug class to hunt for" case. If you've already identified the candidate — "the response reflects my Host header into a JavaScript src URL, that's cache poisoning" — load `hunt-cache-poison` directly. The orchestrator's value is the initial routing from a fuzzy intent ("there's a chatbot, what should I test") to a concrete skill set (`hunt-llm-ai` + `hunt-api-misconfig`).
 
 When in doubt: open the orchestrator FIRST on any new target, let it route, then close the orchestrator and work in the loaded skills. Don't keep the orchestrator loaded all session — it occupies context window that could hold actual probe results.
 
