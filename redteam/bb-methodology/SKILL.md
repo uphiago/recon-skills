@@ -288,7 +288,7 @@ What did you find?
 |   +-- UUID only? -> Find UUID leak source, then retry
 +-- SSRF
 |   +-- DNS only? -> DON'T REPORT. Try cloud metadata
-|   +-- Can reach [REDACTED_IP]? -> Extract keys -> RCE
+|   +-- Can reach 169.254.169.254? -> Extract keys -> RCE
 |   +-- Internal port scan? -> Find Redis/K8s -> RCE
 +-- SQLi
 |   +-- Error-based? -> Extract data (passwords, tokens)

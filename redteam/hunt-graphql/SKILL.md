@@ -316,7 +316,7 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 9. **EXNESS — SSRF in GraphQL `allTicks` query** ([H1 #1864188](https://hackerone.com/reports/1864188))
     - Subclass: SSRF via GraphQL argument
-    - Payload: `query { allTicks(source:"http://[REDACTED_IP]/latest/meta-data/") { … } }` — `source` arg fed into a server-side HTTP client
+    - Payload: `query { allTicks(source:"http://169.254.169.254/latest/meta-data/") { … } }` — `source` arg fed into a server-side HTTP client
     - Root cause: GraphQL field accepted a URL arg and dereferenced it without scheme/host allowlist
     - Year: 2023 — **$3,000**, 249 upvotes
 

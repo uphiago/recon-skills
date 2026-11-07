@@ -328,14 +328,14 @@ These are the load-bearing public references for every CVE called out in the mat
 - **References:** https://www.vmware.com/security/advisories/VMSA-2021-0020.html ; https://www.cisa.gov/news-events/alerts/2021/09/24/vmware-vcenter-server-vulnerability-cve-2021-22005-under-active-exploit ; https://www.rapid7.com/blog/post/2021/09/21/critical-vcenter-server-file-upload-vulnerability-cve-2021-22005/ ; https://www.bleepingcomputer.com/news/security/working-exploit-released-for-vmware-vcenter-cve-2021-22005-bug/
 
 ### 4. CVE-2022-22954 — Workspace ONE Access / Identity Manager FreeMarker SSTI → RCE
-- **Affected:** Workspace ONE Access [REDACTED_IP], [REDACTED_IP], [REDACTED_IP], [REDACTED_IP]; Identity Manager 3.3.3 → 3.3.6; vRealize Automation 7.6.
+- **Affected:** Workspace ONE Access 25.01.x, 24.07.x, 23.10.x, 22.09.x; Identity Manager 3.3.3 → 3.3.6; vRealize Automation 7.6.
 - **Attack flow:** Unauth GET to `/catalog-portal/ui/oauth/verify?deviceUdid=${...}` injects a FreeMarker template; `freemarker.template.utility.Execute` runs OS commands as the `horizon` service account. Single-request RCE.
 - **Root cause:** Catalog-portal endpoint passed attacker-controlled query parameter into FreeMarker render without sandboxing the Execute utility.
 - **Disclosure:** Reported by Steven Seeley (mr_me) of Source Incite; VMware advisory VMSA-2022-0011 published 2022-04-06. PoCs public within 48h; widespread mass-exploitation followed. **CISA KEV:** added 2022-04-14. CISA AA22-138B (May 2022) documents IR engagements at "large organizations" exploited via this CVE. Year discovered 2022, patched 2022.
 - **References:** https://www.vmware.com/security/advisories/VMSA-2022-0011.html ; https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-138b ; https://srcincite.io/blog/2022/04/19/cve-2022-22954-vmware-workspace-one-access-pre-auth-rce.html ; https://www.crowdsec.net/blog/new-surge-in-vmware-cve-2022-22954-exploit-attempts
 
 ### 5. CVE-2022-22972 — Workspace ONE Access / Identity Manager / vRealize Automation Host-header authentication bypass
-- **Affected:** Workspace ONE Access [REDACTED_IP]; Identity Manager 3.3.3–3.3.6; vRealize Automation 7.6 (and downstream Cloud Foundation bundles).
+- **Affected:** Workspace ONE Access 25.01.x–22.09.x; Identity Manager 3.3.3–3.3.6; vRealize Automation 7.6 (and downstream Cloud Foundation bundles).
 - **Attack flow:** Manipulate the HTTP `Host` header during local-domain login flow; the server routes its internal validation request to the attacker-controlled hostname → returns admin session without legitimate credentials.
 - **Root cause:** Host header used unvalidated as the target for the internal auth-validation request — classic SSRF-into-self with trust elevation.
 - **Disclosure:** Reported by Bruno López of Innotec Security; VMware advisory VMSA-2022-0014 published 2022-05-18. **CISA Emergency Directive 22-03** (2022-05-18) ordered all U.S. federal civilian agencies to patch or remove affected VMware installations by 2022-05-24 — the same agencies that had just been told the same thing for CVE-2022-22954 six weeks earlier. Year discovered 2022, patched 2022.

@@ -168,7 +168,7 @@ PROXY_TARGETS=(
   "http://localhost:8080/"
   "http://127.0.0.1:7071/"       # Zimbra Admin port
   "http://127.0.0.1:22/"
-  "http://[REDACTED_IP]/latest/meta-data/"  # AWS IMDS
+  "http://169.254.169.254/latest/meta-data/"  # AWS IMDS
   "http://metadata.google.internal/"
 )
 

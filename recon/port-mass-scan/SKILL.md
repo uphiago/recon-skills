@@ -134,11 +134,11 @@ fi
 # Scan Brazilian ISP ranges for cameras (from Vivo, Claro, Oi)
 echo "[*] Camera hunt on Claro 3G/4G ranges"
 masscan -p554,80,8010,8011 --rate=50000 \
-  --range [REDACTED_IP]-[REDACTED_IP] -oJ cameras_claro.json
+  --range 187.44.0.0-187.44.255.255 -oJ cameras_claro.json
 
 echo "[*] Camera hunt on Vivo ranges"
 masscan -p554,80,8010,8011 --rate=50000 \
-  --range [REDACTED_IP]-[REDACTED_IP] -oJ cameras_vivo.json
+  --range 179.191.0.0-179.191.255.255 -oJ cameras_vivo.json
 
 # Post-process: probe discovered cameras for snapshots
 grep -Eo '"ip":"[^"]+"' cameras_*.json | sed 's/"ip":"//;s/"//' | sort -u | \

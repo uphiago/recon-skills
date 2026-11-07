@@ -58,7 +58,7 @@ masscan -p554,80,8010,8011 --rate=10000 192.168.0.0/24 -oJ cameras.json
 ### Phase 1 — Mass Camera Discovery
 
 ```bash
-RANGE="$1"  # e.g., [REDACTED_IP]/16
+RANGE="$1"  # e.g., 187.44.0.0/16
 OUTDIR="$OUTDIR/cameras"
 mkdir -p "$OUTDIR"
 

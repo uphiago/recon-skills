@@ -536,7 +536,7 @@ All tests verify report writing readiness.
 - BAD: "Interesting finding on /api/users"
 - BAD: "IDOR vulnerability in API"
 - GOOD: "Authenticated IDOR on /api/users/{uid} -> admin email + role disclosure"
-- GOOD: "Unauthenticated SSRF on /preview?url= -> AWS metadata [REDACTED_IP] reachable"
+- GOOD: "Unauthenticated SSRF on /preview?url= -> AWS metadata 169.254.169.254 reachable"
 
 The bad titles get opened last. The good titles get opened first. Same finding, different queue position, different triage day, different payout speed.
 

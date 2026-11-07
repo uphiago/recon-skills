@@ -120,7 +120,7 @@ response = impit.get("https://target.com/api/endpoint")
 response = impit.get(
     "https://target.com/api/v1",
     headers={
-        "X-Forwarded-For": "[REDACTED_IP]",
+        "X-Forwarded-For": "203.0.113.42",
         "Authorization": "Bearer token",
     }
 )
