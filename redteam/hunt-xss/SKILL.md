@@ -4,8 +4,10 @@ description: "Hunting skill for xss vulnerabilities. Built from 174 public bug b
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [xss, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [xss, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

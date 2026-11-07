@@ -4,8 +4,10 @@ description: "Hunt MFA / 2FA bypass — 7 distinct patterns. (1) MFA not enforce
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [mfa, bypass, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [mfa, bypass, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

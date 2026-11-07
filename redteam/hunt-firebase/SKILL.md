@@ -4,8 +4,10 @@ description: "Hunt Firebase / Firestore / GCP exploitation — Firebase API key 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [firebase, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [firebase, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-FIREBASE — Firebase / Firestore / GCP Exploitation

@@ -4,8 +4,10 @@ description: "Analyze JS bundles and source maps for hardcoded secrets, API keys
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: recon
-tags: [js, secrets, API-key, jwt, source-map, recon]
+platforms: [linux]
+metadata:
+  tags: [js, secrets, API-key, jwt, source-map, recon]
+  category: recon
 ---
 
 # JS Bundle & Source Map Analysis -- Secret Extraction

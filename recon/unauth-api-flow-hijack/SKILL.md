@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, API, unauthenticated, flow, interview, form, upload, export]
-category: recon
-related_skills:
-  - api-noauth-hunt
-  - hardcoded-credential-hunt
-  - hunt-write-gap
-  - hunt-idor
+metadata:
+  tags: [recon, API, unauthenticated, flow, interview, form, upload, export]
+  category: recon
+  related_skills:
+    - api-noauth-hunt
+    - hardcoded-credential-hunt
+    - hunt-write-gap
+    - hunt-idor
 ---
 
 # Unauthenticated API Flow Hijack

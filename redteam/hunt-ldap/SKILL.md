@@ -4,8 +4,10 @@ description: "Hunt LDAP Injection and XPath Injection — authentication bypass,
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ldap, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [ldap, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-LDAP — LDAP Injection & XPath Injection

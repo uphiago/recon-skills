@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, dnsx, httpx
-tags: [recon, ASN, CIDR, IP-range, TLD, reverse-DNS, infrastructure]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - origin-ip-discovery
-  - vhost-enumeration
-  - port-mass-scan
+metadata:
+  tags: [recon, ASN, CIDR, IP-range, TLD, reverse-DNS, infrastructure]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - origin-ip-discovery
+    - vhost-enumeration
+    - port-mass-scan
 ---
 
 # ASN Infrastructure Mapping

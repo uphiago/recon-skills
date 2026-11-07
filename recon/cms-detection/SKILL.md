@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, nuclei
-tags: [recon, CMS, fingerprinting, technology, WordPress, Drupal, Joomla, Magento]
-category: recon
-related_skills:
-  - web-enumeration
-  - wordpress-plugin-hunt
-  - visual-recon
-  - wp-mass-recon
+metadata:
+  tags: [recon, CMS, fingerprinting, technology, WordPress, Drupal, Joomla, Magento]
+  category: recon
+  related_skills:
+    - web-enumeration
+    - wordpress-plugin-hunt
+    - visual-recon
+    - wp-mass-recon
 ---
 
 # CMS Detection

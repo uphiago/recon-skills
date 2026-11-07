@@ -1,18 +1,19 @@
 ---
 name: hunt-django
 description: "Hunt Django-specific vulnerabilities: DRF permission gaps, ORM injection, and admin exploitation."
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, django, DRF, ORM, Python, admin, CSRF]
-related_skills:
-  - hunt-sqli
-  - hunt-ssti
-  - hunt-idor
-  - hunt-csrf
+metadata:
+  tags: [redteam, django, DRF, ORM, Python, admin, CSRF]
+  category: redteam
+  related_skills:
+    - hunt-sqli
+    - hunt-ssti
+    - hunt-idor
+    - hunt-csrf
 ---
 
 # Django Security Hunting

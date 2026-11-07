@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3, subfinder, dnsx
-tags: [recon, subdomain, takeover, CNAME, DNS, cloud, Heroku, S3, Azure]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - origin-ip-discovery
-  - port-service-discovery
+metadata:
+  tags: [recon, subdomain, takeover, CNAME, DNS, cloud, Heroku, S3, Azure]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - origin-ip-discovery
+    - port-service-discovery
 ---
 
 # Subdomain Takeover Detection

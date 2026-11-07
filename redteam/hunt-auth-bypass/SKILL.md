@@ -4,8 +4,10 @@ description: Hunting skill for auth bypass vulnerabilities. Built from 12 public
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [auth, bypass, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [auth, bypass, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

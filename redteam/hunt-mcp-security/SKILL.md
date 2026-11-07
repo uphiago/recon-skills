@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, MCP, AI, tool-security, agent, prompt-injection, OWASP]
-category: redteam
-related_skills:
-  - hunt-llm-ai
-  - hunt-api-misconfig
-  - hunt-auth-bypass
+metadata:
+  tags: [redteam, MCP, AI, tool-security, agent, prompt-injection, OWASP]
+  category: redteam
+  related_skills:
+    - hunt-llm-ai
+    - hunt-api-misconfig
+    - hunt-auth-bypass
 ---
 
 # MCP Security Hunting

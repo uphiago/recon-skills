@@ -5,16 +5,17 @@ version: 3.0.0
 license: MIT
 platforms: [linux, macos]
 compatibility: Requires curl, jq, and optional wpscan
-tags: [redteam, wordpress, web, api, plugins]
-category: redteam
-related_skills:
-  - cors-credential-wordpress
-  - error-log-mining
-  - source-leak-hunt
-  - staging-subdomain-hunt
-  - wordpress-plugin-hunt
-  - wp-plugin-rest-auth-bypass
-  - xmlrpc-exploitation
+metadata:
+  tags: [redteam, wordpress, web, api, plugins]
+  category: redteam
+  related_skills:
+    - cors-credential-wordpress
+    - error-log-mining
+    - source-leak-hunt
+    - staging-subdomain-hunt
+    - wordpress-plugin-hunt
+    - wp-plugin-rest-auth-bypass
+    - xmlrpc-exploitation
 ---
 
 # WordPress Security Assessment

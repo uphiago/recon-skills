@@ -4,8 +4,10 @@ description: Hunting skill for graphql vulnerabilities. Built from 12 public bug
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [graphql, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [graphql, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

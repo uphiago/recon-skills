@@ -4,8 +4,10 @@ description: "Hunt file upload bugs — RCE via webshell, XSS via SVG/HTML, SSRF
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [file-upload, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [file-upload, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

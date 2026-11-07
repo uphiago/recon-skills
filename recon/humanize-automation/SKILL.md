@@ -6,11 +6,12 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires python3
-tags: [recon, humanize, behavioral, anti-bot, mouse, keyboard, automation]
-category: recon
-related_skills:
-  - stealth-browser-launch
-  - tls-fingerprint-impersonation
+metadata:
+  tags: [recon, humanize, behavioral, anti-bot, mouse, keyboard, automation]
+  category: recon
+  related_skills:
+    - stealth-browser-launch
+    - tls-fingerprint-impersonation
 ---
 
 # Humanize Automation

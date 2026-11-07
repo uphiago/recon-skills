@@ -4,8 +4,10 @@ description: Complete bug bounty workflow — recon (subdomain enumeration, asse
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [bug-bounty, toolkit, local, recon, redteam]
+platforms: [linux]
+metadata:
+  tags: [bug-bounty, toolkit, local, recon, redteam]
+  category: redteam
 ---
 
 # Bug Bounty Master Workflow

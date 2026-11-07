@@ -4,8 +4,10 @@ description: "Hunt HTTP request smuggling (CL.TE, TE.CL, H2.CL, H2.TE). Cause: f
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [http-smuggling, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [http-smuggling, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

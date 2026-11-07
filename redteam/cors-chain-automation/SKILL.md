@@ -4,8 +4,10 @@ description: Use when a bounded list of authorized API endpoints needs consisten
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cors, automation, chain, redteam]
+platforms: [linux]
+metadata:
+  tags: [cors, automation, chain, redteam]
+  category: redteam
 ---
 
 # Multi-Endpoint CORS Triage

@@ -4,8 +4,10 @@ description: Hunt Open Redirect — all types including low-impact, chained to O
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [open-redirect, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [open-redirect, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-OPEN-REDIRECT — Open Redirect

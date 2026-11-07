@@ -4,8 +4,10 @@ description: Hunt Insecure Deserialization — Java gadget chains (ysoserial), P
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [deserialization, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [deserialization, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-DESERIALIZATION — Insecure Deserialization

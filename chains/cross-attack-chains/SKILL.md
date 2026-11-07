@@ -5,14 +5,15 @@ version: 2.0.0
 license: MIT
 platforms: [any]
 compatibility: Requires evidence from the owning validation skills
-tags: [chains, attack-path, validation, reporting]
-category: chains
-related_skills:
-  - attack-patterns-reference
-  - evidence-hygiene
-  - report-writing
-  - triage-validation
-  - wordpress-full-compromise
+metadata:
+  tags: [chains, attack-path, validation, reporting]
+  category: chains
+  related_skills:
+    - attack-patterns-reference
+    - evidence-hygiene
+    - report-writing
+    - triage-validation
+    - wordpress-full-compromise
 ---
 
 # Cross-Attack Chains

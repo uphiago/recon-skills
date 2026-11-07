@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl
-tags: [recon, cache-poisoning, WCD, web-cache, CDN]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - cors-credential-wordpress
-  - staging-subdomain-hunt
+metadata:
+  tags: [recon, cache-poisoning, WCD, web-cache, CDN]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - cors-credential-wordpress
+    - staging-subdomain-hunt
 ---
 
 # Cache Attack Skill

@@ -1,17 +1,18 @@
 ---
 name: hunt-prototype-pollution
 description: Hunt client-side and server-side prototype pollution for XSS, auth bypass, and RCE.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, prototype-pollution, XSS, RCE, JavaScript, Node.js, jQuery]
-related_skills:
-  - hunt-nodejs
-  - hunt-xss
-  - hunt-api-misconfig
+metadata:
+  tags: [redteam, prototype-pollution, XSS, RCE, JavaScript, Node.js, jQuery]
+  category: redteam
+  related_skills:
+    - hunt-nodejs
+    - hunt-xss
+    - hunt-api-misconfig
 ---
 
 # Prototype Pollution Hunting

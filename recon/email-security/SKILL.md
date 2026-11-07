@@ -4,8 +4,10 @@ description: "DMARC/SPF/DKIM check, email spoofing, SMTP test, and security head
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: recon
-tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
+platforms: [linux]
+metadata:
+  tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
+  category: recon
 ---
 
 # Email Security -- DMARC, SPF, DKIM

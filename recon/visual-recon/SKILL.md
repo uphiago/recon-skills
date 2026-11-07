@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, screenshot, visual, triage, fingerprinting, technology]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - web-enumeration
-  - cms-detection
-  - port-service-discovery
+metadata:
+  tags: [recon, screenshot, visual, triage, fingerprinting, technology]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - web-enumeration
+    - cms-detection
+    - port-service-discovery
 ---
 
 # Visual Recon

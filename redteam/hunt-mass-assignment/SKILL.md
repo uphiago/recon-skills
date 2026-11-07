@@ -1,17 +1,18 @@
 ---
 name: hunt-mass-assignment
 description: Hunt mass assignment via sensitive field injection and ORM framework exploitation.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, mass-assignment, API, ORM, authorization, field-injection]
-related_skills:
-  - hunt-api-misconfig
-  - hunt-idor
-  - hunt-write-gap
+metadata:
+  tags: [redteam, mass-assignment, API, ORM, authorization, field-injection]
+  category: redteam
+  related_skills:
+    - hunt-api-misconfig
+    - hunt-idor
+    - hunt-write-gap
 ---
 
 # Mass Assignment Hunting

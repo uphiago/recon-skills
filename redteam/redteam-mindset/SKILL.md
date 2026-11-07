@@ -4,8 +4,10 @@ description: Red-team operator discipline — the mindset corrections that separ
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [mindset, methodology, redteam]
+platforms: [linux]
+metadata:
+  tags: [mindset, methodology, redteam]
+  category: redteam
 ---
 
 ## When to Use

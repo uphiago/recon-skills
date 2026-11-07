@@ -1,18 +1,19 @@
 ---
 name: hunt-nestjs
 description: "Hunt NestJS-specific vulnerabilities: guard bypass, decorator gaps, and microservice auth drift."
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [redteam, nestjs, TypeScript, decorator, guard, microservice, GraphQL]
-related_skills:
-  - hunt-graphql
-  - hunt-api-misconfig
-  - hunt-idor
-  - hunt-write-gap
+metadata:
+  tags: [redteam, nestjs, TypeScript, decorator, guard, microservice, GraphQL]
+  category: redteam
+  related_skills:
+    - hunt-graphql
+    - hunt-api-misconfig
+    - hunt-idor
+    - hunt-write-gap
 ---
 
 # NestJS Security Hunting

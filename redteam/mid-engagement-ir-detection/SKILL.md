@@ -4,8 +4,10 @@ description: Methodology for detecting client SOC patches, attacker activity, an
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ir, detection, mid-engagement, redteam]
+platforms: [linux]
+metadata:
+  tags: [ir, detection, mid-engagement, redteam]
+  category: redteam
 ---
 
 ## When to Use

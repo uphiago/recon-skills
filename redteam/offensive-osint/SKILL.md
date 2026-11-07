@@ -1,11 +1,13 @@
 ---
 name: offensive-osint
 description: "Operational arsenal for authorized external red-team and bug-bounty recon. Concrete probes, wordlists, regexes, dorks, curl one-liners for: subdomain enum, GraphQL/Swagger/REST discovery, identity fabric (Entra/Okta/ADFS/Google/SAML/M365 deep — Teams/SharePoint/OneDrive), cloud bucket enum (S3/GCS/Azure), CDN/WAF bypass, origin discovery, vendor fingerprinting (Citrix/F5/Pulse/Fortinet/PaloAlto/Cisco/VMware), CI/CD exposure, 48-pattern secret-scan catalog, Postman workspaces, breach correlation, TLS/JA3 audit, secret triage. Detail content in 15 modular reference files. Use for any authorized recon: scoping, asset discovery, attack-path mapping, secret triage, severity scoring."
-license: MIT
-revision_date: 2026-07-25
-category: redteam
-tags: [osint, offensive, recon, redteam]
 version: 3.0.0
+revision_date: 2026-07-25
+license: MIT
+platforms: [linux]
+metadata:
+  tags: [osint, offensive, recon, redteam]
+  category: redteam
 ---
 
 # Offensive OSINT — External Red-Team Arsenal

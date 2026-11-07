@@ -4,8 +4,10 @@ description: Meme coin and token security audit — rug pull detection (honeypot
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [meme-coin, audit, web3, redteam]
+platforms: [linux]
+metadata:
+  tags: [meme-coin, audit, web3, redteam]
+  category: redteam
 ---
 
 # MEME COIN & TOKEN SECURITY AUDIT

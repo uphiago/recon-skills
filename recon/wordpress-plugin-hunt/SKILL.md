@@ -6,15 +6,16 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, wordpress, plugins, CVE, exploitation]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - deep-invade
-  - cross-attack-chains
-  - wordpress-full-compromise
-  - staging-subdomain-hunt
-  - xmlrpc-exploitation
+metadata:
+  tags: [recon, wordpress, plugins, CVE, exploitation]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - deep-invade
+    - cross-attack-chains
+    - wordpress-full-compromise
+    - staging-subdomain-hunt
+    - xmlrpc-exploitation
 ---
 
 # WordPress Plugin Hunt Skill

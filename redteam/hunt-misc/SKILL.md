@@ -4,8 +4,10 @@ description: Hunting skill for misc vulnerabilities. Built from 225 public bug b
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [misc, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [misc, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

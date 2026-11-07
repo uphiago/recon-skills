@@ -4,8 +4,10 @@ description: "Hunt source code and build artifact leakage — JavaScript source 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [source, leak, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [source, leak, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-SOURCE-LEAK — Source Code & Build Artifact Leakage

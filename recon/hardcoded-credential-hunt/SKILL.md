@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, password, credential, hardcoded, HTML, javascript, API]
-category: recon
-related_skills:
-  - api-noauth-hunt
-  - js-secrets-extraction
-  - source-leak-hunt
+metadata:
+  tags: [recon, password, credential, hardcoded, HTML, javascript, API]
+  category: recon
+  related_skills:
+    - api-noauth-hunt
+    - js-secrets-extraction
+    - source-leak-hunt
 ---
 
 # Hardcoded Credential Hunt

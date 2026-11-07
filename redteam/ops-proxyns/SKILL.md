@@ -4,8 +4,10 @@ description: "Kernel-level proxy protection via proxy-ns — forces ALL traffic 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ops, proxyns, redteam, infrastructure]
+platforms: [linux]
+metadata:
+  tags: [ops, proxyns, redteam, infrastructure]
+  category: redteam
 ---
 
 # OPS-PROXYNS — Kernel-Level Proxy / OPSEC Protection

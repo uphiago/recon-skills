@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, firebase, supabase, firestore, cloud, data-breach]
-category: recon
-related_skills:
-  - api-noauth-hunt
-  - js-secrets-extraction
-  - source-leak-hunt
+metadata:
+  tags: [recon, firebase, supabase, firestore, cloud, data-breach]
+  category: recon
+  related_skills:
+    - api-noauth-hunt
+    - js-secrets-extraction
+    - source-leak-hunt
 ---
 
 # Firebase & Supabase Attack Skill

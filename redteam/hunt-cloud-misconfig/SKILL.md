@@ -4,8 +4,10 @@ description: "Hunt cloud / infrastructure misconfigurations. AWS: public S3 buck
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cloud, misconfiguration, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cloud, misconfiguration, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-CLOUD-MISCONFIG — Cloud / Infrastructure Misconfigurations

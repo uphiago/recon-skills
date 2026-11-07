@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, subfinder, httpx, dnsx, dig, jq
-tags: [recon, subdomain, DNS, crt.sh, asset-discovery]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - staging-subdomain-hunt
-  - deep-invade
-  - recon-playbook
+metadata:
+  tags: [recon, subdomain, DNS, crt.sh, asset-discovery]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - staging-subdomain-hunt
+    - deep-invade
+    - recon-playbook
 ---
 
 # Subdomain Enumeration Skill

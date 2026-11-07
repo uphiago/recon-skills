@@ -4,8 +4,10 @@ description: "Hunt public /metrics, /health, and actuator endpoints leaking AI u
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [metrics, exposure, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [metrics, exposure, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

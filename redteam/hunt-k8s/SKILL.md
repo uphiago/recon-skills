@@ -4,8 +4,10 @@ description: "Hunt Kubernetes & Docker — API anonymous access, kubelet 10250 e
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [kubernetes, k8s, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [kubernetes, k8s, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-K8S — Kubernetes & Docker Security

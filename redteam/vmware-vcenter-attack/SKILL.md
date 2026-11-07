@@ -4,8 +4,10 @@ description: VMware vSphere / vCenter Server external attack matrix — version 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [vmware, vcenter, attack, redteam]
+platforms: [linux]
+metadata:
+  tags: [vmware, vcenter, attack, redteam]
+  category: redteam
 ---
 
 ## When to Use

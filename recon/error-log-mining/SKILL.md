@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, grep, python3
-tags: [recon, error-log, credentials, wordpress, data-mining]
-category: recon
-related_skills:
-  - deep-invade
-  - source-leak-hunt
-  - phpinfo-to-rce
-  - wordpress-full-compromise
+metadata:
+  tags: [recon, error-log, credentials, wordpress, data-mining]
+  category: recon
+  related_skills:
+    - deep-invade
+    - source-leak-hunt
+    - phpinfo-to-rce
+    - wordpress-full-compromise
 ---
 
 # Error Log Mining Skill

@@ -4,8 +4,10 @@ description: Web2 recon pipeline — subdomain enumeration (subfinder, Chaos API
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [web2, recon, redteam]
+platforms: [linux]
+metadata:
+  tags: [web2, recon, redteam]
+  category: redteam
 ---
 
 # WEB2 RECON PIPELINE

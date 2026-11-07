@@ -4,8 +4,10 @@ description: Hunting skill for idor vulnerabilities. Built from 26 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [idor, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [idor, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

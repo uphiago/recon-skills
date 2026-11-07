@@ -4,8 +4,10 @@ description: "Hunt Host Header Injection — password reset poisoning → ATO, w
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [host-header, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [host-header, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-HOST-HEADER — Host Header Injection

@@ -4,8 +4,10 @@ description: Hunting skill for sqli vulnerabilities. Built from 12 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [sql, injection, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [sql, injection, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

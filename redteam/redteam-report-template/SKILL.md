@@ -4,8 +4,10 @@ description: Client-facing red-team deliverable format — codifies the Subject 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [report, template, redteam]
+platforms: [linux]
+metadata:
+  tags: [report, template, redteam]
+  category: redteam
 ---
 
 ## When to Use

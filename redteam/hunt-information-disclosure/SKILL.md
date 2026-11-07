@@ -1,18 +1,19 @@
 ---
 name: hunt-information-disclosure
 description: Hunt error leakage, DVCS exposure, source maps, config files, and differential oracles.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3, httpx
-tags: [redteam, information-disclosure, error-leakage, source-maps, config, enumeration]
-related_skills:
-  - source-leak-hunt
-  - js-secrets-extraction
-  - error-log-mining
-  - web-enumeration
+metadata:
+  tags: [redteam, information-disclosure, error-leakage, source-maps, config, enumeration]
+  category: redteam
+  related_skills:
+    - source-leak-hunt
+    - js-secrets-extraction
+    - error-log-mining
+    - web-enumeration
 ---
 
 # Information Disclosure Hunting

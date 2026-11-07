@@ -6,12 +6,12 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl
-disable-model-invocation: true
-tags: [infra, docker, privilege-escalation, container-escape]
-category: infra
-related_skills:
-  - port-service-discovery
-  - api-noauth-hunt
+metadata:
+  tags: [infra, docker, privilege-escalation, container-escape]
+  category: infra
+  related_skills:
+    - port-service-discovery
+    - api-noauth-hunt
 ---
 
 # Docker Privilege Escalation Skill

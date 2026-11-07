@@ -4,8 +4,10 @@ description: End-to-end Android APK red-team pipeline — automated APK acquisit
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [apk, android, mobile, reverse-engineering, redteam]
+platforms: [linux]
+metadata:
+  tags: [apk, android, mobile, reverse-engineering, redteam]
+  category: redteam
 ---
 
 ## When to Use

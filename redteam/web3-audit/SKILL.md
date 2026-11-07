@@ -4,8 +4,10 @@ description: Smart contract security audit — 10 DeFi bug classes (accounting d
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [web3, audit, redteam, blockchain]
+platforms: [linux]
+metadata:
+  tags: [web3, audit, redteam, blockchain]
+  category: redteam
 ---
 
 # WEB3 SMART CONTRACT AUDIT

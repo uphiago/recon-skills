@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, github, secret, API-key, token, dork, OSINT, trufflehog, credential]
-category: recon
-related_skills:
-  - js-secrets-extraction
-  - hardcoded-credential-hunt
-  - source-leak-hunt
+metadata:
+  tags: [recon, github, secret, API-key, token, dork, OSINT, trufflehog, credential]
+  category: recon
+  related_skills:
+    - js-secrets-extraction
+    - hardcoded-credential-hunt
+    - source-leak-hunt
 ---
 
 # GitHub Secret Hunting

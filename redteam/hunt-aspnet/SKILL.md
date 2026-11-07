@@ -4,8 +4,10 @@ description: Hunt ASP.NET-specific surface — ViewState deserialization (signed
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [aspnet, hunt, redteam, web]
+platforms: [linux]
+metadata:
+  tags: [aspnet, hunt, redteam, web]
+  category: redteam
 ---
 
 ## When to Use

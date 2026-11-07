@@ -6,16 +6,17 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3
-tags: [recon, sector, wordpress, cors, xmlrpc, mass-recon]
-category: redteam
-related_skills:
-  - wp-mass-recon
-  - cors-credential-wordpress
-  - xmlrpc-exploitation
-  - source-leak-hunt
-  - error-log-mining
-  - deep-invade
-  - recon-playbook
+metadata:
+  tags: [recon, sector, wordpress, cors, xmlrpc, mass-recon]
+  category: redteam
+  related_skills:
+    - wp-mass-recon
+    - cors-credential-wordpress
+    - xmlrpc-exploitation
+    - source-leak-hunt
+    - error-log-mining
+    - deep-invade
+    - recon-playbook
 ---
 
 # RECON-SECTOR — Parameterized Sector Reconnaissance

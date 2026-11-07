@@ -4,8 +4,10 @@ description: "Hunt server-side template injection (SSTI) across Jinja2 (Flask/Dj
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [ssti, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [ssti, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

@@ -4,8 +4,10 @@ description: Hunting skill for cache poison vulnerabilities. Built from 10 publi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cache, poisoning, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cache, poisoning, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

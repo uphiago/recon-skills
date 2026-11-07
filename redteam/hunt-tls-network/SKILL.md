@@ -4,8 +4,10 @@ description: "Hunt TLS/SSL and DNS misconfigurations — missing HSTS (downgrade
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [tls, network, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [tls, network, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-TLS-NETWORK — TLS/SSL & DNS Security

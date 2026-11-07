@@ -4,8 +4,10 @@ description: "Hunt CORS Misconfiguration — origin-reflection with credentials,
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cors, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cors, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-CORS — Cross-Origin Resource Sharing Misconfiguration

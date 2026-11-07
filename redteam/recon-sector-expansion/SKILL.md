@@ -4,8 +4,10 @@ description: "Multi-sector batch domain expansion — identify untested/under-te
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [recon, sector, expansion, redteam]
+platforms: [linux]
+metadata:
+  tags: [recon, sector, expansion, redteam]
+  category: redteam
 ---
 
 # RECON-SECTOR-EXPANSION — Batch Discovery Across Untapped Sectors

@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, python3, bash
-tags: [auth, SAML, SSO, XML-signature, identity]
-category: auth
-related_skills:
-  - jwt-attack
-  - exchange-owa-attack
-  - api-noauth-hunt
+metadata:
+  tags: [auth, SAML, SSO, XML-signature, identity]
+  category: auth
+  related_skills:
+    - jwt-attack
+    - exchange-owa-attack
+    - api-noauth-hunt
 ---
 
 # SAML SSO Attack Skill

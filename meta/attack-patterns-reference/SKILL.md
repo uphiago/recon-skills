@@ -5,20 +5,21 @@ version: 1.2.0
 license: MIT
 platforms: [linux]
 compatibility: N/A (reference catalog)
-tags: [meta, reference, patterns, validation]
-category: meta
-related_skills:
-  - cors-credential-wordpress
-  - cross-attack-chains
-  - error-log-mining
-  - js-secrets-extraction
-  - phpinfo-to-rce
-  - port-service-discovery
-  - source-leak-hunt
-  - staging-subdomain-hunt
-  - wordpress-plugin-hunt
-  - wp-mass-recon
-  - xmlrpc-exploitation
+metadata:
+  tags: [meta, reference, patterns, validation]
+  category: meta
+  related_skills:
+    - cors-credential-wordpress
+    - cross-attack-chains
+    - error-log-mining
+    - js-secrets-extraction
+    - phpinfo-to-rce
+    - port-service-discovery
+    - source-leak-hunt
+    - staging-subdomain-hunt
+    - wordpress-plugin-hunt
+    - wp-mass-recon
+    - xmlrpc-exploitation
 ---
 
 # Attack Patterns Reference

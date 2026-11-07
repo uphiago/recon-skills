@@ -6,14 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, grep
-tags: [recon, source-leak, exposure, secrets, wordpress]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - js-secrets-extraction
-  - error-log-mining
-  - phpinfo-to-rce
-  - deep-invade
+metadata:
+  tags: [recon, source-leak, exposure, secrets, wordpress]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - js-secrets-extraction
+    - error-log-mining
+    - phpinfo-to-rce
+    - deep-invade
 ---
 
 # Source Leak Hunt Skill

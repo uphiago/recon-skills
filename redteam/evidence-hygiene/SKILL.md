@@ -4,8 +4,10 @@ description: "Evidence-capture and PoC-redaction discipline for bug-bounty submi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [evidence, hygiene, reporting, redteam]
+platforms: [linux]
+metadata:
+  tags: [evidence, hygiene, reporting, redteam]
+  category: redteam
 ---
 
 # EVIDENCE HYGIENE — PoC Capture & Redaction Discipline

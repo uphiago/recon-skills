@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, ffuf, dnsx
-tags: [recon, vhost, virtual-host, Host-header, fuzzing, SSL, PTR]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - origin-ip-discovery
-  - web-enumeration
+metadata:
+  tags: [recon, vhost, virtual-host, Host-header, fuzzing, SSL, PTR]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - origin-ip-discovery
+    - web-enumeration
 ---
 
 # Virtual Host Enumeration

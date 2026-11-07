@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, dnsx, python3, subfinder
-tags: [recon, origin-ip, CDN, WAF, bypass, Cloudflare, favicon, DNS]
-category: recon
-related_skills:
-  - subdomain-enumeration
-  - vhost-enumeration
-  - port-mass-scan
+metadata:
+  tags: [recon, origin-ip, CDN, WAF, bypass, Cloudflare, favicon, DNS]
+  category: recon
+  related_skills:
+    - subdomain-enumeration
+    - vhost-enumeration
+    - port-mass-scan
 ---
 
 # Origin IP Discovery

@@ -6,11 +6,12 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, python3
-tags: [recon, HTTP2, headers, fingerprint, impersonation, browser, JA4]
-category: recon
-related_skills:
-  - tls-fingerprint-impersonation
-  - stealth-browser-launch
+metadata:
+  tags: [recon, HTTP2, headers, fingerprint, impersonation, browser, JA4]
+  category: recon
+  related_skills:
+    - tls-fingerprint-impersonation
+    - stealth-browser-launch
 ---
 
 # HTTP/2 Header Impersonation

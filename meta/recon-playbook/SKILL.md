@@ -5,18 +5,19 @@ version: 2.0.0
 license: MIT
 platforms: [linux, macos]
 compatibility: Requires curl, jq, subfinder, dnsx, httpx, katana, and optional nmap
-tags: [meta, recon, web, api, workflow]
-category: meta
-related_skills:
-  - attack-patterns-reference
-  - evidence-hygiene
-  - offensive-osint
-  - port-service-discovery
-  - report-writing
-  - subdomain-enumeration
-  - triage-validation
-  - web-enumeration
-  - web2-recon
+metadata:
+  tags: [meta, recon, web, api, workflow]
+  category: meta
+  related_skills:
+    - attack-patterns-reference
+    - evidence-hygiene
+    - offensive-osint
+    - port-service-discovery
+    - report-writing
+    - subdomain-enumeration
+    - triage-validation
+    - web-enumeration
+    - web2-recon
 ---
 
 # External Web Recon Playbook

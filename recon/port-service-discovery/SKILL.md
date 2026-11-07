@@ -6,14 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, masscan
-tags: [recon, port-scan, mysql, FTP, SSH, internal-api]
-category: recon
-related_skills:
-  - deep-invade
-  - wp-mass-recon
-  - cross-attack-chains
-  - staging-subdomain-hunt
-  - xmlrpc-exploitation
+metadata:
+  tags: [recon, port-scan, mysql, FTP, SSH, internal-api]
+  category: recon
+  related_skills:
+    - deep-invade
+    - wp-mass-recon
+    - cross-attack-chains
+    - staging-subdomain-hunt
+    - xmlrpc-exploitation
 ---
 
 # Port & Service Discovery Skill

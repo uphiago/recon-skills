@@ -4,8 +4,10 @@ description: Microsoft 365 / Entra ID red-team attack chain — current 2026 rea
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [m365, entra, azure, attack, redteam]
+platforms: [linux]
+metadata:
+  tags: [m365, entra, azure, attack, redteam]
+  category: redteam
 ---
 
 ## When to Use

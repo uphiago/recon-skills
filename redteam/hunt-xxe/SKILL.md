@@ -4,8 +4,10 @@ description: "Hunting skill for xxe vulnerabilities. Built from 10 public bug bo
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [xxe, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [xxe, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

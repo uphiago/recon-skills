@@ -6,18 +6,19 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, wordpress, mass-scan, us-companies]
-category: recon
-related_skills:
-  - cors-credential-wordpress
-  - xmlrpc-exploitation
-  - source-leak-hunt
-  - wordpress-plugin-hunt
-  - staging-subdomain-hunt
-  - wordpress-full-compromise
-  - deep-invade
-  - recon-playbook
-  - port-service-discovery
+metadata:
+  tags: [recon, wordpress, mass-scan, us-companies]
+  category: recon
+  related_skills:
+    - cors-credential-wordpress
+    - xmlrpc-exploitation
+    - source-leak-hunt
+    - wordpress-plugin-hunt
+    - staging-subdomain-hunt
+    - wordpress-full-compromise
+    - deep-invade
+    - recon-playbook
+    - port-service-discovery
 ---
 
 # WP Mass Recon Skill

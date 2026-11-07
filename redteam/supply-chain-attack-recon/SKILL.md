@@ -4,8 +4,10 @@ description: External recon for software supply-chain attack surface — package
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [supply-chain, attack, recon, redteam]
+platforms: [linux]
+metadata:
+  tags: [supply-chain, attack, recon, redteam]
+  category: redteam
 ---
 
 ## When to Use

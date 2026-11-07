@@ -4,8 +4,10 @@ description: "Hunt CI/CD pipeline vulnerabilities — GitHub Actions workflow in
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cicd, pipeline, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [cicd, pipeline, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-CICD — CI/CD Pipeline Security

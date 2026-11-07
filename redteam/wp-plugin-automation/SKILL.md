@@ -4,8 +4,10 @@ description: "Scripts and workflows to batch-test popular WordPress plugin CVEs 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [wordpress, plugin, automation, redteam]
+platforms: [linux]
+metadata:
+  tags: [wordpress, plugin, automation, redteam]
+  category: redteam
 ---
 
 # WP-PLUGIN-AUTOMATION — Batch WordPress Plugin CVE Testing

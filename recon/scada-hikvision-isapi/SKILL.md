@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3
-tags: [recon, SCADA, Hikvision, ISAPI, IoT, camera, RTSP, ONVIF, industrial]
-category: recon
-related_skills:
-  - port-service-discovery
-  - hunt-ssrf
-  - iot-camera-recon
-  - js-secrets-extraction
+metadata:
+  tags: [recon, SCADA, Hikvision, ISAPI, IoT, camera, RTSP, ONVIF, industrial]
+  category: recon
+  related_skills:
+    - port-service-discovery
+    - hunt-ssrf
+    - iot-camera-recon
+    - js-secrets-extraction
 ---
 
 # SCADA Hikvision ISAPI Enumeration

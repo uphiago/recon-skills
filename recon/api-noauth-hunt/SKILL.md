@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, API, no-auth, data-breach, CRUD]
-category: recon
-related_skills:
-  - firebase-supabase-attack
-  - js-secrets-extraction
-  - port-service-discovery
-  - source-leak-hunt
+metadata:
+  tags: [recon, API, no-auth, data-breach, CRUD]
+  category: recon
+  related_skills:
+    - firebase-supabase-attack
+    - js-secrets-extraction
+    - port-service-discovery
+    - source-leak-hunt
 ---
 
 # API No-Authentication Validation

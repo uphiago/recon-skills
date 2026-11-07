@@ -1,69 +1,71 @@
 ---
 name: osint-methodology
 description: "Comprehensive OSINT methodology for external red-team operations and authorized attack-surface assessments. Covers the 5-stage recon pipeline (seed discovery, asset expansion, enrichment, exposure analysis, reporting), asset-graph discipline with 29 asset types, severity rubric (CRITICAL/HIGH/MEDIUM/LOW/INFO), confidence upgrade workflows, time budgeting, asset-level triage rules, scale-based tactics, identity-fabric mapping (Entra/Okta/ADFS/Google/SAML/M365 Teams+SharePoint+OAuth), API and auth-map methodology, JavaScript deep analysis, mobile attack surface, cloud attack surface, breach×identity correlation, detectability tagging, detection-aware probing (back-off, persona rotation), read-only validator discipline, WAF/CDN bypass + origin discovery, vulnerability prioritization (CVE/EPSS/KEV), phishing infrastructure planning + pretext development, bug bounty submission templates, client deliverable templates with risk translation, threat-actor investigation (incl. RU/CN pivots), cryptocurrency tracing, image/video forensics, chronolocation. Use when planning or executing reconnaissance against authorized targets, mapping an organization's external attack surface, investigating a person/entity, tracing crypto flows, geolocating media, or performing attribution work."
-license: MIT
-revision_date: 2026-07-25
-category: redteam
-tags: [osint, methodology, recon, redteam]
 version: 2.1
-triggers:
-  - external recon
-  - external red team
-  - red team external
-  - attack surface management
-  - attack surface mapping
-  - ASM
-  - perimeter recon
-  - target reconnaissance
-  - bug bounty recon
-  - asset discovery
-  - footprint
-  - attack path
-  - identity fabric
-  - SSO discovery
-  - IdP fingerprinting
-  - tenant fingerprinting
-  - M365 enumeration
-  - Microsoft 365 recon
-  - API discovery
-  - GraphQL introspection
-  - mobile recon
-  - APK analysis
-  - cloud bucket enumeration
-  - bucket enum
-  - breach correlation
-  - secret leak hunt
-  - origin discovery
-  - CDN bypass
-  - WAF bypass
-  - vulnerability prioritization
-  - CVE prioritization
-  - EPSS
-  - CISA KEV
-  - phishing infrastructure
-  - pretext development
-  - bug bounty submission
-  - responsible disclosure
-  - client report
-  - exec summary
-  - risk translation
-  - confidence upgrade
-  - time budget
-  - engagement profile
-  - asset triage
-  - detection-aware probing
-  - back-off strategy
-  - persona rotation
-  - OSINT methodology
-  - open source intelligence
-  - target profiling
-  - data correlation
-  - OSINT workflow
-  - intelligence collection
-  - OSINT campaign
-  - recon methodology
-  - threat actor investigation
-  - attribution
+revision_date: 2026-07-25
+license: MIT
+platforms: [linux]
+metadata:
+  tags: [osint, methodology, recon, redteam]
+  category: redteam
+  triggers:
+    - external recon
+    - external red team
+    - red team external
+    - attack surface management
+    - attack surface mapping
+    - ASM
+    - perimeter recon
+    - target reconnaissance
+    - bug bounty recon
+    - asset discovery
+    - footprint
+    - attack path
+    - identity fabric
+    - SSO discovery
+    - IdP fingerprinting
+    - tenant fingerprinting
+    - M365 enumeration
+    - Microsoft 365 recon
+    - API discovery
+    - GraphQL introspection
+    - mobile recon
+    - APK analysis
+    - cloud bucket enumeration
+    - bucket enum
+    - breach correlation
+    - secret leak hunt
+    - origin discovery
+    - CDN bypass
+    - WAF bypass
+    - vulnerability prioritization
+    - CVE prioritization
+    - EPSS
+    - CISA KEV
+    - phishing infrastructure
+    - pretext development
+    - bug bounty submission
+    - responsible disclosure
+    - client report
+    - exec summary
+    - risk translation
+    - confidence upgrade
+    - time budget
+    - engagement profile
+    - asset triage
+    - detection-aware probing
+    - back-off strategy
+    - persona rotation
+    - OSINT methodology
+    - open source intelligence
+    - target profiling
+    - data correlation
+    - OSINT workflow
+    - intelligence collection
+    - OSINT campaign
+    - recon methodology
+    - threat actor investigation
+    - attribution
 ---
 
 # OSINT Methodology — External Red-Team Edition

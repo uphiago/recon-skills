@@ -4,8 +4,10 @@ description: "Hunt Missing/Weak Rate Limiting — login brute force, OTP/2FA bru
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [brute-force, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [brute-force, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-BRUTE-FORCE — Rate Limiting / Brute Force / Enumeration

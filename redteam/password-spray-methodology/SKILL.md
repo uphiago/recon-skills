@@ -4,8 +4,10 @@ description: End-to-end password spray playbook. User enumeration, lockout detec
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [password, spray, methodology, redteam]
+platforms: [linux]
+metadata:
+  tags: [password, spray, methodology, redteam]
+  category: redteam
 ---
 
 # Password Spray Methodology

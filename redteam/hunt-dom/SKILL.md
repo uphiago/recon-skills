@@ -4,8 +4,10 @@ description: "Hunt client-side DOM vulnerabilities — DOM Clobbering (overwrite
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [dom, hunt, redteam, xss]
+platforms: [linux]
+metadata:
+  tags: [dom, hunt, redteam, xss]
+  category: redteam
 ---
 
 # HUNT-DOM — DOM Clobbering / PostMessage / Service Worker / CSS Exfil

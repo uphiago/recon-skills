@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, masscan
-tags: [recon, port-scan, masscan, rustscan, nmap, infrastructure]
-category: recon
-related_skills:
-  - port-service-discovery
-  - iot-camera-recon
-  - exchange-owa-attack
+metadata:
+  tags: [recon, port-scan, masscan, rustscan, nmap, infrastructure]
+  category: recon
+  related_skills:
+    - port-service-discovery
+    - iot-camera-recon
+    - exchange-owa-attack
 ---
 
 # Port Mass Scan Skill

@@ -4,8 +4,10 @@ description: Hunt Next.js specific vulnerabilities — Server Actions arbitrary 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [nextjs, hunt, redteam, javascript]
+platforms: [linux]
+metadata:
+  tags: [nextjs, hunt, redteam, javascript]
+  category: redteam
 ---
 
 # HUNT-NEXTJS — Next.js / SSR Framework Vulnerabilities

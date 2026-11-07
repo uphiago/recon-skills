@@ -4,8 +4,10 @@ description: Hunt Laravel specific vulnerabilities — Debug mode leakage (APP_D
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [laravel, hunt, redteam, php]
+platforms: [linux]
+metadata:
+  tags: [laravel, hunt, redteam, php]
+  category: redteam
 ---
 
 # HUNT-LARAVEL — Laravel Specific Vulnerabilities

@@ -4,8 +4,10 @@ description: Security payloads, bypass tables, wordlists, gf pattern names, alwa
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [arsenal, tools, security, redteam]
+platforms: [linux]
+metadata:
+  tags: [arsenal, tools, security, redteam]
+  category: redteam
 ---
 
 # SECURITY ARSENAL

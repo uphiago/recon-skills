@@ -4,8 +4,10 @@ description: Hunt NoSQL Injection — MongoDB operator injection ($where, $regex
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [nosql, injection, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [nosql, injection, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-NOSQLI — NoSQL Injection

@@ -4,8 +4,10 @@ description: "Hunt API security misconfiguration — mass assignment, JWT attack
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [api, misconfiguration, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [api, misconfiguration, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

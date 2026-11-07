@@ -4,8 +4,10 @@ description: "Enumerate hidden tables, fields, and endpoints via API error hints
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [schema, enumeration, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [schema, enumeration, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

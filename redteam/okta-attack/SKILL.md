@@ -4,8 +4,10 @@ description: Okta-as-IdP red-team attack chain — tenant discovery, user enumer
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [okta, sso, attack, redteam]
+platforms: [linux]
+metadata:
+  tags: [okta, sso, attack, redteam]
+  category: redteam
 ---
 
 ## When to Use

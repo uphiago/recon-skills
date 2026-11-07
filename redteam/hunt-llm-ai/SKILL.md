@@ -4,8 +4,10 @@ description: "Hunt LLM/AI feature bugs — prompt injection, indirect injection,
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [llm, ai, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [llm, ai, hunt, redteam]
+  category: redteam
 ---
 
 ## When to Use

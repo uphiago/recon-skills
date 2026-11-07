@@ -4,8 +4,10 @@ description: Exploit Flask/Werkzeug debugger exposure for traceback and SECRET l
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: recon
-tags: [flask, werkzeug, debugger, SECRET, recon, python]
+platforms: [linux]
+metadata:
+  tags: [flask, werkzeug, debugger, SECRET, recon, python]
+  category: recon
 ---
 
 # Flask/Werkzeug Debugger Exploitation

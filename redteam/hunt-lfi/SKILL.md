@@ -4,8 +4,10 @@ description: "Hunt Local File Inclusion (LFI), Remote File Inclusion (RFI), and 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [lfi, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [lfi, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-LFI — Local / Remote File Inclusion & Path Traversal

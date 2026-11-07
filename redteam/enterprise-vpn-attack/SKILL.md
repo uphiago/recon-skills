@@ -4,8 +4,10 @@ description: External SSL VPN / remote-access appliance attack matrix — Cisco 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [vpn, enterprise, attack, redteam]
+platforms: [linux]
+metadata:
+  tags: [vpn, enterprise, attack, redteam]
+  category: redteam
 ---
 
 ## When to Use

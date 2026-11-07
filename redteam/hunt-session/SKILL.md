@@ -4,8 +4,10 @@ description: "Hunt Session Management vulnerabilities — session fixation (no r
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [session, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [session, hunt, redteam]
+  category: redteam
 ---
 
 # HUNT-SESSION — Session Management

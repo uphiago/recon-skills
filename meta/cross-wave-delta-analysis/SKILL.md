@@ -6,14 +6,15 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: N/A (analysis methodology)
-tags: [meta, wave, delta, comparison, analysis]
-category: meta
-related_skills:
-  - recon-playbook
-  - cross-attack-chains
-  - cors-credential-wordpress
-  - xmlrpc-exploitation
-  - attack-patterns-reference
+metadata:
+  tags: [meta, wave, delta, comparison, analysis]
+  category: meta
+  related_skills:
+    - recon-playbook
+    - cross-attack-chains
+    - cors-credential-wordpress
+    - xmlrpc-exploitation
+    - attack-patterns-reference
 ---
 
 # Cross-Wave Delta Analysis Skill

@@ -4,8 +4,10 @@ description: "Master bug bounty orchestrator — full pipeline: recon, pre-hunt 
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [bug-bounty, recon, redteam]
+platforms: [linux]
+metadata:
+  tags: [bug-bounty, recon, redteam]
+  category: redteam
 ---
 
 # Bug Bounty Master Workflow

@@ -4,8 +4,10 @@ description: Bug bounty report writing for H1/Bugcrowd/Intigriti/Immunefi — re
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [report, writing, redteam]
+platforms: [linux]
+metadata:
+  tags: [report, writing, redteam]
+  category: redteam
 ---
 
 # REPORT WRITING

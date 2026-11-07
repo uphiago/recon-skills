@@ -4,8 +4,10 @@ description: Hunt Microsoft SharePoint Server (2013/2016/2019/Subscription Editi
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [sharepoint, hunt, redteam, microsoft]
+platforms: [linux]
+metadata:
+  tags: [sharepoint, hunt, redteam, microsoft]
+  category: redteam
 ---
 
 ## When to Use

@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, cors, wordpress, credential-theft, ATO]
-category: recon
-related_skills:
-  - wp-mass-recon
-  - xmlrpc-exploitation
-  - cross-attack-chains
-  - wordpress-full-compromise
+metadata:
+  tags: [recon, cors, wordpress, credential-theft, ATO]
+  category: recon
+  related_skills:
+    - wp-mass-recon
+    - xmlrpc-exploitation
+    - cross-attack-chains
+    - wordpress-full-compromise
 ---
 
 # CORS Credential WordPress Skill

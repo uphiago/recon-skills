@@ -6,12 +6,13 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, exchange, OWA, NTLM, ActiveDirectory, password-spray]
-category: recon
-related_skills:
-  - port-service-discovery
-  - zimbra-attack
-  - subdomain-enumeration
+metadata:
+  tags: [recon, exchange, OWA, NTLM, ActiveDirectory, password-spray]
+  category: recon
+  related_skills:
+    - port-service-discovery
+    - zimbra-attack
+    - subdomain-enumeration
 ---
 
 # Exchange/OWA Attack Skill

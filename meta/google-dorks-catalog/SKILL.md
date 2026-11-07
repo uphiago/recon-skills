@@ -6,9 +6,9 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: N/A (reference catalog)
-disable-model-invocation: true
-tags: [meta, google-dorks, secrets, passive-recon, osint]
-category: meta
+metadata:
+  tags: [meta, google-dorks, secrets, passive-recon, osint]
+  category: meta
 ---
 
 # Google Dorks Catalog -- Exposed Configs & Secrets

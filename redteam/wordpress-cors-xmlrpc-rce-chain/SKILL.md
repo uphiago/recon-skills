@@ -5,14 +5,15 @@ version: 2.0.0
 license: MIT
 platforms: [linux, macos]
 compatibility: Requires curl, a browser, and approved WordPress test identities
-tags: [wordpress, cors, xmlrpc, chain, validation]
-category: redteam
-related_skills:
-  - cross-attack-chains
-  - hunt-cors
-  - hunt-wordpress
-  - triage-validation
-  - xmlrpc-exploitation
+metadata:
+  tags: [wordpress, cors, xmlrpc, chain, validation]
+  category: redteam
+  related_skills:
+    - cross-attack-chains
+    - hunt-cors
+    - hunt-wordpress
+    - triage-validation
+    - xmlrpc-exploitation
 ---
 
 # WordPress CORS, XML-RPC, and Upload Chain

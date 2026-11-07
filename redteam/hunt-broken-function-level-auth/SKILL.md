@@ -1,17 +1,18 @@
 ---
 name: hunt-broken-function-level-auth
 description: Hunt broken function-level authorization via verb drift, route shadowing, and transport gaps.
-category: redteam
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, ffuf
-tags: [redteam, authorization, function-level, API, verb-drift, route-shadowing]
-related_skills:
-  - hunt-idor
-  - hunt-auth-bypass
-  - hunt-api-misconfig
+metadata:
+  tags: [redteam, authorization, function-level, API, verb-drift, route-shadowing]
+  category: redteam
+  related_skills:
+    - hunt-idor
+    - hunt-auth-bypass
+    - hunt-api-misconfig
 ---
 
 # Broken Function Level Authorization

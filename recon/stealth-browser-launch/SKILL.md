@@ -6,13 +6,14 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, httpx, nuclei, python3
-tags: [recon, stealth, browser, anti-bot, fingerprint, chromium, playwright]
-category: recon
-related_skills:
-  - humanize-automation
-  - tls-fingerprint-impersonation
-  - http2-header-impersonation
-  - ops-proxyns
+metadata:
+  tags: [recon, stealth, browser, anti-bot, fingerprint, chromium, playwright]
+  category: recon
+  related_skills:
+    - humanize-automation
+    - tls-fingerprint-impersonation
+    - http2-header-impersonation
+    - ops-proxyns
 ---
 
 # Stealth Browser Launch

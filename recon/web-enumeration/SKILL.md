@@ -4,8 +4,10 @@ description: "Sensitive file scanning, path traversal bypass, vHost enum, .env e
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: recon
-tags: [web, enumeration, sensitive-files, path-traversal, vhost, recon]
+platforms: [linux]
+metadata:
+  tags: [web, enumeration, sensitive-files, path-traversal, vhost, recon]
+  category: recon
 ---
 
 # Web Enumeration -- Sensitive Files, Path Traversal, vHost, Log Mining

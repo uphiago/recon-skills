@@ -4,8 +4,10 @@ description: Skill-set loader for /hunt orchestrator. Fingerprints the target, p
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [dispatch, hunt, redteam]
+platforms: [linux]
+metadata:
+  tags: [dispatch, hunt, redteam]
+  category: redteam
 ---
 
 # hunt-dispatch

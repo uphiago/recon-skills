@@ -4,8 +4,10 @@ description: Finding validation before writing any report — 7-Question Gate (a
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [triage, validation, redteam]
+platforms: [linux]
+metadata:
+  tags: [triage, validation, redteam]
+  category: redteam
 ---
 
 # TRIAGE & VALIDATION

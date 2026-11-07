@@ -6,11 +6,12 @@ revision_date: 2026-07-25
 license: MIT
 platforms: [linux]
 compatibility: Requires curl, nmap, python3, masscan, subfinder, httpx, nuclei
-tags: [recon, camera, IoT, RTSP, ONVIF, Axis, Hikvision]
-category: recon
-related_skills:
-  - port-mass-scan
-  - port-service-discovery
+metadata:
+  tags: [recon, camera, IoT, RTSP, ONVIF, Axis, Hikvision]
+  category: recon
+  related_skills:
+    - port-mass-scan
+    - port-service-discovery
 ---
 
 # IoT Camera Recon Skill

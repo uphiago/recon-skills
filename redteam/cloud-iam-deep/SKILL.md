@@ -4,8 +4,10 @@ description: "GCP/AWS/Azure cloud exploitation -- Cloud Functions, Firestore, Cl
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
-category: redteam
-tags: [cloud, IAM, AWS, GCP, Azure, privilege-escalation, redteam]
+platforms: [linux]
+metadata:
+  tags: [cloud, IAM, AWS, GCP, Azure, privilege-escalation, redteam]
+  category: redteam
 ---
 
 # Cloud IAM Deep -- Cloud Functions, Storage, IAM Exploitation
