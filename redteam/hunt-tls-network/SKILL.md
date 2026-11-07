@@ -338,8 +338,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://dmarcian.com/dmarc-inspector
 
 ---
 
-## Validation
-
+## Verification
 Each finding ships only with the proof listed — never the `dig`/header output alone.
 
 - **Subdomain takeover:** you registered the dangling resource and served a unique canary over `https://sub.target.com/` with valid TLS. Screenshot + canary string. (Tear down after.)
@@ -358,30 +357,6 @@ Each finding ships only with the proof listed — never the `dig`/header output 
 - Missing security headers / missing CAA only: Info (usually do not file)
 
 **Pre-submission scope gate:** before filing ANY item here, confirm the program does not list it as out of scope (email-auth, missing-headers, weak-TLS-without-exploit, and CAA are commonly OOS). Quote the in-scope line in your report.
-
----
-
-## Verification
-
-Run this self-test to confirm tls-network hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-tls-network" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 

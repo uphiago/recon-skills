@@ -299,25 +299,9 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ## Verification
 
-Run this self-test to confirm cache poisoning readiness:
-
-1. **Cache header detection** — confirm cache header recognition:
-   ```bash
-   echo "X-Cache: hit" | grep -q "X-Cache" && echo "PASS: cache header recognized" || echo "FAIL"
-   echo "CF-Cache-Status: HIT" | grep -q "CF-Cache" && echo "PASS: Cloudflare cache recognized" || echo "FAIL"
-   ```
-
-2. **Unkeyed header injection** — verify header probe syntax:
-   ```bash
-   echo "X-Forwarded-Host: evil.com" | grep -q "X-Forwarded-Host" && echo "PASS: unkeyed header syntax" || echo "FAIL"
-   ```
-
-3. **Fat GET test** — confirm GET-with-body support:
-   ```bash
-   curl --max-time 30 --connect-timeout 10 -s -X GET "https://httpbin.org/get" -d "test=body" 2>/dev/null | grep -q "test" && echo "PASS: GET with body supported" || echo "(httpbin may be down)"
-   ```
-
-All 3 tests verify cache poisoning probing readiness.
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

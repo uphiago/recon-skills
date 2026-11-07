@@ -379,36 +379,6 @@ Quarterly, sweep your `~/security-research/` and `~/Downloads/` for stale HARs /
 
 ---
 
-## Pitfalls
-
-- **Capturing cookies in screenshots** — the #1 evidence-hygiene mistake. Always collapse the Network tab Headers panel, hide the Burp Request panel, and never screenshot "Copy as cURL" output.
-- **Leaving victim PII unredacted** — IDOR PoCs that show real names, emails, and phone numbers violate responsible disclosure. Black-bar all other-user PII even in private platform attachments.
-- **HAR files with live cookies** — exported HARs contain full cookie values unless sanitized with jq. Always run the sanitize_har function before attaching.
-- **Console.log echoing cookies** — DevTools Console PoCs must use `credentials: 'include'`, never hardcode cookie values in fetch calls.
-- **Forgetting "allow pasting"** — Chrome blocks paste into Console by default. Type `allow pasting` before any PoC to prevent the warning text from appearing in screenshots.
-- **Not clearing Console between steps** — multi-step PoCs with overlapping console output confuse triagers. Clear Console (Cmd+K / Ctrl+L) between each call.
-- **Screenshotting Proxy HTTP history** — shows entire request/response with cookies. Use Repeater instead and hide the request panel.
-- **Post-submission cookie not rotated** — cookies visible in submitted screenshots are dead only after logout/login rotation. Rotate immediately after submission.
-- **Inconsistent screenshot dimensions** — different browser sizes across PoC steps look sloppy. Take all screenshots in one sitting with consistent window size.
-- **Not saving unredacted originals** — triagers may request the unredacted version. Keep originals in a local encrypted folder; never share via email.
-- **Public output with real domains** — any README/blog/report with "target.example.com — vuln detail" exposes the client. Use sector labels and pattern-based descriptions.
-- **Stale artifacts accumulating** — HARs and screenshots from old engagements pile up. Quarterly audit: archive or delete stale evidence files.
-
----
-
-## 9. Pairing with Other Skills
-
-| For this question / task | Use this skill |
-|---|---|
-| "Should I report this finding at all?" | `triage-validation` |
-| "What's the report body template?" | `report-writing` |
-| "What VRT / severity / OOS rebuttal for Bugcrowd?" | `bugcrowd-reporting` |
-| "How do I redact / sanitize this evidence?" | This skill (`evidence-hygiene`) |
-| "How do I demonstrate the bug actually fires?" | `security-arsenal` |
-| "Where are the recon probes for this asset class?" | `offensive-osint` |
-
----
-
 ## Verification
 
 Run this self-test to confirm evidence-hygiene readiness:
@@ -442,6 +412,37 @@ Run this self-test to confirm evidence-hygiene readiness:
    ```
 
 All 5 tests verify the critical evidence-hygiene safeguards are present.
+
+
+---
+
+## Pitfalls
+
+- **Capturing cookies in screenshots** — the #1 evidence-hygiene mistake. Always collapse the Network tab Headers panel, hide the Burp Request panel, and never screenshot "Copy as cURL" output.
+- **Leaving victim PII unredacted** — IDOR PoCs that show real names, emails, and phone numbers violate responsible disclosure. Black-bar all other-user PII even in private platform attachments.
+- **HAR files with live cookies** — exported HARs contain full cookie values unless sanitized with jq. Always run the sanitize_har function before attaching.
+- **Console.log echoing cookies** — DevTools Console PoCs must use `credentials: 'include'`, never hardcode cookie values in fetch calls.
+- **Forgetting "allow pasting"** — Chrome blocks paste into Console by default. Type `allow pasting` before any PoC to prevent the warning text from appearing in screenshots.
+- **Not clearing Console between steps** — multi-step PoCs with overlapping console output confuse triagers. Clear Console (Cmd+K / Ctrl+L) between each call.
+- **Screenshotting Proxy HTTP history** — shows entire request/response with cookies. Use Repeater instead and hide the request panel.
+- **Post-submission cookie not rotated** — cookies visible in submitted screenshots are dead only after logout/login rotation. Rotate immediately after submission.
+- **Inconsistent screenshot dimensions** — different browser sizes across PoC steps look sloppy. Take all screenshots in one sitting with consistent window size.
+- **Not saving unredacted originals** — triagers may request the unredacted version. Keep originals in a local encrypted folder; never share via email.
+- **Public output with real domains** — any README/blog/report with "target.example.com — vuln detail" exposes the client. Use sector labels and pattern-based descriptions.
+- **Stale artifacts accumulating** — HARs and screenshots from old engagements pile up. Quarterly audit: archive or delete stale evidence files.
+
+---
+
+## 9. Pairing with Other Skills
+
+| For this question / task | Use this skill |
+|---|---|
+| "Should I report this finding at all?" | `triage-validation` |
+| "What's the report body template?" | `report-writing` |
+| "What VRT / severity / OOS rebuttal for Bugcrowd?" | `bugcrowd-reporting` |
+| "How do I redact / sanitize this evidence?" | This skill (`evidence-hygiene`) |
+| "How do I demonstrate the bug actually fires?" | `security-arsenal` |
+| "Where are the recon probes for this asset class?" | `offensive-osint` |
 
 ---
 

@@ -153,7 +153,7 @@ done
 ## Verification
 
 1. **Confirm the credential is static:** fetch the page/endpoint three times and verify the password value is identical each time.
-2. **Confirm it grants access:** use the credential at the intended endpoint and verify the response differs from a failed attempt (HTTP 200/302 vs 401/403).
+2. **Confirm it grants access:** use the credential at the intended endpoint and compare against a known-failed attempt with a random wrong credential. A bare 200/302 is not proof — catch-all apps return 200 on failure. Require a body diff: session token issued, redirect to an authenticated area, or account-specific content absent from the failed attempt.
 3. **Map the privilege level:** test the credential against other endpoints to determine scope (read-only, write, admin, reset).
 4. **Check for audit trail:** repeat the access with a unique identifier in the request to verify the action appears in logs (confirms real impact).
 

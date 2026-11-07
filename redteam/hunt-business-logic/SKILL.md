@@ -251,6 +251,7 @@ Run this self-test to confirm business logic readiness:
 
 All 3 tests verify business logic probing readiness.
 
+
 ---
 
 ## Pitfalls

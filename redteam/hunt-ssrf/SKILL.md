@@ -453,25 +453,9 @@ The following real, verified bug-bounty / coordinated-disclosure cases extend th
 
 ## Verification
 
-Run this self-test to confirm ssrf hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-ssrf" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

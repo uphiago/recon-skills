@@ -270,19 +270,9 @@ trufflehog docker --image ORG/IMAGE:latest --only-verified
 
 ## Verification
 
-Run this self-test to confirm CI/CD hunting readiness:
-
-1. **.git exposure probe** — confirm git path syntax:
-   PASS: git path syntax
-PASS: git HEAD path syntax
-
-2. **GitHub Actions workflow detection** — confirm workflow path:
-   PASS: workflow path recognized
-
-3. **Jenkinsfile detection** — confirm Jenkinsfile pattern:
-   PASS: Jenkinsfile pattern recognized
-
-All 3 tests verify CI/CD hunting readiness.
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

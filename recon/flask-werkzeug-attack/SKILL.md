@@ -29,6 +29,9 @@ Flask applications with `debug=True` enable the Werkzeug debugger, which exposes
 
 ```bash
 # Check if Werkzeug debugger is active — trigger an error
+TARGET=target.com
+PORT=5000   # set to the observed Werkzeug port
+
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/sitemap.xml" 2>/dev/null | grep -oE "(Werkzeug|Debugger|SECRET|CONSOLE_MODE|EVALEX)" | head -5
 
 # Try to trigger error on common paths
@@ -158,10 +161,14 @@ curl --max-time 30 --connect-timeout 10 -sk -D- "https://target.com:PORT/sitemap
 - **Triggering errors leaves logs.** Every debugger page request generates a 500 error in the server logs. Be conservative to avoid detection.
 
 ## Verification
+
 1. **Skill integrity** — confirm the skill file is well-formed:
-   FAIL
-FAIL
-All tests verify the skill is properly structured.
+   ```bash
+   grep -q "name: flask-werkzeug-attack" SKILL.md && echo "PASS: frontmatter present" || echo "FAIL"
+   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
+   ```
+2. **Debugger discrimination** — a real finding requires the Werkzeug HTML traceback page (blue themed, collapsible frames), not any HTTP 500; the `/console` probe distinguishes 400 (console present) from 404 (absent).
+3. **RCE claims** — only count when EVALEX is enabled AND the console POST returns command output; a 200 on the console page alone is not code execution.
 
 ---
 

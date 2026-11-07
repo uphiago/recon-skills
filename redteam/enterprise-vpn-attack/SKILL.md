@@ -331,6 +331,15 @@ Add `-as` (auto-scan) for broader vuln coverage but slower.
 
 ---
 
+## Bridge to neighboring skills
+
+- `m365-entra-attack` — when AAA backend is Entra SAML; cred-spray strategy carries over
+- `hunt-saml` — XSW / signature-stripping if SAML SP is misconfigured
+- `mid-engagement-ir-detection` — appliances generate noisy logs; watch for IPS rules being deployed mid-engagement
+- `redteam-mindset` — banner-stripped ≠ "not vulnerable"; keep digging via behavioral fingerprints
+
+---
+
 ## Verification
 
 Run this self-test to confirm VPN appliance fingerprinting works:
@@ -369,14 +378,6 @@ Run this self-test to confirm VPN appliance fingerprinting works:
 
 All 6 tests verify the VPN fingerprinting and CVE detection syntax.
 
----
-
-## Bridge to neighboring skills
-
-- `m365-entra-attack` — when AAA backend is Entra SAML; cred-spray strategy carries over
-- `hunt-saml` — XSW / signature-stripping if SAML SP is misconfigured
-- `mid-engagement-ir-detection` — appliances generate noisy logs; watch for IPS rules being deployed mid-engagement
-- `redteam-mindset` — banner-stripped ≠ "not vulnerable"; keep digging via behavioral fingerprints
 
 ---
 

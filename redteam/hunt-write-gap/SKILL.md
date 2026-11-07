@@ -117,32 +117,10 @@ curl --max-time 30 --connect-timeout 10 -sk -X PATCH "${TARGET}/subscribers?user
 
 ---
 
-## Verification
-
-Run this self-test to confirm write-gap hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-write-gap" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
-
----
-
 ## Pitfalls
-- **Write-what-where primitive without exploitation** — the ability to write arbitrary data to arbitrary addresses is the finding. Need to demonstrate what the write achieves.
-- **Race condition write vs atomic write** — if the write is atomic (single instruction), it may not be exploitable. Need a race window.
-- **File write without execution** — writing to disk is a primitive. Need ability to execute the written content (web shell, cron job, DLL hijack).
-- **Memory corruption write without control** — crashing the server isn't a finding. Need controlled write with predictable impact.
+
+- **200/204 without persistence** — the API accepted the write but silently dropped it (RLS, trigger, read replica lag). Confirm with a GET on the same resource and a unique marker value.
+- **Write to 0 rows** — a PATCH with a filter that matches nothing returns success without changing state. It proves the route exists, not that a write gap exists.
+- **Own-data write reported as cross-tenant** — writing your own row is expected behavior. The finding requires writing another user's or tenant's object.
+- **Unauthenticated write that requires a CSRF/session precondition** — if the same request fails from a fresh client, document the precondition instead of claiming open access.
+- **Destructive confirmation** — PATCH/DELETE on shared or production data needs explicit authorization and a synthetic, restorable object. Clean up the probe row after confirmation.

@@ -210,8 +210,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/jolokia/exec/com.sun
 
 ---
 
-## Validation
-
+## Verification
 ✅ Heap dump: strings command extracts readable passwords/tokens from .hprof file
 ✅ Actuator/env: secrets visible in JSON response
 ✅ SpEL: arithmetic expression evaluates (7*7=49) or OOB callback received
@@ -223,30 +222,6 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/jolokia/exec/com.sun
 - H2 console RCE: Critical
 - Actuator env (passwords exposed): High
 - Mappings disclosure only: Low-Medium
-
----
-
-## Verification
-
-Run this self-test to confirm springboot hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-springboot" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 

@@ -273,29 +273,9 @@ Before writing the report, confirm:
 
 ## Verification
 
-Run this self-test to confirm ASP.NET hunting readiness:
-
-1. **ViewState detection** — confirm __VIEWSTATE pattern recognition:
-   ```bash
-   echo '<input type="hidden" name="__VIEWSTATE" value="dDwtMTc5MjU3NjY0Mzt0PDtsPGk8MT47PjtsPHQ8O2w8aTwxPjs+O2w8dDw7bDxpPDE+Oz47bDx0PDtsPGk8MT47PjtAPDEyMzQ1Njc4OTA7Pj47Oz47Pj47Pj47Pg==" />' | grep -q "__VIEWSTATE" && echo "PASS: ViewState pattern detected" || echo "FAIL"
-   ```
-
-2. **ViewState encryption check** — confirm encrypted-vs-signed differentiation:
-   ```bash
-   echo '__VIEWSTATEENCRYPTED=""' | grep -q 'VIEWSTATEENCRYPTED=""' && echo "PASS: signed-only recognized" || echo "FAIL"
-   ```
-
-3. **trace.axd probe syntax** — confirm the probe would work:
-   ```bash
-   echo "trace.axd" | grep -q "trace.axd" && echo "PASS: trace.axd path syntax correct" || echo "FAIL"
-   ```
-
-4. **Telerik RAU endpoint syntax** — confirm the Telerik handler path:
-   ```bash
-   echo "/Telerik.Web.UI.WebResource.axd?type=rau" | grep -q "rau" && echo "PASS: Telerik RAU path syntax correct" || echo "FAIL"
-   ```
-
-All 4 tests verify the ASP.NET surface detection capability.
+- Every promoted finding states the expected behavior, the observed response, and the negative control that rules out a false positive.
+- Impact is demonstrated with the minimum state change necessary; a status code, banner, or scanner label alone is not a finding.
+- Requests, responses, UTC timestamps, and tool versions are recorded beneath `${OUTPUT_DIR:-./output}` so a reviewer can reproduce the claim.
 
 ---
 

@@ -14,7 +14,7 @@ tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
 
 - During passive reconnaissance (Phase 1)
 - After initial DNS enumeration
-- DMARC p=none means the domain can be totally spoofed
+- DMARC p=none means DMARC enforcement is off; actual spoofability still depends on SPF/DKIM and the receiver's local policy
 - Critical for identifying phishing/business email compromise risks
 
 ## DMARC/SPF/DKIM Check Commands
@@ -76,11 +76,11 @@ With `v=spf1 include:amazonses.com ~all`:
 2. Configure SES with your own domain (verified)
 3. Send email with From: admin@target.com
 4. SPF PASSES (because of include:amazonses.com)
-5. DMARC p=none -- provider delivers normally
+5. DMARC p=none -- the receiver applies no DMARC policy; delivery then depends on SPF/DKIM and local filters
 
 ## Real-World Cases
 
-**Real-world case (CRITICAL)**: Political party -- DMARC p=none on both domains (DOMAIN_PLACEHOLDER_A, DOMAIN_PLACEHOLDER_B). SPF with include:amazonses.com (any SES account can send as the domain). Total email spoofing.
+**Field observation (reported as CRITICAL after delivery proof)**: an organization with DMARC p=none on both domains and SPF `include:amazonses.com`, where a message spoofed via a separate SES account was delivered to a controlled inbox. The inbox-delivery evidence, not the p=none record alone, justified the severity.
 
 ## Pitfalls
 
@@ -93,8 +93,13 @@ With `v=spf1 include:amazonses.com ~all`:
 ## Verification
 
 ```bash
-# Verify email spoofing is possible
-# Send test email and check headers:
+# Check the DMARC policy first
 dig +short TXT _dmarc.target.com
-# If p=none -> confirmed spoofable
+# p=none means no DMARC enforcement — it does NOT by itself prove spoofing.
+# Proof = a spoofed message actually delivered to an inbox you control:
+swaks --to you@your-inbox.example --from ceo@target.com \
+  --server <an-smtp-relay-you-control-or-localhost> --header-From "ceo@target.com"
+# Then inspect the delivered message's Authentication-Results header:
+# dmarc=none or dmarc=pass with an attacker-controlled source = confirmed.
+# Reject/quarantine or spam-folder delivery = not demonstrated.
 ```

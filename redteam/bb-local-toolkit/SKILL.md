@@ -1307,6 +1307,46 @@ Check the list below. If it's there and you can't chain it -> KILL IT.
 ### Q7: Would a triager reading this say "yes, that's a real bug"?
 Read your report as if you're a tired triager at 5pm on a Friday. Does it pass?
 
+## Verification
+
+Run this self-test to confirm the toolkit is operational:
+
+1. **Core tool check** — verify essential Go binaries and Python tools are installed:
+   ```bash
+   which subfinder httpx nuclei katana ffuf dalfox gau waybackurls 2>/dev/null
+   pip3 show arjun paramspider 2>/dev/null | grep -E '^Name:|^Version:'
+   ```
+
+2. **FFUF calibration test** — confirm `-ac` auto-calibrate works:
+   ```bash
+   ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://example.com/FUZZ -ac -timeout 5 2>&1 | head -5
+   ```
+
+3. **Subfinder connectivity** — verify passive sources are reachable:
+   ```bash
+   subfinder -d example.com -silent -timeout 30 2>&1 | head -3
+   ```
+
+4. **HackerOne API reachability** — confirm GraphQL endpoint is accessible:
+   ```bash
+   curl --max-time 30 --connect-timeout 10 -s "https://hackerone.com/graphql" -o /dev/null -w "%{http_code}" && echo " PASS" || echo " FAIL"
+   ```
+
+5. **Semgrep install check** — confirm static analysis is available:
+   ```bash
+   semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
+   ```
+
+6. **Wordlist availability** — confirm SecLists is cloned:
+   ```bash
+   ls /usr/share/seclists/Discovery/Web-Content/common.txt >/dev/null 2>&1 && echo "PASS: SecLists present" || echo "FAIL: git clone https://github.com/danielmiessler/SecLists.git /usr/share/seclists"
+   ```
+
+All 6 tests should pass for a fully operational toolkit. Missing Go binaries can be installed via `go install`; Python tools via `pip3 install`.
+
+
+---
+
 ## Pitfalls
 
 - **Over-automation without understanding** — running nuclei, ffuf, and dalfox on every subdomain triggers WAF blocks, rate limits, and IP bans. Use `-rate` and `-t` flags. Manual probing finds bugs that automated scanners miss.
@@ -1526,45 +1566,6 @@ When payout is being downgraded, use these counters:
 | "Already known" | "Show me the report number -- I searched and found none" |
 | "By design" | "Show me the documentation that states this is intended" |
 | "Low CVSS score" | "CVSS doesn't account for business impact -- attacker can steal [X]" |
-
----
-
-## Verification
-
-Run this self-test to confirm the toolkit is operational:
-
-1. **Core tool check** — verify essential Go binaries and Python tools are installed:
-   ```bash
-   which subfinder httpx nuclei katana ffuf dalfox gau waybackurls 2>/dev/null
-   pip3 show arjun paramspider 2>/dev/null | grep -E '^Name:|^Version:'
-   ```
-
-2. **FFUF calibration test** — confirm `-ac` auto-calibrate works:
-   ```bash
-   ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://example.com/FUZZ -ac -timeout 5 2>&1 | head -5
-   ```
-
-3. **Subfinder connectivity** — verify passive sources are reachable:
-   ```bash
-   subfinder -d example.com -silent -timeout 30 2>&1 | head -3
-   ```
-
-4. **HackerOne API reachability** — confirm GraphQL endpoint is accessible:
-   ```bash
-   curl --max-time 30 --connect-timeout 10 -s "https://hackerone.com/graphql" -o /dev/null -w "%{http_code}" && echo " PASS" || echo " FAIL"
-   ```
-
-5. **Semgrep install check** — confirm static analysis is available:
-   ```bash
-   semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
-   ```
-
-6. **Wordlist availability** — confirm SecLists is cloned:
-   ```bash
-   ls /usr/share/seclists/Discovery/Web-Content/common.txt >/dev/null 2>&1 && echo "PASS: SecLists present" || echo "FAIL: git clone https://github.com/danielmiessler/SecLists.git /usr/share/seclists"
-   ```
-
-All 6 tests should pass for a fully operational toolkit. Missing Go binaries can be installed via `go install`; Python tools via `pip3 install`.
 
 ---
 

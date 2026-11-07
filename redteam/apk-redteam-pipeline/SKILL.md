@@ -347,23 +347,6 @@ mitmproxy --listen-port 8080
 
 ---
 
-## Pitfalls
-
-- **Don't grep only for "password"** — most secrets have specific high-signal patterns (AKIA, AIza, eyJ, etc.). Generic word grep produces too much noise.
-- **Don't skip XAPK split APKs** — config.armeabi splits and config.<lang> splits sometimes contain different code paths.
-- **Don't trust expired JWTs as "dead intel"** — the path structure, endpoint list, and signing algorithm are still useful. The 8-year-expired-JWT example above shows this.
-- **Don't reverse only the latest version** — older APK versions (via APKMirror version history) sometimes have secrets removed in newer versions but still active server-side.
-- **Don't ignore Firebase even if app looks "simple"** — Firebase rules misconfigurations (public read on Firestore) are extremely common.
-- **Don't run Frida on a production device** — use rooted emulator or test device only.
-- **APKPure CDN rate-limiting** — truncated downloads with missing EOCD are common. Rotate IP (VPN hop) and retry; `7z x` is more lenient than `unzip` for partially-downloaded archives.
-- **Large APKs can OOM jadx** — for APKs >100 MB, increase jadx heap with `-Xmx4g` or fall back to `strings`-only pass first.
-- **Keystore/SQLite files in assets/** — overlooked because they don't match regex secret patterns. Manually review `assets/` directory tree for `.db`, `.sqlite`, `.jks`, `.bks`, `.p12` files.
-- **ProGuard/R8 obfuscation** — most APKs are obfuscated; secret patterns survive renaming, but class names don't. Don't dismiss an APK because method names are `a.b.c.d`.
-- **Multi-dex APKs** — some secrets live in `classes2.dex` onward; don't stop after `classes.dex`.
-- **Play Store developer pages may list inactive/beta apps** — cross-reference with download counts and last-updated dates; stale apps may have been archived but still expose secrets.
-
----
-
 ## Verification
 
 Run this self-test to confirm the pipeline works end-to-end:
@@ -404,6 +387,24 @@ Run this self-test to confirm the pipeline works end-to-end:
    ```
 
 If all 5 tests pass, the pipeline is operational. Test 1 (acquisition) may fail due to APKPure CDN blocking — this does not block the rest of the workflow; fall back to APKMirror or direct APK URL.
+
+
+---
+
+## Pitfalls
+
+- **Don't grep only for "password"** — most secrets have specific high-signal patterns (AKIA, AIza, eyJ, etc.). Generic word grep produces too much noise.
+- **Don't skip XAPK split APKs** — config.armeabi splits and config.<lang> splits sometimes contain different code paths.
+- **Don't trust expired JWTs as "dead intel"** — the path structure, endpoint list, and signing algorithm are still useful. The 8-year-expired-JWT example above shows this.
+- **Don't reverse only the latest version** — older APK versions (via APKMirror version history) sometimes have secrets removed in newer versions but still active server-side.
+- **Don't ignore Firebase even if app looks "simple"** — Firebase rules misconfigurations (public read on Firestore) are extremely common.
+- **Don't run Frida on a production device** — use rooted emulator or test device only.
+- **APKPure CDN rate-limiting** — truncated downloads with missing EOCD are common. Rotate IP (VPN hop) and retry; `7z x` is more lenient than `unzip` for partially-downloaded archives.
+- **Large APKs can OOM jadx** — for APKs >100 MB, increase jadx heap with `-Xmx4g` or fall back to `strings`-only pass first.
+- **Keystore/SQLite files in assets/** — overlooked because they don't match regex secret patterns. Manually review `assets/` directory tree for `.db`, `.sqlite`, `.jks`, `.bks`, `.p12` files.
+- **ProGuard/R8 obfuscation** — most APKs are obfuscated; secret patterns survive renaming, but class names don't. Don't dismiss an APK because method names are `a.b.c.d`.
+- **Multi-dex APKs** — some secrets live in `classes2.dex` onward; don't stop after `classes.dex`.
+- **Play Store developer pages may list inactive/beta apps** — cross-reference with download counts and last-updated dates; stale apps may have been archived but still expose secrets.
 
 ---
 

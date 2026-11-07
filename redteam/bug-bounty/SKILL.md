@@ -1307,6 +1307,40 @@ Check the list below. If it's there and you can't chain it -> KILL IT.
 ### Q7: Would a triager reading this say "yes, that's a real bug"?
 Read your report as if you're a tired triager at 5pm on a Friday. Does it pass?
 
+## Verification
+
+Run this self-test to confirm the toolkit is operational:
+
+1. **Core tool check** — verify essential Go binaries are installed:
+   ```bash
+   which subfinder httpx nuclei katana ffuf dalfox gau waybackurls 2>/dev/null
+   ```
+
+2. **FFUF calibration test** — confirm `-ac` auto-calibrate works:
+   ```bash
+   ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://example.com/FUZZ -ac -timeout 5 2>&1 | head -5
+   ```
+
+3. **Subfinder connectivity** — verify passive sources are reachable:
+   ```bash
+   subfinder -d example.com -silent -timeout 30 2>&1 | head -3
+   ```
+
+4. **HackerOne API reachability** — confirm GraphQL endpoint is accessible:
+   ```bash
+   curl --max-time 30 --connect-timeout 10 -s "https://hackerone.com/graphql" -o /dev/null -w "%{http_code}" && echo " PASS" || echo " FAIL"
+   ```
+
+5. **Semgrep install check** — confirm static analysis is available:
+   ```bash
+   semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
+   ```
+
+All 5 tests should pass for a fully operational toolkit.
+
+
+---
+
 ## Pitfalls
 
 - **Over-automation without understanding** — running nuclei, ffuf, and dalfox on every subdomain triggers WAF blocks, rate limits, and IP bans. Use `-rate` and `-t` flags. Manual probing finds bugs that automated scanners miss.
@@ -1554,39 +1588,6 @@ When payout is being downgraded, use these counters:
 # INSTALLATION
 
 This file is a portable methodology skill. Load it with whichever agent or workflow you use; it assumes only the tools listed in the prerequisites.
-
----
-
-## Verification
-
-Run this self-test to confirm the toolkit is operational:
-
-1. **Core tool check** — verify essential Go binaries are installed:
-   ```bash
-   which subfinder httpx nuclei katana ffuf dalfox gau waybackurls 2>/dev/null
-   ```
-
-2. **FFUF calibration test** — confirm `-ac` auto-calibrate works:
-   ```bash
-   ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u https://example.com/FUZZ -ac -timeout 5 2>&1 | head -5
-   ```
-
-3. **Subfinder connectivity** — verify passive sources are reachable:
-   ```bash
-   subfinder -d example.com -silent -timeout 30 2>&1 | head -3
-   ```
-
-4. **HackerOne API reachability** — confirm GraphQL endpoint is accessible:
-   ```bash
-   curl --max-time 30 --connect-timeout 10 -s "https://hackerone.com/graphql" -o /dev/null -w "%{http_code}" && echo " PASS" || echo " FAIL"
-   ```
-
-5. **Semgrep install check** — confirm static analysis is available:
-   ```bash
-   semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
-   ```
-
-All 5 tests should pass for a fully operational toolkit.
 
 ---
 

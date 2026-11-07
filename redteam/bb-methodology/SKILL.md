@@ -126,6 +126,61 @@ Before touching any command:
 
 ---
 
+## Verification
+
+Run this self-test to confirm the methodology's quality gates are operational:
+
+1. **Marker uniqueness test** — confirm baseline check catches false positives:
+   ```bash
+   echo "<a href='javascript:HelpWindowKey(1)'>Help</a>" > /tmp/test-baseline.html
+   MARKER="javascript"
+   grep -q "$MARKER" /tmp/test-baseline.html && echo "FAIL: marker appears in baseline — choose unique marker" || echo "PASS: marker is unique"
+   rm -f /tmp/test-baseline.html
+   ```
+
+2. **Body-diff test** — verify diff catches byte-identical responses:
+   ```bash
+   echo "identical body" > /tmp/a.txt && cp /tmp/a.txt /tmp/b.txt
+   diff /tmp/a.txt /tmp/b.txt >/dev/null && echo "PASS: identical bodies detected (no bypass)" || echo "FAIL: diff broken"
+   rm -f /tmp/a.txt /tmp/b.txt
+   ```
+
+3. **Statistical sample test** — verify Python can compute mean/σ:
+   ```bash
+   python3 -c "
+   import statistics
+   control = [700, 710, 690, 705, 715, 698, 702, 708, 695, 712]
+   mean_c = statistics.mean(control)
+   stdev_c = statistics.stdev(control)
+   threshold = mean_c + 2*stdev_c
+   suspect = 1527
+   print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
+   " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
+   ```
+
+4. **Shell-loop ban verification** — confirm Python iteration works reliably:
+   ```bash
+   python3 -c "
+   items = ['a','b','c','d','e','f','g','h','i','j']
+   results = []
+   for item in items:
+       results.append(f'processed:{item}')
+   expected = 10
+   actual = len(results)
+   print(f'PASS: {actual}/{expected} items processed' if actual == expected else f'FAIL: {actual}/{expected}')
+   " 2>/dev/null || echo "FAIL: Python3 unavailable"
+   ```
+
+5. **Mode confirmation check** — verify the engagement-type decision framework is understood:
+   ```bash
+   grep -q "PART 0" SKILL.md && echo "PASS: PART 0 mode-confirmation present" || echo "FAIL: PART 0 missing"
+   ```
+
+If all 5 tests pass, the methodology discipline rules are verifiable. Tests 1-2 are the most common false-positive sources in real engagements.
+
+
+---
+
 ## Pitfalls
 
 - **Mode confusion** — treating a bug-bounty engagement as a red-team exercise wastes time on hygiene findings that get N/A'd. Confirm the engagement type (PART 0) before any recon.
@@ -473,60 +528,6 @@ For any iteration that runs more than 5 times, **use Python (with try/except per
 - Always count results. If you expected 100 probes and got <50 lines of output, your loop ate something.
 
 **Lesson from an authorized engagement:** A zsh array-iteration verb-tampering test silently produced no curl invocations across 20+ iterations (zsh ate the array). Output looked like "HIT [GET] /_api/web → " repeated for every probe but the actual response was missing. ~50 probes worth of testing lost. Switching the test to Python with explicit per-iteration logging surfaced the real results.
-
----
-
-## Verification
-
-Run this self-test to confirm the methodology's quality gates are operational:
-
-1. **Marker uniqueness test** — confirm baseline check catches false positives:
-   ```bash
-   echo "<a href='javascript:HelpWindowKey(1)'>Help</a>" > /tmp/test-baseline.html
-   MARKER="javascript"
-   grep -q "$MARKER" /tmp/test-baseline.html && echo "FAIL: marker appears in baseline — choose unique marker" || echo "PASS: marker is unique"
-   rm -f /tmp/test-baseline.html
-   ```
-
-2. **Body-diff test** — verify diff catches byte-identical responses:
-   ```bash
-   echo "identical body" > /tmp/a.txt && cp /tmp/a.txt /tmp/b.txt
-   diff /tmp/a.txt /tmp/b.txt >/dev/null && echo "PASS: identical bodies detected (no bypass)" || echo "FAIL: diff broken"
-   rm -f /tmp/a.txt /tmp/b.txt
-   ```
-
-3. **Statistical sample test** — verify Python can compute mean/σ:
-   ```bash
-   python3 -c "
-   import statistics
-   control = [700, 710, 690, 705, 715, 698, 702, 708, 695, 712]
-   mean_c = statistics.mean(control)
-   stdev_c = statistics.stdev(control)
-   threshold = mean_c + 2*stdev_c
-   suspect = 1527
-   print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
-   " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
-   ```
-
-4. **Shell-loop ban verification** — confirm Python iteration works reliably:
-   ```bash
-   python3 -c "
-   items = ['a','b','c','d','e','f','g','h','i','j']
-   results = []
-   for item in items:
-       results.append(f'processed:{item}')
-   expected = 10
-   actual = len(results)
-   print(f'PASS: {actual}/{expected} items processed' if actual == expected else f'FAIL: {actual}/{expected}')
-   " 2>/dev/null || echo "FAIL: Python3 unavailable"
-   ```
-
-5. **Mode confirmation check** — verify the engagement-type decision framework is understood:
-   ```bash
-   grep -q "PART 0" SKILL.md && echo "PASS: PART 0 mode-confirmation present" || echo "FAIL: PART 0 missing"
-   ```
-
-If all 5 tests pass, the methodology discipline rules are verifiable. Tests 1-2 are the most common false-positive sources in real engagements.
 
 ---
 

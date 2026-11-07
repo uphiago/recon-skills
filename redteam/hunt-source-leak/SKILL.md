@@ -24,7 +24,7 @@ Source map exposing TypeScript source = see all API routes, auth logic, secrets.
 
 ---
 
-## Pitfalls (Read Before Probes)
+## Pitfalls
 
 ### 1. Fake Source Maps — HTML Serving as .map
 
@@ -412,9 +412,16 @@ trufflehog filesystem /tmp/repo/
 
 ## Verification
 1. **Skill integrity** — confirm the skill file is well-formed:
-   FAIL
-FAIL
-All tests verify the skill is properly structured.
+   ```bash
+   grep -q "name: hunt-source-leak" SKILL.md && echo "PASS: frontmatter present" || echo "FAIL"
+   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
+   ```
+2. **Catch-all rejection** — the content filter must reject a bare HTML homepage:
+   ```bash
+   printf '<!doctype html><title>home</title>' > /tmp/sl_catchall.html
+   grep -qiE 'DB_|APP_|_KEY|_SECRET|DB_PASSWORD' /tmp/sl_catchall.html \
+     && echo "FAIL: catch-all flagged as leak" || echo "PASS: catch-all rejected"
+   ```
 
 ---
 

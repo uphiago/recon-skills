@@ -94,7 +94,7 @@ curl --max-time 30 --connect-timeout 10 -sk "${TARGET}/telescope/requests" | hea
 - **Confirmed exposure**: `/metrics` returns Prometheus text format (lines starting with `# HELP` or `# TYPE`)
 - **Actuator exposure**: `/actuator/health` returns JSON with component statuses
 - **False positive**: Endpoint returns `{"status":"ok"}` only (minimal health check, not a metrics leak)
-- **Severity upgrade**: If `/actuator/env` or `/actuator/configprops` is exposed → CRITICAL (environment variables leaked)
+- **Severity upgrade**: `/actuator/env` or `/actuator/configprops` exposed → HIGH/CRITICAL only if the response contains unredacted secrets (Spring Boot 2.2+ redacts `password`/`secret`/`key` values by default — check the body before scoring)
 
 ---
 
@@ -104,30 +104,6 @@ curl --max-time 30 --connect-timeout 10 -sk "${TARGET}/telescope/requests" | hea
 - DB pool metrics showing overload → DoS attack surface identified
 - Circuit breaker states for Stripe/email → infrastructure dependency map for chained attacks
 - Combine with `hunt-schema-enumeration` for full target profile
-
----
-
-## Verification
-
-Run this self-test to confirm metrics-exposure hunting readiness:
-
-1. **Skill integrity** — confirm the skill file is readable and well-formed:
-   ```bash
-   grep -q "name: hunt-metrics-exposure" SKILL.md && echo "PASS: skill frontmatter present" || echo "FAIL"
-   grep -q "revision_date:" SKILL.md && echo "PASS: revision date present" || echo "FAIL"
-   ```
-
-2. **Category check** — confirm the skill has a category:
-   ```bash
-   grep -q "category:" SKILL.md && echo "PASS: category present" || echo "FAIL"
-   ```
-
-3. **Pitfalls section** — confirm pitfalls are documented:
-   ```bash
-   grep -q "^## Pitfalls" SKILL.md && echo "PASS: pitfalls section present" || echo "FAIL"
-   ```
-
-All 3 tests verify the skill is properly structured and ready for use.
 
 ---
 
