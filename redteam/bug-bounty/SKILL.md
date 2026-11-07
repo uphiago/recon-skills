@@ -1396,6 +1396,8 @@ All 6 tests should pass for a fully operational toolkit. Missing Go binaries can
 - **Report-first, validate-later** — writing the report before confirming the bug still works at time of submission. Always re-test minutes before submitting.
 - **One test account testing itself** — IDOR/ATO bugs need two accounts (attacker + victim). Testing with one account against itself proves nothing.
 - **Not reading disclosed reports first** — spending hours hunting a class that's out of scope or already hard-mitigated wastes time. Read 3+ disclosed reports before hunting.
+- **Over-reliance on one wordlist** — SecLists is a starting point, not the destination. Asset-specific wordlists (from JS files, API responses, swagger docs) outperform generic ones.
+- **Ignoring mobile API versions** — mobile apps often use different/v1 endpoints with lower auth maturity than web counterparts.
 - **Scope creep via subdomain enumeration** — verify every subdomain is owned by the target. Third-party services are typically out of scope.
 - **New features == unreviewed** — anything launched in the last 30 days has the lowest security maturity and highest bug density.
 
