@@ -174,7 +174,7 @@ curl --max-time 30 --connect-timeout 10 https://api.target.com/repos/ORG/REPO/te
 
 **Grep for GraphQL in JS bundles:**
 ```bash
-grep -Eo '(query|mutation|subscription)\s+\w+\s*[\({]' bundle.js
+grep -Po '(query|mutation|subscription)\s+\w+\s*[\({]' bundle.js
 grep -Eo '"(/[a-z0-9/_-]*graphql[a-z0-9/_-]*)"' bundle.js
 ```
 

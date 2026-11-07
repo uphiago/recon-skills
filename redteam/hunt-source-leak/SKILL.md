@@ -99,7 +99,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/asset-manifest.json"
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/static/js/main.*.js" 2>/dev/null | head -3
 
 # Next.js
-BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId":"\K[^"]+')
+BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Po '"buildId":"\K[^"]+')
 curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/static/$BUILD_ID/_buildManifest.js" | head -5
 
 # Step 2: For each JS bundle, check for source map reference at end of file

@@ -177,7 +177,7 @@ curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/settings/e
 ```bash
 # Get token from session A
 TOKEN_A=$(curl --max-time 30 --connect-timeout 10 -s https://target.com/settings -H "Cookie: session=SESSION_A" \
-  | grep -Eo 'authenticity_token[^"]*value="\K[^"]+')
+  | grep -Po 'authenticity_token[^"]*value="\K[^"]+')
 
 # Use token A in session B's request
 curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/settings/update \

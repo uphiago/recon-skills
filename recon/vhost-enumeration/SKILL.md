@@ -106,13 +106,13 @@ echo "http://dev.target.com" | httpx -silent
 # Extract hostnames from SSL certificate
 echo | openssl s_client -connect TARGET_IP:443 -servername target.com 2>/dev/null \
   | openssl x509 -noout -text \
-  | grep -Eo 'DNS:[^,\s]+' | cut -d: -f2 | sort -u
+  | grep -Po 'DNS:[^,\s]+' | cut -d: -f2 | sort -u
 
 # Batch: extract hostnames from all discovered IPs
 cat unique_ips.txt | while read ip; do
   echo | timeout 5 openssl s_client -connect $ip:443 2>/dev/null \
     | openssl x509 -noout -text 2>/dev/null \
-    | grep -Eo 'DNS:[^,\s]+' | cut -d: -f2 | sort -u >> ssl_hostnames.txt
+    | grep -Po 'DNS:[^,\s]+' | cut -d: -f2 | sort -u >> ssl_hostnames.txt
   sleep 0.5
 done
 

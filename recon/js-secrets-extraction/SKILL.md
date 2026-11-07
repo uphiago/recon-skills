@@ -259,17 +259,17 @@ curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo 'src
 for chunk in chunks/*.js; do
   echo "=== $chunk ==="
   # eval / new Function (arbitrary code execution)
-  grep -Eon 'eval\s*\(|new\s+Function\s*\(' "$chunk"
+  grep -Pon 'eval\s*\(|new\s+Function\s*\(' "$chunk"
   # Hardcoded API keys/secrets
-  grep -Eon '(?:api[_-]?key|secret|token|password|bearer)\s*[:=]\s*["\x27][^"\x27]{8,}' "$chunk"
+  grep -Pon '(?:api[_-]?key|secret|token|password|bearer)\s*[:=]\s*["\x27][^"\x27]{8,}' "$chunk"
   # postMessage without origin check
-  grep -Eon 'postMessage\s*\(' "$chunk"
+  grep -Pon 'postMessage\s*\(' "$chunk"
   # Prototype pollution patterns
   grep -Eon '__proto__|constructor\.prototype' "$chunk"
   # Debug/test code in production
   grep -Eoin 'debug|test|staging|localhost' "$chunk"
   # Client-trusted flags
-  grep -Eon '(?:isAdmin|isVip|isPremium|isModerator|role)\s*[=:]\s*true' "$chunk"
+  grep -Pon '(?:isAdmin|isVip|isPremium|isModerator|role)\s*[=:]\s*true' "$chunk"
 done > ai_review_findings.txt
 
 # 3. Review findings — each is a CANDIDATE, not confirmed

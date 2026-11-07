@@ -42,7 +42,7 @@ curl --max-time 30 --connect-timeout 10 -skI "https://TARGET:PORT/" | grep -iE "
 # Download the main JS bundle and scan for ISAPI endpoints
 curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/" | grep -Eo 'src="([^"]+\.js[^"]*)"' | while read -r match; do
   js_url=$(echo "$match" | grep -Eo '(\./[^"]+\.js[^"]*|/[^"]+\.js[^"]*)')
-  [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Eo '/ISAPI/[^"'\''\s]{5,80}' | sort -u
+  [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Po '/ISAPI/[^"'\''\s]{5,80}' | sort -u
 done
 ```
 
@@ -109,7 +109,7 @@ for path in "${ISAPI_PATHS[@]}"; do
   
   # Decode error codes
   if echo "$body" | grep -q "ErrorCode"; then
-    error=$(echo "$body" | grep -Eo 'ErrorCode\"?\s*[:\s]*(\d+)' | grep -Eo '\d+')
+    error=$(echo "$body" | grep -Po 'ErrorCode\"?\s*[:\s]*(\d+)' | grep -Po '\d+')
     case $error in
       216) echo "  → SESSION_ERROR (auth required)";;
       401) echo "  → UNAUTHORIZED";;

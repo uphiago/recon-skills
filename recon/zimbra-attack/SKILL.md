@@ -75,7 +75,7 @@ if echo "$INITIAL" | grep -qi "zimbra\|zmail"; then
 fi
 
 # Check page title
-TITLE=$(curl -sk --max-time 10 --connect-timeout 10 "https://$TARGET/" 2>/dev/null | grep -Eo '<title>\K[^<]+')
+TITLE=$(curl -sk --max-time 10 --connect-timeout 10 "https://$TARGET/" 2>/dev/null | grep -Po '<title>\K[^<]+')
 if echo "$TITLE" | grep -qi "zimbra"; then
   echo "[+] Zimbra confirmed — Title: $TITLE"
 fi
@@ -90,8 +90,8 @@ fi
 SOAP_RESP=$(curl -sk -X POST --max-time 10 --connect-timeout 10 "https://$TARGET/service/soap/" \
   -H "Content-Type: application/xml" \
   -d '<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Header><context xmlns="urn:zimbra"/></soap:Header><soap:Body><GetVersionInfoRequest xmlns="urn:zimbraAdmin"/></soap:Body></soap:Envelope>' 2>/dev/null)
-ZIMBRA_VER=$(echo "$SOAP_RESP" | grep -Eo '<VersionString>\K[^<]+')
-ZIMBRA_RELEASE=$(echo "$SOAP_RESP" | grep -Eo '<ReleaseString>\K[^<]+')
+ZIMBRA_VER=$(echo "$SOAP_RESP" | grep -Po '<VersionString>\K[^<]+')
+ZIMBRA_RELEASE=$(echo "$SOAP_RESP" | grep -Po '<ReleaseString>\K[^<]+')
 if [[ -n "$ZIMBRA_VER" ]]; then
   echo "[+] Zimbra version from SOAP: $ZIMBRA_VER ($ZIMBRA_RELEASE)"
 fi

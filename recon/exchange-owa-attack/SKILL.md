@@ -232,8 +232,8 @@ ADFS_CODE=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 5 --connect-timeo
 # Check Office 365 tenant
 O365_XML=$(curl -sk --max-time 5 --connect-timeout 5 "https://login.microsoftonline.com/getuserrealm.srf?login=user@$TARGET_DOMAIN&xml=1" 2>/dev/null)
 if echo "$O365_XML" | grep -qi "Federated\|Managed"; then
-  echo "  [+] Office 365 tenant: $(echo "$O365_XML" | grep -Eo '<NameSpaceType>\K[^<]+')"
-  echo "  $(echo "$O365_XML" | grep -Eo '<DomainName>\K[^<]+')"
+  echo "  [+] Office 365 tenant: $(echo "$O365_XML" | grep -Po '<NameSpaceType>\K[^<]+')"
+  echo "  $(echo "$O365_XML" | grep -Po '<DomainName>\K[^<]+')"
 fi
 
 # Autodiscover (leaks internal server names)
@@ -242,7 +242,7 @@ AUTODISCOVER=$(curl -sk --max-time 10 --connect-timeout 10 "https://autodiscover
   -d '<?xml version="1.0"?><Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006"><Request><EMailAddress>user@'$TARGET_DOMAIN'</EMailAddress><AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a</AcceptableResponseSchema></Request></Autodiscover>' 2>/dev/null)
 if echo "$AUTODISCOVER" | grep -qi "server\|internal"; then
   echo "  [+] Autodiscover response — internal server names leaked"
-  echo "$AUTODISCOVER" | grep -Eo '(?:<Server>|<InternalRpcClientServer>|<ASUrl>)[^<]+' | head -5
+  echo "$AUTODISCOVER" | grep -Po '(?:<Server>|<InternalRpcClientServer>|<ASUrl>)[^<]+' | head -5
 fi
 ```
 

@@ -45,7 +45,7 @@ curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId
 curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-powered-by\|x-nextjs"
 
 # Extract build ID for /_next/data/ paths
-BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId":"\K[^"]+')
+BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Po '"buildId":"\K[^"]+')
 echo "Build ID: $BUILD_ID"
 
 # Check Next.js version via package disclosure

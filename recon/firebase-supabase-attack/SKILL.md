@@ -76,11 +76,11 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/main.js" -o "$OUTDI
 echo "[*] Extracting Firebase/Supabase configs..."
 
 # Firebase config pattern
-grep -Eo 'apiKey["\s:]+["][^"]+["]|projectId["\s:]+["][^"]+["]|firebase\.initializeApp' \
+grep -Po 'apiKey["\s:]+["][^"]+["]|projectId["\s:]+["][^"]+["]|firebase\.initializeApp' \
   "$OUTDIR"/*.html "$OUTDIR"/*.js 2>/dev/null | sort -u
 
 # Supabase config pattern
-grep -Eo 'supabase\.co[^"'\'' ]+|supabaseUrl["\s:]+["][^"]+["]|supabaseKey["\s:]+["][^"]+["]|anon[_-]?key["\s:=]+["][^"]{20,}["]' \
+grep -Po 'supabase\.co[^"'\'' ]+|supabaseUrl["\s:]+["][^"]+["]|supabaseKey["\s:]+["][^"]+["]|anon[_-]?key["\s:=]+["][^"]{20,}["]' \
   "$OUTDIR"/*.html "$OUTDIR"/*.js 2>/dev/null | sort -u
 ```
 
@@ -231,7 +231,7 @@ for table in "${TABLES[@]}"; do
   if [[ "$code" == "200" ]]; then
     count=$(curl --max-time 30 --connect-timeout 10 -sk "$SUPABASE_URL/rest/v1/$table?limit=0" \
       -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
-      -H "Prefer: count=exact" -I 2>/dev/null | grep -i "content-range" | grep -Eo '\d+(?=/\d+$)')
+      -H "Prefer: count=exact" -I 2>/dev/null | grep -i "content-range" | grep -Po '\d+(?=/\d+$)')
     echo "  [TABLE] $table — HTTP 200 (${count:-?} rows)"
 
     # Fetch first 3 rows

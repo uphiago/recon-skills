@@ -213,7 +213,7 @@ for repo in $(gh repo list "$ORG" --limit 50 --json name --jq '.[].name'); do
 
     # 6. Unpinned third-party actions — mutable tag (@v1, @main) vs pinned (@<40-char sha>)
     #    Mutable tags can be repointed by a compromised action repo (see case #9, tj-actions/changed-files).
-    echo "$content" | grep -E 'uses: *[^ ]+/[^ ]+@(v?[0-9]+([.][0-9]+)*|main|master|latest)\b' | grep -v '@[0-9a-f]\{40\}'
+    echo "$content" | grep -P 'uses: *[^ ]+/[^ ]+@(v?[0-9]+([.][0-9]+)*|main|master|latest)\b' | grep -v '@[0-9a-f]\{40\}'
   done
 done
 ```

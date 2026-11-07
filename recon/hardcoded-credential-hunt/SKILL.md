@@ -36,7 +36,7 @@ Detect credentials baked into client-side code or HTML responses. Targets includ
 
 ```bash
 # Scan HTML for password fields with pre-filled values
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com/PATH" | grep -Eoi '(?:password|passwd|senha|pass|pwd|secret)\s*[=:"]\s*"?[^"&\s]{4,30}"?' | head -10
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/PATH" | grep -Poi '(?:password|passwd|senha|pass|pwd|secret)\s*[=:"]\s*"?[^"&\s]{4,30}"?' | head -10
 
 # Scan JSON config endpoints for credential-like keys
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/config" | python3 -c "
@@ -50,7 +50,7 @@ except: pass
 "
 
 # Scan inline JavaScript for hardcoded secrets
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Eo '(?:SECRET|PASSWORD|API_KEY|TOKEN)\s*=\s*"[^"]{8,}"' | head -10
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Po '(?:SECRET|PASSWORD|API_KEY|TOKEN)\s*=\s*"[^"]{8,}"' | head -10
 ```
 
 ## Procedure

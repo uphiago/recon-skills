@@ -44,7 +44,7 @@ grep -rEn 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[^[:space:]]+' /tmp/*.js
 
 # Quick one-liner
 curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'https://[a-z0-9-]+\.supabase\.co'
-curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo '(?:supabaseUrl|SUPABASE_URL)[": ]+[^"'\''\s]+'
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Po '(?:supabaseUrl|SUPABASE_URL)[": ]+[^"'\''\s]+'
 ```
 
 ### 1.2 Search in .env and Config Files
@@ -60,7 +60,7 @@ curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/manifest.json" | py
 ### 1.3 Extract from Source Maps
 ```bash
 # Check source maps for Supabase config
-curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'sourceMappingURL=[^\s"]+' | cut -d= -f2 | while read sm; do
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Po 'sourceMappingURL=[^\s"]+' | cut -d= -f2 | while read sm; do
   curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$(echo $sm | sed 's|^/||')" -o "/tmp/$(basename $sm)"
 done
 

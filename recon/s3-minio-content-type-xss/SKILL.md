@@ -56,7 +56,7 @@ for path in /uploads/ /media/ /static/uploads/ /cdn/ /files/ /assets/img/ /stora
 done
 
 # Look for S3/MinIO signatures in URLs
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Eo '(?:s3\.|amazonaws\.|minio|storage\.googleapis)[^"'\''\s]{5,60}'
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/" | grep -Po '(?:s3\.|amazonaws\.|minio|storage\.googleapis)[^"'\''\s]{5,60}'
 ```
 
 ### Phase 2 — Test Content-Type Override

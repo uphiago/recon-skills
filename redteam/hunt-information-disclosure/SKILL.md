@@ -85,7 +85,7 @@ done
 
 ```bash
 # Find .js.map files
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo '[^"\s]+\.js\.map' | sort -u
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Po '[^"\s]+\.js\.map' | sort -u
 
 # Download and extract
 wget "https://target.com/static/app.js.map"
@@ -130,7 +130,7 @@ done
 ```bash
 # Framework version from static assets
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/static/admin/css/base.css" | head -5
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo '(?:Django|Laravel|Rails|Express|Next\.js|Nuxt)[\s/]*v?[0-9.]+'
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Po '(?:Django|Laravel|Rails|Express|Next\.js|Nuxt)[\s/]*v?[0-9.]+'
 
 # Package manager lock files
 curl --max-time 30 --connect-timeout 10 -sk "https://target.com/composer.lock" | jq -r '.packages[] | select(.version) | "\(.name)@\(.version)"' 2>/dev/null

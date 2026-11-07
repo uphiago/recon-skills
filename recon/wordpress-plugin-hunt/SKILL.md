@@ -220,8 +220,8 @@ echo "[*] Scanning HTML source for plugin fingerprints..."
 PAGE=$(curl -sk --max-time 10 --connect-timeout 10 "https://$TARGET/" 2>/dev/null)
 
 # CSS/JS handles
-echo "$PAGE" | grep -Eo "(?:/wp-content/plugins/|/wp-content/themes/)[a-zA-Z0-9_-]+" | sort -u | while read -r path; do
-  plugin=$(echo "$path" | grep -Eo 'plugins/\K[a-zA-Z0-9_-]+|themes/\K[a-zA-Z0-9_-]+')
+echo "$PAGE" | grep -Po "(?:/wp-content/plugins/|/wp-content/themes/)[a-zA-Z0-9_-]+" | sort -u | while read -r path; do
+  plugin=$(echo "$path" | grep -Po 'plugins/\K[a-zA-Z0-9_-]+|themes/\K[a-zA-Z0-9_-]+')
   echo "  [SOURCE] $plugin (found in HTML)"
 done
 

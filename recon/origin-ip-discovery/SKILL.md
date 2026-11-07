@@ -110,7 +110,7 @@ shodan search "ssl.cert.subject.cn:target.com" --fields ip_str,port,org
 
 ```bash
 # Extract Analytics ID from target pages
-curl --max-time 30 --connect-timeout 10 -s "https://target.com" | grep -Eo '(?:UA-|G-|GTM-)[A-Z0-9]+'
+curl --max-time 30 --connect-timeout 10 -s "https://target.com" | grep -Po '(?:UA-|G-|GTM-)[A-Z0-9]+'
 
 # Find all domains sharing the same GA ID
 curl --max-time 30 --connect-timeout 10 -s "https://api.hackertarget.com/analyticslookup/?q=UA-XXXXXXXX-X"
@@ -124,7 +124,7 @@ cat subdomains.txt | analyticsrelationships
 
 ```bash
 # Direct IP in page source
-curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo '\b(?:\d{1,3}\.){3}\d{1,3}\b' | sort -u
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Po '\b(?:\d{1,3}\.){3}\d{1,3}\b' | sort -u
 
 # DNS CNAME chain — may expose origin
 dig target.com ANY +noall +answer
@@ -134,7 +134,7 @@ dig www.target.com CNAME +short
 dig target.com MX +short
 
 # SPF records — may contain non-CDN IPs
-dig target.com TXT +short | grep -Eo '\b(?:\d{1,3}\.){3}\d{1,3}\b'
+dig target.com TXT +short | grep -Po '\b(?:\d{1,3}\.){3}\d{1,3}\b'
 
 # Subdomain with different IP pattern
 subfinder -d target.com -silent | dnsx -silent -a -resp-only | sort -u > all_ips.txt

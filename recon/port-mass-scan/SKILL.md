@@ -119,8 +119,8 @@ masscan -p1-10000 --rate=5000 --banners --source-ip "$SOURCE_IP" \
 
 # Alternative: two-phase (Masscan ports → Nmap services)
 masscan -p1-65535 --rate=10000 "$TARGET" -oG "$OUTDIR/${TARGET}_grepable.txt" --wait=10
-OPEN_PORTS=$(grep -Eo 'Host: \S+ \(\)\s+Ports:\s+\K[^#]+' "$OUTDIR/${TARGET}_grepable.txt" | \
-  grep -Eo '\d+/open' | cut -d/ -f1 | tr '\n' ',' | sed 's/,$//')
+OPEN_PORTS=$(grep -Po 'Host: \S+ \(\)\s+Ports:\s+\K[^#]+' "$OUTDIR/${TARGET}_grepable.txt" | \
+  grep -Po '\d+/open' | cut -d/ -f1 | tr '\n' ',' | sed 's/,$//')
 
 if [[ -n "$OPEN_PORTS" ]]; then
   echo "[*] Nmap service detection on ports: $OPEN_PORTS"

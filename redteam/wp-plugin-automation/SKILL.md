@@ -58,7 +58,7 @@ while read t; do
     IFS=':' read -r slug dir <<< "$plugin_entry"
     readme=$(curl --max-time 30 --connect-timeout 10 -sk -o /dev/null -w "%{http_code}" "https://$t/wp-content/plugins/$dir/readme.txt")
     [ "$readme" != "404" ] && [ "$readme" != "000" ] && \
-      version=$(curl --max-time 30 --connect-timeout 10 -sk "https://$t/wp-content/plugins/$dir/readme.txt" | grep -i "stable tag\|version" | head -1 | grep -Eo '[\d.]+') && \
+      version=$(curl --max-time 30 --connect-timeout 10 -sk "https://$t/wp-content/plugins/$dir/readme.txt" | grep -i "stable tag\|version" | head -1 | grep -Po '[\d.]+') && \
       echo "  [+] $slug: v$version"
   done
 done < "$TARGETS"

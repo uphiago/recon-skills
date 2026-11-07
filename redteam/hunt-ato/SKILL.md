@@ -249,7 +249,7 @@ for cc in "" "code_challenge_method=S256&code_challenge=$(echo -n 'test' | opens
     # Step 1: get auth code
     code=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{redirect_url}" \
       "https://target.com/oauth/authorize?response_type=code&client_id=xxx&redirect_uri=https://app.com/cb&state=x$cc" \
-      | grep -Eo 'code=\K[^&]+')
+      | grep -Po 'code=\K[^&]+')
     [[ -z "$code" ]] && echo "NO CODE" && continue
     # Step 2: exchange
     resp=$(curl --max-time 30 --connect-timeout 10 -s -X POST "https://target.com/oauth/token" \

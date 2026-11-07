@@ -193,7 +193,7 @@ done
 
 # Automated security headers check
 curl --max-time 30 --connect-timeout 10 -s "https://securityheaders.com/?q=https://$TARGET&followRedirects=on" | \
-  grep -Eo "grade-\K[A-F+]" | head -3
+  grep -Po "grade-\K[A-F+]" | head -3
 ```
 
 ---
@@ -204,7 +204,7 @@ curl --max-time 30 --connect-timeout 10 -s "https://securityheaders.com/?q=https
 # crt.sh — certificate transparency logs
 curl --max-time 30 --connect-timeout 10 -s "https://crt.sh/?q=%25.$TARGET&output=json" | \
   python3 -m json.tool 2>/dev/null | grep "name_value" | \
-  grep -Eo '"name_value": "\K[^"]+' | \
+  grep -Po '"name_value": "\K[^"]+' | \
   sed 's/\*\.//g' | sort -u > recon/$TARGET/ct-subdomains.txt
 
 echo "[+] CT subdomains found: $(wc -l < recon/$TARGET/ct-subdomains.txt)"

@@ -159,7 +159,7 @@ for port in 8080 8081 8082 8084 8088 8443 3000 5000 9000 9090; do
 
     if [[ "$http_code" != "000" ]]; then
       echo "  HTTP $http_code on port $port"
-      title=$(curl -sk --max-time 5 --connect-timeout 5 "http://$TARGET:$port/" 2>/dev/null | grep -Eo '<title>\K[^<]+')
+      title=$(curl -sk --max-time 5 --connect-timeout 5 "http://$TARGET:$port/" 2>/dev/null | grep -Po '<title>\K[^<]+')
       [[ -n "$title" ]] && echo "  Title: $title"
 
       # Check for Swagger/API docs
