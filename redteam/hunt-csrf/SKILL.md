@@ -45,6 +45,27 @@ Use when the target has any state-changing endpoint that a logged-in user can tr
 
 ---
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Capture a valid request, then replay without token
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/settings/email \
+  -H "Cookie: session=YOUR_SESSION" \
+  -d "email=attacker@evil.com" \
+  -v 2>&1 | grep -E "HTTP|location|error"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 CSRF becomes high-value when it touches **state-changing actions with account-level or financial consequences**. The highest-paying targets are:

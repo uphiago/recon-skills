@@ -27,6 +27,26 @@ Automatically screenshot every live host to triage hundreds of subdomains visual
 - Want to compare visual fingerprints across subdomains (shared infrastructure).
 - Target serves different content based on User-Agent or geolocation.
 
+## How to Run
+
+```bash
+# gowitness — fast, Go-based screenshot tool
+gowitness file -f alive_subs.txt \
+  -P ./screenshots/ \
+  --no-http \
+  --timeout 15 \
+  --resolution-x 1440 \
+  --resolution-y 900
+
+# With database for searchable results
+gowitness file -f alive_subs.txt -P ./screenshots/ --no-http \
+  --db gowitness.db --chrome-window-x 1440 --chrome-window-y 900
+
+# Query results
+gowitness report list --db gowitness.db
+# ... (continues in Procedure)
+```
+
 ## Prerequisites
 
 - `terminal` gowitness, httpx, and curl.

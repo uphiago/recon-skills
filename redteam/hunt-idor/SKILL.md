@@ -12,6 +12,31 @@ tags: [idor, hunt, redteam]
 
 Use when the target has any endpoint that references user-owned resources by ID — API paths with user/order/invoice/message IDs, GraphQL queries with id arguments, file download endpoints, or any multi-tenant SaaS feature. IDOR is one of the most common and highest-paying vulnerabilities because it directly exposes other users' data without authentication bypass. Every feature that displays or acts on a resource by identifier is a candidate. Highest-value targets: financial documents/billing APIs, private repositories, user messages, account management endpoints, and cross-tenant business/org administration features.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Get User A's resource ID while authenticated as A
+curl --max-time 30 --connect-timeout 10 -s -H "Cookie: session=USER_A_SESSION" \
+  https://target.com/api/v1/invoices/12345
+
+# Replay with User B's session
+curl --max-time 30 --connect-timeout 10 -s -H "Cookie: session=USER_B_SESSION" \
+  https://target.com/api/v1/invoices/12345
+
+# Success = 200 OK with User A's data
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 **Why IDOR pays big:**

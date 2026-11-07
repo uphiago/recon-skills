@@ -10,6 +10,41 @@ tags: [grpc, hunt, redteam]
 
 # HUNT-GRPC — gRPC Security
 
+## When to Use
+
+- Target exposes port 50051 / 443 / 8443 / 9090 with HTTP/2, when grpcurl/grpcui detects reflection, when an Envoy or grpc-gateway proxy is fronting a microservice.
+- When recon reveals a microservice architecture.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `grpcurl`, `nmap`, `openssl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Common gRPC ports (50051 native; 443/8443 via TLS+ALPN h2; 9090/8080 h2c)
+nmap -sV -p 50051,50052,443,9090,8080,8443,6565,9000 $TARGET 2>/dev/null | grep open
+
+# ALPN must negotiate h2 — gRPC cannot run on HTTP/1.1
+echo | openssl s_client -alpn h2 -connect $TARGET:443 2>/dev/null | grep -i "ALPN.*h2"
+
+# Native-gRPC fingerprint: an HTTP/2 POST to a bogus method returns a grpc-status
+# trailer (12 = UNIMPLEMENTED) even when the path is wrong — strong signal it's gRPC.
+curl --max-time 30 --connect-timeout 10 -s --http2-prior-knowledge -X POST "http://$TARGET:9090/x.Y/Z" \
+  -H "content-type: application/grpc" -o /dev/null -D - | grep -i grpc-status
+
+# TLS-fronted h2 (port 443): look for grpc-status trailer / grpc content-type
+curl --max-time 30 --connect-timeout 10 -s --http2 -X POST "https://$TARGET/grpc.health.v1.Health/Check" \
+  -H "content-type: application/grpc-web+proto" -o /dev/null -D - | grep -i "grpc-status\|content-type"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 gRPC reflection enabled = full service catalog enumeration without source code. The highest-value gRPC bugs come from the architectural assumption that a service is "internal" — auth is enforced at the edge proxy, and the backend trusts any caller that reaches it. Once you reach the backend directly (exposed port, SSRF, proxy bypass), that trust collapses.

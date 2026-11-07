@@ -27,6 +27,21 @@ Hunt Django-specific vulnerabilities focusing on Django REST Framework (DRF) per
 - Celery task queues process user-supplied data.
 - Django Channels WebSocket endpoints exist alongside REST API.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Django fingerprinting
+curl --max-time 30 --connect-timeout 10 -skI "https://target.com/admin/login/" | grep -iE "csrftoken|sessionid|django"
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com" | grep -Eo 'csrftoken|__debug__|django'
+```
+
 ## Quick Detection
 
 ```bash

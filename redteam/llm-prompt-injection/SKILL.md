@@ -30,6 +30,15 @@ This skill catalogs 40+ tested techniques, defense patterns observed in producti
 - Target uses RAG (retrieval-augmented generation), agentictools, or multi-modal inputs — wider injection surface.
 - You need to map system prompt contents without backend source access.
 
+## How to Run
+
+```bash
+export TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR"
+# Then follow the steps in Procedure.
+```
+
 ## Prerequisites
 
 - `python3` with `requests` library.
@@ -37,6 +46,10 @@ This skill catalogs 40+ tested techniques, defense patterns observed in producti
 - Low rate-limit tolerance: space requests 2-5s apart.
 
 ---
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## 1. The Architectural Problem
 

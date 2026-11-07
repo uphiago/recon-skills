@@ -27,6 +27,16 @@ Identify the content management system, web framework, server software, and tech
 - A host returns generic 200 on all paths — technology detection tells you what it actually runs.
 - Want to find sites running outdated versions of popular CMS platforms.
 
+## How to Run
+
+```bash
+# Fastest: httpx with built-in tech detection
+cat alive_subs.txt | httpx -silent -tech-detect -o tech_detect.txt
+
+# Deep: whatweb with aggressive checks
+whatweb -i alive_subs.txt -a 3 -t 50 --log-brief=cms_results.txt
+```
+
 ## Prerequisites
 
 - `terminal` with httpx, whatweb, wappalyzer, and curl.

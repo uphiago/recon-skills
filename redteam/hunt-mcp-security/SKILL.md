@@ -26,6 +26,30 @@ Hunt vulnerabilities in Model Context Protocol (MCP) implementations — the sta
 - Need to test whether tool outputs can inject prompts back into the agent.
 - Target uses RAG (Retrieval Augmented Generation) with external data sources.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+MCP_URL="https://target.com/mcp"   # adjust: /sse, /messages/, or a custom path
+
+# A standards-compliant server answers initialize with its protocolVersion
+curl --max-time 30 --connect-timeout 10 -sk -X POST "$MCP_URL" \
+  -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"probe","version":"0.1"}}}' \
+  | jq -r '.result.protocolVersion // .error.message // empty'
+
+# Enumerate the real tool catalog
+curl --max-time 30 --connect-timeout 10 -sk -X POST "$MCP_URL" \
+  -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | jq '.result.tools[].name'
+```
+
 ## Transport Model
 
 MCP over HTTP is JSON-RPC 2.0 POSTed to a single endpoint (conventionally `/mcp`; SSE-based servers use `/sse` for the event stream plus `/messages/` for client-to-server POSTs). There are no per-tool REST paths such as `/mcp/tools/execute`. Local servers commonly use stdio instead of HTTP. Discover the endpoint first, then speak JSON-RPC: `initialize`, `tools/list`, `tools/call`.

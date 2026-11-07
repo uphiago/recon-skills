@@ -26,6 +26,22 @@ Hunt for endpoints where authorization is enforced at the controller/middleware 
 - Feature flags or beta endpoints expose functionality before security review.
 - Batch/job endpoints accept internal requests without role verification.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `grpcurl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Verb drift: try PUT/DELETE on endpoints that return 403 on GET
+for method in GET POST PUT PATCH DELETE OPTIONS; do
+  curl --max-time 30 --connect-timeout 10 -sk -X "$method" "https://target.com/api/admin/users" -w "$method %{http_code}\n" -o /dev/null
+done
+```
+
 ## Quick Detection
 
 ```bash

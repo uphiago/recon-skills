@@ -25,6 +25,15 @@ Replace instant programmatic interactions with human-like mouse movements, keybo
 - Need to simulate a real user browsing session for login or account creation.
 - Target uses `requestAnimationFrame`-based mouse movement tracking.
 
+## How to Run
+
+```bash
+export TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR"
+# Then follow the steps in Procedure.
+```
+
 ## Prerequisites
 
 - `terminal` with python3.

@@ -8,6 +8,27 @@ category: redteam
 tags: [http-smuggling, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting H1 paid programs running CDN+origin stacks, when targeting load balancer / WAF bypass.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `httpx`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sI https://target/ | grep -i "Server:"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 17. HTTP REQUEST SMUGGLING
 > Lowest dup rate. $5K–$30K. PortSwigger research by James Kettle.
 

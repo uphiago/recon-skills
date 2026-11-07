@@ -26,6 +26,17 @@ WordPress plugins register custom REST API routes at `/wp-json/{namespace}/`. Ma
 - Standard WordPress endpoints return 401 — but third-party plugin endpoints might not.
 - You want to find hidden admin URLs, debug endpoints, or unauthenticated write operations.
 
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/wp-json/" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for ns in data.get('namespaces', []):
+    print(ns)
+"
+```
+
 ## Prerequisites
 
 - `python3` with `requests` library.

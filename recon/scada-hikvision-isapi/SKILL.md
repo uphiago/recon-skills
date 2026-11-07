@@ -27,6 +27,19 @@ Enumerate Hikvision ISAPI (Intelligent Security Application Programming Interfac
 - A target has industrial/energy/infrastructure context where SCADA systems are likely.
 - The web client loads `Common/common.js`, `Common/components.js`, or `Common/vendorGraph.js` from a relative path.
 
+## How to Run
+
+```bash
+# Fingerprint the web interface
+curl --max-time 30 --connect-timeout 10 -skI "https://TARGET:PORT/" | grep -iE "server|x-powered"
+
+# Download the main JS bundle and scan for ISAPI endpoints
+curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT/" | grep -Eo 'src="([^"]+\.js[^"]*)"' | while read -r match; do
+  js_url=$(echo "$match" | grep -Eo '(\./[^"]+\.js[^"]*|/[^"]+\.js[^"]*)')
+  [ -n "$js_url" ] && curl --max-time 30 --connect-timeout 10 -sk "https://TARGET:PORT$js_url" | grep -Po '/ISAPI/[^"'\''\s]{5,80}' | sort -u
+done
+```
+
 ## Prerequisites
 
 - `terminal` with curl, python3, and nmap.

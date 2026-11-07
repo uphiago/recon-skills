@@ -8,6 +8,29 @@ category: redteam
 tags: [m365, entra, azure, attack, redteam]
 ---
 
+## When to Use
+
+- Any M365/Entra credential attack, password spray, user enumeration, CA-bypass exploration.
+- Active-attacker-detection scenario.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `playwright`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   curl --max-time 30 --connect-timeout 10 -s "https://login.microsoftonline.com/common/.well-known/openid-configuration" | grep -q "token_endpoint" && echo "PASS" || echo "FAIL"
+   
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use this skill
 
 Trigger when:

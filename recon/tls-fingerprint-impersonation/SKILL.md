@@ -26,6 +26,20 @@ Spoof TLS ClientHello parameters — cipher suites, key exchange groups, signatu
 - Need high-throughput HTTP requests that pass TLS fingerprint checks without running a full browser.
 - Target shows different behavior based on TLS fingerprint (mobile vs desktop endpoints).
 
+## How to Run
+
+```bash
+# Check if a target blocks non-browser TLS
+curl --max-time 30 --connect-timeout 10 -sk https://target.com | head -1
+# If 403, test with browser impersonation:
+python3 -c "
+from impit import Impit
+impit = Impit.builder().with_fingerprint('chrome142').build()
+r = impit.get('https://target.com').text
+print(r[:200])
+"
+```
+
 ## Prerequisites
 
 - `terminal` with python3.

@@ -41,6 +41,24 @@ grep -rEn 'dangerouslySetInnerHTML|innerHTML|outerHTML|v-html|\[innerHTML\]|\{@h
 # If found → verify the specific field reaches that sink
 ```
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/search?q=XSSCANARY" | grep -i "XSSCANARY"
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/page?utm_source=XSSCANARY" | grep -i "XSSCANARY"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 XSS is high-value when it combines **privileged context + persistent delivery + scope escalation**. The highest payouts come from:

@@ -27,6 +27,26 @@ Exploit API endpoints that implement a full business workflow (interview, applic
 - The workflow includes file upload, data submission, or export functionality.
 - Error messages reveal the expected request format (validating that endpoints are live).
 
+## How to Run
+
+```bash
+# Probe common flow-starting endpoints
+for ep in /start /api/start /api/v1/start /begin /init /api/init \
+          /start-interview /api/interview/start /api/session/start; do
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -o /tmp/resp.json -w "%{http_code}" \
+    -X POST "https://target.com$ep" \
+    -H "Content-Type: application/json" -d '{}')
+  if [ "$code" = "200" ] || [ "$code" = "201" ]; then
+    echo "=== $ep ($code) ==="
+    cat /tmp/resp.json | python3 -m json.tool 2>/dev/null | head -20
+    # Extract any returned ID
+    cat /tmp/resp.json | python3 -c "
+import sys,json,re
+try:
+    d=json.load(sys.stdin)
+# ... (continues in Procedure)
+```
+
 ## Prerequisites
 
 - `terminal` with curl and python3.

@@ -8,6 +8,30 @@ category: redteam
 tags: [ntlm, information-disclosure, hunt, redteam]
 ---
 
+## When to Use
+
+- Target advertises `WWW-Authenticate: NTLM` or `Negotiate` headers anonymously.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Most one-shot curl runs DON'T return Type-2 because the connection closes.
+# Use this as a quick probe to confirm NTLM is offered:
+curl --max-time 30 --connect-timeout 10 -sk -I -H "Authorization: NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw==" \
+  "https://target.example/_api/web/CurrentUser" 2>&1 | grep -i "WWW-Authenticate"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 NTLM info disclosure is a **Medium-severity finding when chained to context** — the leak itself is intentional protocol behavior (RFC-compliant NTLMSSP challenge), but on internet-exposed enterprise infrastructure it provides exact reconnaissance for the next stage of an attack. Highest-value targets:

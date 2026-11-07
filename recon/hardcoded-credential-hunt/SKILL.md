@@ -26,6 +26,26 @@ Detect credentials baked into client-side code or HTML responses. Targets includ
 - An unauthenticated API endpoint returns data that controls authentication (reset, exit registration, admin actions).
 - JavaScript bundles contain string assignments matching password patterns.
 
+## How to Run
+
+```bash
+# Scan HTML for password fields with pre-filled values
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/PATH" | grep -Poi '(?:password|passwd|senha|pass|pwd|secret)\s*[=:"]\s*"?[^"&\s]{4,30}"?' | head -10
+
+# Scan JSON config endpoints for credential-like keys
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/config" | python3 -c "
+import sys, json, re
+try:
+    data = json.load(sys.stdin)
+    for k, v in data.items() if isinstance(data, dict) else []:
+        if any(x in k.lower() for x in ['pass','secret','key','token','auth']):
+            print(f'{k}: {v}')
+except: pass
+"
+
+# ... (continues in Procedure)
+```
+
 ## Prerequisites
 
 - `terminal` with curl and python3.

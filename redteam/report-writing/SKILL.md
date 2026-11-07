@@ -14,6 +14,30 @@ Impact-first. Human tone. No theoretical language. Triagers are people.
 
 ---
 
+## When to Use
+
+- Validating a finding and before submitting.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `mysql`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+export TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR"
+# Then follow the steps in Procedure.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## THE MOST IMPORTANT RULE
 
 > **Never use "could potentially" or "could be used to" or "may allow".**

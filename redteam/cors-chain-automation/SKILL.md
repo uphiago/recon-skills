@@ -14,6 +14,34 @@ tags: [cors, automation, chain, redteam]
 
 Use when you have a list of API endpoints or target domains and need to systematically find credential-exploitable CORS misconfigurations at scale. Distinguishes the 3 exploitable patterns (reflect-any-origin + credentials, null-origin trust, subdomain-regex bypass) from false positives (ACAO: * alone, ACAC without reflected origin, same-origin-only). Generates ready-to-use browser PoC HTML files for confirmed findings.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gf`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# WRONG — tests only /users:
+curl --max-time 30 --connect-timeout 10 -sk -I "https://$TARGET/wp-json/wp/v2/users" -H "Origin: https://evil.com" | grep -i "access-control"
+
+# CORRECT — test ALL endpoints:
+for ep in /wp-json/wp/v2/users /wp-json/wp/v2/posts /wp-json/wp/v2/pages \
+  /wp-json/wp/v2/media /wp-json/wp/v2/comments /wp-json/wp/v2/statuses \
+  /wp-json/wp/v2/tags /wp-json/wp/v2/categories /wp-json/wp/v2/settings \
+  /wp-json/wc/v3/products /wp-json/gf/v2/forms /wp-json/wp-site-health/v1; do
+  cors=$(curl --max-time 30 --connect-timeout 10 -sk -I "https://$TARGET${ep}" -H "Origin: https://evil.com" 2>/dev/null | grep -iE "access-control-allow-origin|access-control-allow-credentials")
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -o /dev/null -w "%{http_code}" "https://$TARGET${ep}" -H "Origin: https://evil.com" 2>/dev/null)
+  echo "${ep} — HTTP ${code} | ${cors:-NO CORS}"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## CORS Variations
 
 | # | Variation | Initial signal | Required follow-up |

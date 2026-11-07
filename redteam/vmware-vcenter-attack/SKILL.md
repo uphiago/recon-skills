@@ -8,6 +8,42 @@ category: redteam
 tags: [vmware, vcenter, attack, redteam]
 ---
 
+## When to Use
+
+- Recon shows port 443 with vCenter banner, `/ui` redirect, `/websso/SAML2/Metadata`.
+- VMware product fingerprints.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ldapsearch`, `nuclei`, `openssl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="vcenter.target.com"
+
+# Build info endpoint (often public; revealing exact patch level)
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/sdk/vimServiceVersions.xml"
+
+# UI build (visible in page source)
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/ui/login" | grep -oE 'build[^"]{0,40}'
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/ui/" | grep -oE 'vsphere[^"]{0,40}'
+
+# REST API version (vSphere 7+)
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/api/appliance/system/version"
+
+# Cert metadata
+echo | openssl s_client -connect "$TARGET:443" -servername "$TARGET" 2>/dev/null | openssl x509 -noout -text | grep -A1 "Subject Alt"
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use
 
 Trigger when external recon shows ANY of:

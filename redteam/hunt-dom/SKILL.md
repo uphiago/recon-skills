@@ -10,6 +10,32 @@ tags: [dom, hunt, redteam, xss]
 
 # HUNT-DOM — DOM Clobbering / PostMessage / Service Worker / CSS Exfil
 
+## When to Use
+
+- Hunting DOM-XSS, client-side auth bypass.
+- Token exfiltration without server-side interaction.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Source review: find globals fed into sinks (this is what makes clobbering exploitable)
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/" | grep -nE \
+  "document\.(getElementById|baseURI)|window\.[A-Za-z_]+\.(url|src|href|html|cmd)|\
+location\s*=\s*[A-Za-z_]|\.innerHTML\s*=|eval\(|new Function\(|\.src\s*=\s*[A-Za-z_]"
+# DOM-Invader (Burp) → enable "DOM clobbering" — it auto-finds clobberable sources→sinks.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 DOM-based attacks execute in the victim's browser — the server often never sees the payload, so WAFs and server-side input filters do not apply. PostMessage missing-origin-check = cross-origin token theft with no XSS needed.

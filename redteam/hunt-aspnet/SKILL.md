@@ -8,6 +8,33 @@ category: redteam
 tags: [aspnet, hunt, redteam, web]
 ---
 
+## When to Use
+
+- The target surface matches this skill's scope (`hunt-aspnet`) and you need a focused procedure for it.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ysoserial`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.example/page.aspx" \
+  --data "__VIEWSTATE=AAAA&__VIEWSTATEGENERATOR=AAAA"
+# Inspect body for:
+#  - "Validation of viewstate MAC failed" → confirms signed ViewState
+#  - "The state information is invalid for this page" → confirms ALTERNATE parser path
+#  - "Version Information: Microsoft .NET Framework Version:X.X.XXXXX" → exact patch level
+#  - "Microsoft.SharePoint.Client.ServerStub..." → SharePoint farm
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 ASP.NET deserialization bugs pay among the highest amounts in bug bounty when they reach RCE. Even when patched, the disclosure-tier findings (signed-only ViewState, dual-parser differential, request-validator quirks) reliably pay Low-Medium.

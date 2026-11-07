@@ -25,6 +25,22 @@ Hunt for mass assignment vulnerabilities where API endpoints blindly bind user-s
 - Framework ORMs (Rails ActiveRecord, Laravel Eloquent, Django ORM, Mongoose, Prisma) where bulk assignment is the default.
 - PATCH endpoints that accept sparse updates — may skip per-field authorization.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Inject sensitive fields into profile update
+curl --max-time 30 --connect-timeout 10 -sk -X PATCH "https://target.com/api/user/profile" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"test","isAdmin":true,"role":"admin"}'
+```
+
 ## Quick Detection
 
 ```bash

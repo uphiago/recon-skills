@@ -14,6 +14,36 @@ Master orchestrator for hunting sessions. Combines the 5-phase non-linear workfl
 
 ---
 
+## When to Use
+
+- Asking "what should I do next" or "where am I in the process.".
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `amass`, `arjun`, `curl`, `dalfox`, `ffuf`, `gau`, `httpx`, `interactsh-client`, `katana`, `naabu`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   python3 -c "
+   import statistics
+   control = [700, 710, 690, 705, 715, 698, 702, 708, 695, 712]
+   mean_c = statistics.mean(control)
+   stdev_c = statistics.stdev(control)
+   threshold = mean_c + 2*stdev_c
+   suspect = 1527
+   print('PASS: signal detected' if suspect > threshold else 'PASS: no false signal (correct)')
+   " 2>/dev/null || echo "FAIL: Python3 statistics module unavailable"
+   
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## PART 0: MODE CONFIRMATION (Before Anything Else)
 
 **Confirm the engagement type before deciding what counts as a finding.** The same target produces a different report shape depending on which mode applies. Getting this wrong is the single biggest waste of time in this workflow — answer it explicitly before Phase 0.

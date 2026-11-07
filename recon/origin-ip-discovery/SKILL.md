@@ -26,6 +26,16 @@ Discover the real server IP behind CDN/WAF protections (Cloudflare, Akamai, Fast
 - The target uses a single favicon across all infrastructure.
 - SSL certificates share the same organization name across IPs.
 
+## How to Run
+
+```bash
+# Check Cloudflare presence
+curl --max-time 30 --connect-timeout 10 -sI "https://target.com" | grep -i "cf-ray\|server: cloudflare"
+
+# If Cloudflare detected, check for common origin leaks
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/cdn-cgi/trace" | grep -E "ip=|colo="
+```
+
 ## Prerequisites
 
 - `terminal` with curl, python3, and shodan CLI.

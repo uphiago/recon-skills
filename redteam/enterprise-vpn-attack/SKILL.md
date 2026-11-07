@@ -8,6 +8,29 @@ category: redteam
 tags: [vpn, enterprise, attack, redteam]
 ---
 
+## When to Use
+
+- The target surface matches this skill's scope (`enterprise-vpn-attack`) and you need a focused procedure for it.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `nuclei`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -skI 'https://target/+CSCOE+/logon.html' | head -10
+# Look for: Set-Cookie: webvpn=; X-Frame-Options: SAMEORIGIN; CSP: ... block-all-mixed-content
+# Login page contains: "AnyConnect", "CSCOE", "logon.html"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use this skill
 
 Trigger when recon surfaces:

@@ -8,6 +8,33 @@ category: redteam
 tags: [ATO, account-takeover, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting ATO chains, testing password reset / email change / MFA / OAuth / session / JWT.
+- Chaining primitives toward Critical.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `ffuf`, `gh`, `hashcat`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# 6-digit numeric OTP-style reset code, no rate limit:
+ffuf -u "https://target.com/api/reset/verify" -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"email":"victimB@company.com","code":"FUZZ"}' \
+  -w <(seq -w 000000 999999) -mc 200 -fr "invalid" -t 5
+# time-based tokens: capture 5 tokens, diff — md5(timestamp)/sequential int = predictable
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 13. ATO — ACCOUNT TAKEOVER TAXONOMY
 > 12 distinct paths. ATO is a destination class, not a single bug — each path below is a primitive that becomes Critical only when you demonstrate takeover of a SECOND account (test account B) you do not control, from attacker A's session/IP/device. A path that only locks you out of your own account, or only works when you already hold the victim's password AND session, is not a standalone ATO.
 

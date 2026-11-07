@@ -14,6 +14,30 @@ tags: [web3, audit, redteam, blockchain]
 
 ---
 
+## When to Use
+
+- Any Solidity/Rust contract audit or when deciding whether a DeFi target is worth hunting.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+export TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR"
+# Then follow the steps in Procedure.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## PRE-DIVE KILL SIGNALS (check BEFORE any code review)
 
 > ZKsync lesson: $322M TVL + OZ audit + 750K LOC + 5 sessions = 0 findings. Large well-audited bridges are extremely hard.

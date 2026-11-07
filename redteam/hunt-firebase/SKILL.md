@@ -10,6 +10,42 @@ tags: [firebase, hunt, redteam]
 
 # HUNT-FIREBASE — Firebase / Firestore / GCP Exploitation
 
+## When to Use
+
+- A JS bundle, APK.
+- .env file reveals a Firebase API key (AIzaSy...) or when target uses firebaseio.com / firestore.googleapis.com endpoints.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gcloud`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Download the main page and its JS bundles
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" -o /tmp/index.html
+grep -Eo 'src="[^"]*\.js"' /tmp/index.html | cut -d'"' -f2 | while read js; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$js" -o "/tmp/$(basename $js)"
+done
+
+# Search for Firebase API keys in all downloaded JS
+grep -rEn 'AIza[0-9A-Za-z_-]{35}' /tmp/*.js
+
+# Search for firebaseConfig
+grep -rEn 'firebaseConfig|firebase.initializeApp|apiKey|authDomain' /tmp/*.js --include="*.js"
+
+# Search for Firebase URLs
+grep -rEn 'firebaseio|firestore|firebasestorage|firebaseapp' /tmp/*.js --include="*.js"
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Firebase is Google's mobile/web platform. When developers embed the **API key** in the client (which is required by Firebase SDKs), they often forget to configure **Firestore Security Rules** or **Realtime Database Rules**, leaving all data publicly readable and writable.

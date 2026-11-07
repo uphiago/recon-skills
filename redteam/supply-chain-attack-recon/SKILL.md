@@ -8,6 +8,39 @@ category: redteam
 tags: [supply-chain, attack, recon, redteam]
 ---
 
+## When to Use
+
+- The target has a public GitHub org, when their build artifacts/SBOMs are reachable, when their docker images are on Docker Hub/GHCR.
+- When you find internal package names in their JS bundles.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `jq`, `nuclei`, `python3`, `semgrep`, `trufflehog`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="<brand>"  # set to target brand name
+
+# Direct guesses
+for guess in $TARGET "${TARGET}-tech" "${TARGET}corp" "${TARGET}-io" "${TARGET}-eng"; do
+  curl --max-time 30 --connect-timeout 10 -sI "https://github.com/$guess" | grep -E "HTTP|status" | head -1
+done
+
+# Via WHOIS / email-domain → GitHub search
+gh search users --owner-affiliations=organization --query "$TARGET" --limit 10
+
+# Via employees → reverse from social media + GitHub profile
+# Many employees list their employer org on their GitHub profile
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use
 
 Trigger when:

@@ -14,6 +14,35 @@ The target uses modern observability tooling (Go, .NET, Java, Node.js). These fr
 
 ---
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="https://target.com"
+
+# Common observability paths
+for ep in metrics health status ready live readyz healthz \
+  actuator/health actuator/metrics actuator/prometheus \
+  Telescope telescope horizon debug; do
+  code=$(curl --max-time 30 --connect-timeout 10 -sk -o /tmp/metrics_${ep}.txt -w "%{http_code}" \
+    "${TARGET}/${ep}" 2>/dev/null)
+  if [ "$code" = "200" ]; then
+    size=$(wc -c < /tmp/metrics_${ep}.txt)
+    echo "  /${ep}: HTTP 200 (${size} bytes)"
+  fi
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Phase 1 — Discover Metrics Endpoints
 
 ```bash

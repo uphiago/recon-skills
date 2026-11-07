@@ -10,6 +10,38 @@ tags: [source, leak, hunt, redteam]
 
 # HUNT-SOURCE-LEAK — Source Code & Build Artifact Leakage
 
+## When to Use
+
+- The target surface matches this skill's scope (`hunt-source-leak`) and you need a focused procedure for it.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `censys`, `curl`, `git-dumper`, `python3`, `shodan`, `trufflehog`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# First 80 bytes tell the story
+head -c 80 /tmp/map_file
+# "<!DOCTYPE" or "<html" = faux map (SPA serving HTML)
+# "{" or ")))}" = real source map
+
+python3 -c "
+with open('/tmp/map_file') as f:
+    d = f.read()
+if d.strip().startswith('{'): print('Real source map')
+elif '<!DOCTYPE' in d or '<html' in d: print('FAUX — SPA serving HTML')
+else: print(f'Unknown, first 80b: {repr(d[:80])}')
+"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Source map exposing TypeScript source = see all API routes, auth logic, secrets. Swagger/OpenAPI JSON = complete API surface map.

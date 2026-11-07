@@ -10,6 +10,40 @@ tags: [springboot, hunt, redteam, java]
 
 # HUNT-SPRINGBOOT — Spring Boot Specific Vulnerabilities
 
+## When to Use
+
+- Target runs Spring Boot — detected via X-Application-Context header, /actuator, Whitelabel Error Page.
+- Java stack traces.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Spring Boot indicators
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-application-context\|x-content-type"
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/nonexistent" | grep -i "Whitelabel Error Page\|Spring Boot\|org.springframework"
+
+# Actuator root (may list available endpoints)
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/actuator" | python3 -m json.tool 2>/dev/null
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/actuator/" | python3 -m json.tool 2>/dev/null
+
+# Try common base paths
+for base in "" "/manage" "/management" "/app"; do
+  STATUS=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" "https://$TARGET$base/actuator")
+  [ "$STATUS" = "200" ] && echo "[+] Actuator at: $TARGET$base/actuator"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Spring Boot Actuator `/actuator/heapdump` exposed = heap dump with all secrets in memory.

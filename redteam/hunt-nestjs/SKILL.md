@@ -27,6 +27,25 @@ Hunt NestJS-specific vulnerabilities in guard bypass via decorator stack gaps, R
 - Swagger/OpenAPI docs are exposed at `/api` or `/api-json`.
 - CRUD endpoints follow predictable NestJS naming conventions.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `grpcurl`, `jq`, `redis-cli`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# NestJS fingerprinting
+curl --max-time 30 --connect-timeout 10 -skI "https://target.com/api" | grep -iE "x-powered-by|server"
+# Look for: x-powered-by: NestJS
+
+# Swagger docs
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api" -w "%{http_code}\n" -o /dev/null
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api-json" | jq '.paths | keys[]' 2>/dev/null
+```
+
 ## Quick Detection
 
 ```bash

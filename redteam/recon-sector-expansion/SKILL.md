@@ -19,6 +19,29 @@ Use within authorized engagements to **expand coverage into fresh sectors** — 
 - "We need to expand coverage; what haven't we tested?"
 - "Find fresh targets outside the usual sectors"
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `httpx`, `mysql`, `nmap`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+QUERY="roofing"
+curl -s --max-time 40 --connect-timeout 10 \
+  "https://crt.sh/?q=${QUERY}&excluded=expired&dedup=Y" \
+  -H 'User-Agent: Mozilla/5.0' 2>/dev/null | \
+  grep -oE '>[A-Za-z0-9][A-Za-z0-9.-]*\.com<' | \
+  sed 's/^>//;s/<$//' | \
+  sort -u >> /tmp/all_crt_domains.txt
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## The Sector Expansion Workflow
 
 ### Phase 1 — Coverage Audit

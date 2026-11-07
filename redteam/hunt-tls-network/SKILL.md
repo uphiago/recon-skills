@@ -10,6 +10,42 @@ tags: [tls, network, hunt, redteam]
 
 # HUNT-TLS-NETWORK — TLS/SSL & DNS Security
 
+## When to Use
+
+- Recon to find infrastructure weaknesses.
+- To TRIAGE them honestly before reporting.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `dnsx`, `nmap`, `openssl`, `python3`, `sslyze`, `swaks`, `testssl.sh`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Quick TLS test with testssl.sh
+brew install testssl
+testssl.sh --fast $TARGET 2>/dev/null | grep -E "CRITICAL|HIGH|MEDIUM|OK|NOT" | head -30
+
+# Or use sslyze (Python)
+pip3 install sslyze
+python3 -m sslyze $TARGET --json_out /tmp/sslyze_$TARGET.json 2>/dev/null
+cat /tmp/sslyze_$TARGET.json | python3 -m json.tool | grep -i "vulnerability\|insecure\|error" | head -20
+
+# Check certificate expiry and chain
+echo | openssl s_client -connect $TARGET:443 -servername $TARGET 2>/dev/null | \
+  openssl x509 -noout -dates -subject -issuer 2>/dev/null
+
+# Check for weak ciphers manually (a successful handshake = the cipher is OFFERED, not exploitable)
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Reality Check (Read First)
 
 Most findings in this class are **Info/Low and routinely rejected** as "best-practice" / "missing-hardening" by triage. This skill exists to stop you wasting a submission. Two questions before you report anything here:

@@ -16,6 +16,29 @@ tags: [web, enumeration, sensitive-files, path-traversal, vhost, recon]
 - Success rate is high on neglected infrastructure
 - One finding (.env, .git) often leads to full credential access
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `arjun`, `curl`, `ffuf`, `git-dumper`, `mysql`, `paramspider`, `waybackurls`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Detect cache headers
+curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/" | grep -iE "(age|x-cache|via|server)"
+# Via: 1.1 varnish = Varnish
+# X-Cache: Hit from cloudfront = AWS CloudFront
+# Cf-Cache-Status: HIT = Cloudflare
+# Varnish Extreme TTL (32 days):
+curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/" | grep -iE "age:|max-age|x-cache"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Sensitive File Scanning (200+ Paths)
 
 ```python

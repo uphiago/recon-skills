@@ -13,6 +13,28 @@ version: 3.0.0
 > **v3.0** — Refactored 2026-05-02 from a 4,168-line monolith into a lean SKILL.md (~400 lines) plus 15 modular reference files in `references/`. Detail content loads on demand — Claude reads only the reference files relevant to the current task.
 
 
+## When to Use
+
+- Any authorized recon: scoping, asset discovery, attack-path mapping, secret triage, severity scoring.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `amass`, `censys`, `curl`, `dnsx`, `gau`, `git-dumper`, `gowitness`, `httpx`, `katana`, `kubectl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   curl --max-time 30 --connect-timeout 10 -s "https://crt.sh/?q=example.com&output=json" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'{len(d)} certs found')" 2>/dev/null || echo "NOTE: crt.sh may be rate-limited"
+   
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 0. When to use / When NOT
 
 **Use this skill when:**

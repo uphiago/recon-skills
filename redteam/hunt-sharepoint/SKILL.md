@@ -8,6 +8,40 @@ category: redteam
 tags: [sharepoint, hunt, redteam, microsoft]
 ---
 
+## When to Use
+
+- Target has SharePoint headers (SPRequestGuid, X-MS-InvokeApp, X-SharePointHealthScore, MicrosoftSharePointTeamServices) or paths (/_layouts/15/, /_vti_bin/, /_api/, /_catalogs/).
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+   # Method 1: _vti_inf.html (always anonymous, always present)
+   curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_vti_inf.html"
+   # → FPVersion="16001000" (15.x = SP2013, 16.x = SP2016/2019/SE)
+
+   # Method 2: _api/contextinfo POST (anonymous on most farms)
+   curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.example/_api/contextinfo" \
+     -H "Accept: application/json;odata=verbose" \
+     | jq -r '.d.GetContextWebInformation.LibraryVersion'
+   # → "15.0.5545.1000" (full build number)
+
+   # Method 3: /_layouts/15/start.aspx body
+   curl --max-time 30 --connect-timeout 10 -sk "https://target.example/_layouts/15/start.aspx" \
+     | grep -oE "15\.[0-9]+\.[0-9]+\.[0-9]+|16\.[0-9]+\.[0-9]+\.[0-9]+"
+   
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 SharePoint Server (on-prem) is one of the richest enterprise attack surfaces in 2025-2026 bug bounty / red-team work. Three forces converge:

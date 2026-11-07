@@ -17,6 +17,33 @@ tags: [email, SPF, DKIM, DMARC, spoofing, SMTP, recon]
 - DMARC p=none means DMARC enforcement is off; actual spoofability still depends on SPF/DKIM and the receiver's local policy
 - Critical for identifying phishing/business email compromise risks
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `dig`, `swaks`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# SPF
+dig +short TXT $target | grep "v=spf1"
+
+# DMARC
+dig +short TXT _dmarc.$target
+
+# DKIM (common selector: google)
+dig +short TXT google._domainkey.$target
+
+# MX
+dig +short MX $target
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## DMARC/SPF/DKIM Check Commands
 
 ```bash

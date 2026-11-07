@@ -12,6 +12,41 @@ tags: [bug-bounty, toolkit, local, recon, redteam]
 
 Full pipeline: Recon -> Learn -> Hunt -> Validate -> Report. One skill for everything.
 
+## When to Use
+
+- ANY bug bounty task.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `arjun`, `chaos`, `curl`, `dalfox`, `dnsx`, `ffuf`, `gau`, `gf`, `gh`, `httpx`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# THE ONE RULE: Always use -ac (auto-calibrate filters noise automatically)
+ffuf -w wordlist.txt -u https://target.com/FUZZ -ac
+
+# Authenticated raw request file — IDOR testing (save Burp request to req.txt, replace ID with FUZZ)
+seq 1 10000 | ffuf --request req.txt -w - -ac
+
+# Authenticated API endpoint brute
+ffuf -u https://TARGET/api/FUZZ -w wordlist.txt -H "Cookie: session=TOKEN" -ac
+
+# Parameter discovery
+ffuf -w ~/wordlists/burp-parameter-names.txt -u "https://target.com/api/endpoint?FUZZ=test" -ac -mc 200
+
+# Hidden POST parameters
+ffuf -w ~/wordlists/burp-parameter-names.txt -X POST -d "FUZZ=test" -u "https://target.com/api/endpoint" -ac
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## THE ONLY QUESTION THAT MATTERS
 
 > **"Can an attacker do this RIGHT NOW against a real user who has taken NO unusual actions -- and does it cause real harm (stolen money, leaked PII, account takeover, code execution)?"**

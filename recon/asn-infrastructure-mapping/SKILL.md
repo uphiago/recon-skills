@@ -27,6 +27,16 @@ Map an organization's entire IP infrastructure by pivoting from domain to ASN (A
 - Services on non-standard ports are invisible to web-only recon.
 - Acquired subsidiaries or international domains may sit on different ASNs with weaker security.
 
+## How to Run
+
+```bash
+# Start: domain → IP → ASN → CIDR ranges
+IP=$(dig target.com +short | head -1)
+ASN=$(whois $IP | grep -i "origin\|OriginAS" | awk '{print $NF}' | head -1)
+echo "ASN: $ASN"
+whois -h whois.radb.net -- "-i origin $ASN" | grep -Eo "([0-9.]+){4}/[0-9]+" | sort -u
+```
+
 ## Prerequisites
 
 - `terminal` whois, dnsx, mapcidr, httpx, and asnmap.

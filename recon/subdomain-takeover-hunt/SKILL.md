@@ -25,6 +25,16 @@ Detect subdomains pointing to unregistered or unclaimed third-party cloud servic
 - A subdomain returns NXDOMAIN, 404, or "no such app" error pages.
 - The CNAME target is a service with user-registrable names.
 
+## How to Run
+
+```bash
+# DNS resolution with CNAME extraction
+dnsx -retry 3 -a -cname -resp -silent -l alive_subs.txt | tee dns_records.txt
+
+# Automated takeover scan
+subzy run --targets alive_subs.txt --hide_fails --vuln
+```
+
 ## Prerequisites
 
 - `terminal` with curl, dnsx, subfinder.

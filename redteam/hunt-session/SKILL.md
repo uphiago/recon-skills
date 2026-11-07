@@ -10,6 +10,41 @@ tags: [session, hunt, redteam]
 
 # HUNT-SESSION — Session Management
 
+## When to Use
+
+- The target surface matches this skill's scope (`hunt-session`) and you need a focused procedure for it.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Step 1: grab a pre-auth session the SERVER hands an anonymous client.
+curl --max-time 30 --connect-timeout 10 -s -L -c "$JAR_A" "https://$TARGET/login" -o /dev/null
+PRE=$(get_cookie "$JAR_A"); echo "pre-auth: $PRE"
+
+# Step 1b (stronger): can we FORCE an arbitrary ID? attacker-chosen value.
+FIX="session=AAAAdeadbeefAAAA"
+
+# Step 2: authenticate while CARRYING the pre-auth/forced cookie (reuse same jar).
+curl --max-time 30 --connect-timeout 10 -s -L -c "$JAR_A" -b "$JAR_A" -X POST "https://$TARGET/login" \
+  -d "username=attacker@example.com&password=CorrectHorse1" -o /dev/null
+POST=$(get_cookie "$JAR_A"); echo "post-auth: $POST"
+
+# DECISION:
+#  - If $POST == $PRE (value unchanged across the auth boundary) AND that value
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Session fixation leading to admin hijack = Critical. Session surviving a password change = High-to-Critical (persistent ATO from a stolen cookie that the victim believes they revoked by resetting their password).

@@ -68,6 +68,28 @@ triggers:
 
 # OSINT Methodology — External Red-Team Edition
 
+## When to Use
+
+- Planning or executing reconnaissance against authorized targets, mapping an organization's external attack surface, investigating a person/entity, tracing crypto flows, geolocating media.
+- Performing attribution work.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `amass`, `censys`, `curl`, `dnsx`, `ffuf`, `gobuster`, `httpx`, `katana`, `masscan`, `naabu`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sk -H "Host: target.example.com" https://<candidate-IP>/
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 0. When to use this skill / When NOT
 
 **Use this skill when:**

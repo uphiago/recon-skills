@@ -25,6 +25,26 @@ Spoof HTTP/2 SETTINGS frames, pseudo-header ordering, and browser-specific HTTP 
 - Mobile API endpoints require Android OkHttp header profiles.
 - Combining with TLS impersonation for a complete network-level browser profile.
 
+## How to Run
+
+```bash
+# Check if target sends different responses based on HTTP headers
+# Compare browser-like headers vs curl defaults
+
+python3 -c "
+import requests
+
+# curl default headers
+r1 = requests.get('https://target.com')
+print(f'Default: {r1.status_code}')
+
+# Browser-like headers
+r2 = requests.get('https://target.com', headers={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.176 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+# ... (continues in Procedure)
+```
+
 ## Prerequisites
 
 - `terminal` with python3.

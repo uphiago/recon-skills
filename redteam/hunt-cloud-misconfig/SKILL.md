@@ -10,6 +10,38 @@ tags: [cloud, misconfiguration, hunt, redteam]
 
 # HUNT-CLOUD-MISCONFIG — Cloud / Infrastructure Misconfigurations
 
+## When to Use
+
+- Hunting cloud-native storage and compute misconfig (S3/GCS/Blob, IMDS-via-SSRF, serverless, public managed services).
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `aws-cli`, `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# S3 listing
+curl --max-time 30 --connect-timeout 10 -s "https://TARGET-NAME.s3.amazonaws.com/?max-keys=10"
+aws s3 ls s3://target-bucket-name --no-sign-request
+
+# Try common bucket names
+for name in target target-backup target-assets target-prod target-staging; do
+  curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "$name: %{http_code}\n" "https://$name.s3.amazonaws.com/"
+done
+
+# Firebase open rules
+curl --max-time 30 --connect-timeout 10 -s "https://TARGET-APP.firebaseio.com/.json"   # read
+curl --max-time 30 --connect-timeout 10 -s -X PUT "https://TARGET-APP.firebaseio.com/test.json" -d '"pwned"'  # write
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 ### S3 / GCS / Azure Blob

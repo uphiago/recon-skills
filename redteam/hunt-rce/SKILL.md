@@ -12,6 +12,25 @@ tags: [rce, hunt, redteam]
 
 Use when the target has any endpoint that processes user-controlled input through an execution layer — template engines, shell commands, YAML/XML parsers, file paths used in operations, package resolution, or configuration files. RCE is the highest-payout vulnerability class because it grants direct execution control over target infrastructure. Every admin/management console, template/preview endpoint, upload processor, deserialization sink, and dependency resolver is a candidate. Highest-value targets: enterprise server products (GHES, self-hosted GitLab), supply chain/package registries, cloud-native infrastructure, and admin/management consoles.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `kubectl`, `ysoserial`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -sI http://target/ | grep -i "Server:"
+# Vulnerable: Apache/2.4.49 (CVE-2021-41773) or Apache/2.4.50 (CVE-2021-42013)
+# Patched:    Apache/2.4.51+
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 RCE vulnerabilities command the highest payouts in bug bounty programs because they grant attackers direct execution control over target infrastructure. The highest-value targets are:

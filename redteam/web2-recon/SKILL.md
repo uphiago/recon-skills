@@ -14,6 +14,42 @@ Full asset discovery from nothing to a prioritized URL list ready for hunting.
 
 ---
 
+## When to Use
+
+- Starting recon on any web2 target or when asked about asset discovery, subdomain enum.
+- Attack surface mapping.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `censys`, `chaos`, `curl`, `dalfox`, `dig`, `dnsx`, `ffuf`, `gau`, `gf`, `gh`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# 1. Set your Chaos API key (get free key at chaos.projectdiscovery.io)
+export CHAOS_API_KEY="your-key-here"
+# Add to ~/.zshrc or ~/.bashrc for persistence:
+echo 'export CHAOS_API_KEY="your-key-here"' >> ~/.zshrc
+
+# 2. Update nuclei templates (run weekly)
+nuclei -update-templates
+
+# 3. Configure subfinder with API keys for more sources
+mkdir -p ~/.config/subfinder
+cat > ~/.config/subfinder/config.yaml << 'EOF'
+# Get free keys at: virustotal.com, securitytrails.com, censys.io, shodan.io
+virustotal: [YOUR_VT_KEY]
+securitytrails: [YOUR_ST_KEY]
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## SETUP (one-time)
 
 ```bash

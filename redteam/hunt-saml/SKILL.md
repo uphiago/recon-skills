@@ -8,6 +8,30 @@ category: redteam
 tags: [saml, hunt, redteam, sso]
 ---
 
+## When to Use
+
+- Hunting SSO flows, when SAML AssertionConsumerService is reachable, when chaining IdP-trust to SP-impersonation.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+export TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR"
+# Then follow the steps in Procedure.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 20. SAML / SSO ATTACKS
 > SSO bugs frequently pay High–Critical. XML parsers are notoriously inconsistent.
 

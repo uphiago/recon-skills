@@ -8,6 +8,36 @@ category: redteam
 tags: [okta, sso, attack, redteam]
 ---
 
+## When to Use
+
+- Recon shows `<tenant>.okta.com`, `<tenant>.okta-emea.com`, `<tenant>.oktapreview.com`.
+- Autodiscover-style records pointing at Okta IdP.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dnsx`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Tenant subdomains often match the brand
+# Replace these with your target's actual tenant slug candidates:
+for tenant in target-brand target-brand-ltd target-sister-brand target-brand-short target-other-variant; do
+  for region in okta okta-emea oktapreview; do
+    host="$tenant.$region.com"
+    code=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 8 --connect-timeout 8 "https://$host/")
+    [ "$code" != "404" ] && [ "$code" != "000" ] && echo "  $host  $code"
+  done
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use this skill
 
 Trigger when:

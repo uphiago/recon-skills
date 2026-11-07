@@ -20,6 +20,26 @@ category: meta
 - Before any active scanning
 - Validated against 100+ real targets
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test dork results manually
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET/.env" | head -5
+# Verify GitHub found secrets
+python3 -c "import json; print(json.loads(open('result.json').read()))"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## High-Precision Dorks
 
 ### Critical Exposed Files

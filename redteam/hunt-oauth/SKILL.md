@@ -8,6 +8,32 @@ category: redteam
 tags: [oauth, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting oauth on any target.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `playwright`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Step 1: Initiate OAuth flow, capture state value
+# Step 2: Drop request, use attacker account's link with victim's session
+curl --max-time 30 --connect-timeout 10 -v "https://target.com/oauth/authorize?client_id=APP&redirect_uri=https://target.com/cb&response_type=code&state=FIXED_VALUE"
+
+# Step 3: Force victim to visit callback with attacker's code + fixed state
+https://target.com/oauth/callback?code=ATTACKER_CODE&state=FIXED_VALUE
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 OAuth vulnerabilities are among the highest-value bug classes in web security because they directly enable **account takeover, session theft, and authentication bypass** — the trifecta that programs pay most for.

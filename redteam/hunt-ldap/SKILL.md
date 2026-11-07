@@ -17,6 +17,40 @@ tags: [ldap, hunt, redteam]
 > the **RFC 4515** filter grammar — all publicly verifiable references rather
 > than invented HackerOne IDs. Do not cite a report you cannot link.
 
+## When to Use
+
+- Target uses LDAP/AD authentication, corporate SSO with a directory backend, an address-book/people-search API.
+- XML-based data stores queried with XPath.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `hashcat`, `ldapsearch`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# ALWAYS capture a control response first — you compare everything to this.
+BASE=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}|%{size_download}|%{time_total}" \
+  -X POST https://$TARGET/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"validlookinguser","password":"wrongpass"}')
+echo "BASELINE (valid-format, wrong pw): $BASE"
+
+# Send a single unbalanced paren. A SAFE (escaping) app → identical baseline.
+# An INJECTABLE app → 500 / filter-syntax error / different size.
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test)","password":"x"}' | grep -iE \
+  "naming|InvalidSearchFilter|error code 49|Bad search filter|jndi|ldap_search"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 LDAP injection that bypasses authentication = **Critical**. Blind attribute

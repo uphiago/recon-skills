@@ -8,6 +8,30 @@ category: redteam
 tags: [api, misconfiguration, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting API misconfigs, JWT flaws, mass-assignment, prototype pollution.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `httpx`, `jq`, `kiterunner`, `python3`, `shodan`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test: reflected origin + credentials
+curl --max-time 30 --connect-timeout 10 -s -I -H "Origin: https://evil.com" https://target.com/api/user/me
+# If: Access-Control-Allow-Origin: https://evil.com + Access-Control-Allow-Credentials: true
+# → CRITICAL: attacker reads credentialed responses
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 12. API SECURITY MISCONFIGURATION
 
 ### Mass Assignment

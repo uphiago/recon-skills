@@ -27,6 +27,16 @@ Exploit public cloud storage buckets (S3, MinIO, and compatible) by overriding t
 - The bucket URL responds to `?response-content-type=` with a changed Content-Type.
 - The bucket returns an AWS SignatureDoesNotMatch error leaking the real bucket host and region.
 
+## How to Run
+
+```bash
+# Test if an object's Content-Type can be overridden (MinIO and compatible)
+curl --max-time 30 --connect-timeout 10 -skI "https://cdn.target.com/uploads/avatar123.png?response-content-type=text/html" | grep -i content-type
+
+# If you get 'text/html', the override works — proceed to exploitation
+# If you get 'Request specific response headers cannot be used for anonymous GET requests', it's S3 — use signed URL approach
+```
+
 ## Prerequisites
 
 - `terminal` with curl and python3.

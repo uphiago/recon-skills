@@ -10,6 +10,39 @@ tags: [laravel, hunt, redteam, php]
 
 # HUNT-LARAVEL — Laravel Specific Vulnerabilities
 
+## When to Use
+
+- Target runs Laravel (PHP) — detected via X-Powered-By, Laravel session cookies.
+- /storage/ paths.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `phpggc`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Laravel-specific indicators
+curl --max-time 30 --connect-timeout 10 -sI https://$TARGET/ | grep -i "laravel_session\|x-powered-by.*php"
+curl --max-time 30 --connect-timeout 10 -s https://$TARGET/ | grep -i "laravel\|Illuminate\|csrf-token"
+
+# Common Laravel paths
+for path in /storage /public /resources "/vendor/laravel" "/.env" "/artisan"; do
+  STATUS=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" "https://$TARGET$path")
+  [ "$STATUS" != "404" ] && echo "$path: $STATUS"
+done
+
+# Check error page (trigger 404)
+curl --max-time 30 --connect-timeout 10 -s "https://$TARGET/definitely-does-not-exist-xyz" | grep -i "laravel\|Whoops\|Ignition\|symfony"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Laravel debug mode enabled in production = instant RCE via Ignition (CVE-2021-3129).

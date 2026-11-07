@@ -26,6 +26,16 @@ Discover hidden virtual hosts on IP addresses by fuzzing the `Host` header. Many
 - SSL certificates on an IP list multiple domain names in the SAN field.
 - You need to map internal services behind a reverse proxy.
 
+## How to Run
+
+```bash
+# Basic VHOST fuzz on a single IP
+ffuf -u http://TARGET_IP \
+  -w /path/to/wordlist.txt \
+  -H "Host: FUZZ.target.com" \
+  -fs 0 -mc 200,301,302,401,403
+```
+
 ## Prerequisites
 
 - `terminal` with curl, ffuf, dnsx, and httpx.

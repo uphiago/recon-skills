@@ -16,6 +16,37 @@ You have authenticated access to a target and can READ your own data (profile, s
 
 ---
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+TARGET="https://api.target.com"
+TOKEN="<your_auth_token>"
+
+# Test common write methods on all discovered endpoints
+for ep in users subscribers profiles accounts settings; do
+  for method in PATCH PUT POST; do
+    code=$(curl --max-time 30 --connect-timeout 10 -sk -X "$method" -w "%{http_code}" -o /tmp/resp.txt \
+      "${TARGET}/${ep}" \
+      -H "Authorization: Bearer ${TOKEN}" \
+      -H "Content-Type: application/json" -d '{}' 2>/dev/null)
+    if [ "$code" != "404" ] && [ "$code" != "405" ]; then
+      echo "  $method /${ep}: HTTP $code"
+    fi
+  done
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Phase 1 — Identify Writeable Endpoints
 
 From prior recon (schema enumeration, JS bundle analysis), build a list of endpoints that accept write methods:

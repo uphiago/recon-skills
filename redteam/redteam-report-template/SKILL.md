@@ -8,6 +8,42 @@ category: redteam
 tags: [report, template, redteam]
 ---
 
+## When to Use
+
+- The engagement is "external red team for an enterprise client" (not H1/Bugcrowd/Intigriti), when generating the final report, when the client has specified a custom report format.
+- When packaging findings into DOCX/PDF.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Prerequisite: pandoc installed (apt/dnf/brew install pandoc)
+
+# Convert
+pandoc REPORT_FINAL.md \
+  -o REPORT_FINAL.docx \
+  --resource-path=engagement_log/poc \
+  --toc \
+  # Optional: add --reference-doc=/path/to/your/reference.docx for a branded style template \
+  --toc-depth=2 \
+  --highlight-style=tango
+
+# Verify image count
+python3 -c "
+from docx import Document
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use
 
 Use this skill for **client-deliverable** reports:

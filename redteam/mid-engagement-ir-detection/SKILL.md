@@ -8,6 +8,42 @@ category: redteam
 tags: [ir, detection, mid-engagement, redteam]
 ---
 
+## When to Use
+
+- (a) running ANY active engagement against a monitored target, (b) a previously-confirmed finding stops reproducing, (c) baseline timing shifts unexpectedly.
+- (d) you notice response patterns changing during testing.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Bash watcher — runs every 5 min during engagement, alerts on shifts
+
+cd "$ENGAGEMENT_DIR"
+
+# Re-measure baseline timing on key targets
+for target in "$@"; do
+  ms=$(curl -sk -o /dev/null -w "%{time_total}" "$target" --max-time 30 --connect-timeout 10)
+  ms_int=$(echo "$ms * 1000" | bc | cut -d. -f1)
+  echo "$(date -u +%FT%TZ) $target $ms_int" >> baseline_history.log
+done
+
+# Diff against pre-session baseline
+python3 - << 'PY'
+import json, time
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use this skill
 
 Trigger when:

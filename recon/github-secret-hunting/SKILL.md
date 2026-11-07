@@ -26,6 +26,17 @@ Scan public GitHub repositories for leaked API keys, tokens, passwords, and inte
 - The target uses CI/CD systems that may leak tokens in build logs or workflow files.
 - Want real-time monitoring for new secret leaks from the target org.
 
+## How to Run
+
+```bash
+# Basic GitHub code search for sensitive patterns in target repos
+echo "target.com" | while read domain; do
+  curl --max-time 30 --connect-timeout 10 -s -H "Authorization: token $GITHUB_TOKEN" \
+    "https://api.github.com/search/code?q=$domain+filename:.env" \
+    | jq '.items[]?.html_url'
+done
+```
+
 ## Prerequisites
 
 - `terminal` with python3, curl, git.

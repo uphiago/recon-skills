@@ -17,6 +17,29 @@ tags: [js, secrets, API-key, jwt, source-map, recon]
 - When target uses Firebase, Supabase, Auth0
 - Higher yield than directory scanning on many targets
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`, `waybackurls`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s "https://target.com" > index.html
+grep -Eo 'src="[^"]*\.js"' index.html | cut -d'"' -f2 | while read js; do
+  curl --max-time 30 --connect-timeout 10 -s "https://target.com$js" > "$(basename $js)"
+done
+
+# Search for secrets in bundles
+grep -rEn "(apiKey|api_key|API_KEY|token|secret|password|clientId|client_id|auth0|firebase|supabase)[\"'\"]?[[:space:]]*[:=][[:space:]]*[\"'\'][^\"'\']{8,}" *.js
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Why Analyze JS Bundles
 
 Modern JavaScript bundles (Webpack, Vite, esbuild) often contain:

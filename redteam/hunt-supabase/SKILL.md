@@ -10,6 +10,42 @@ tags: [supabase, hunt, redteam]
 
 # HUNT-SUPABASE — Supabase Exploitation
 
+## When to Use
+
+- A JS bundle, .env.
+- APK reveals a Supabase URL (project.supabase.co) and anon key (eyJ...).
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Download JS bundles and search for Supabase
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'src="[^"]*\.js"' | cut -d'"' -f2 | while read js; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET$js" -o "/tmp/$(basename $js)"
+done
+
+# Search for Supabase URL pattern
+grep -rEn 'https://[a-z0-9-]+\.supabase\.co' /tmp/*.js
+grep -rEn 'supabaseUrl|SUPABASE_URL|supabaseKey|SUPABASE_ANON_KEY' /tmp/*.js
+
+# Search for Supabase JWT anon key
+grep -rEn 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[^[:space:]]+' /tmp/*.js
+
+# Quick one-liner
+curl --max-time 30 --connect-timeout 10 -sk "https://$TARGET" | grep -Eo 'https://[a-z0-9-]+\.supabase\.co'
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Supabase is the open-source Firebase alternative. It uses **Row Level Security (RLS)** for access control, but RLS policies are frequently misconfigured — especially in rapid-development stacks (Lovable.dev, Bolt.new, Cursor).

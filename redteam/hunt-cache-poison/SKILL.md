@@ -8,6 +8,29 @@ category: redteam
 tags: [cache, poisoning, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting cache poisoning, Web Cache Deception, CDN-fronted apps.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Send twice, compare Age header
+curl --max-time 30 --connect-timeout 10 -s -I "https://target.com/page" | grep -i "age\|x-cache\|cf-cache"
+curl --max-time 30 --connect-timeout 10 -s -I "https://target.com/page" | grep -i "age\|x-cache\|cf-cache"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Cache poisoning is high-value because a single poisoned cache entry can affect thousands or millions of victims simultaneously — one request, mass exploitation. Payout scales with blast radius.

@@ -14,6 +14,28 @@ tags: [open-redirect, hunt, redteam]
 
 Use when the target has any redirect parameter — ?url=, ?next=, ?redirect=, ?return=, ?redirect_uri=, or similar — on login/logout flows, OAuth authorization endpoints, language switchers, payment redirects, or any parameter that controls where the user is sent after an action. Open redirect alone is Low on most programs, but becomes Critical when chained to OAuth token theft (redirect_uri bypass) or SSRF escalation. Every OAuth authorization endpoint with a configurable redirect_uri is the highest-value target.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gf`, `nuclei`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+COLLAB="https://evil.com"
+cat recon/$TARGET/redirect-candidates.txt | qsreplace "$COLLAB" | while read url; do
+  LOC=$(curl --max-time 30 --connect-timeout 10 -s -I --max-redirs 0 "$url" | grep -i "^location:")
+  STATUS=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" --max-redirs 0 "$url")
+  [ -n "$LOC" ] && echo "$STATUS | $LOC | $url"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Open redirect alone is Low. Chained to OAuth = Critical (ATO).

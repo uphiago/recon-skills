@@ -10,6 +10,39 @@ tags: [cors, hunt, redteam]
 
 # HUNT-CORS — Cross-Origin Resource Sharing Misconfiguration
 
+## When to Use
+
+- Testing API endpoints, SPAs.
+- Any app emitting Access-Control-* headers.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `httpx`, `nuclei`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Probe API endpoints across the entire surface. Critical: test MULTIPLE endpoints,
+# not just /users — user-specific and resource-specific URLs may behave differently.
+while read url; do
+  result=$(curl --max-time 30 --connect-timeout 10 -s -D - -o /dev/null "$url" \
+    -H "Origin: https://evil.com" \
+    -H "Cookie: $SESSION_COOKIE" | grep -i "access-control")
+  [ -n "$result" ] && echo "=== $url ===" && echo "$result"
+done < recon/$TARGET/api-endpoints.txt
+
+# httpx bulk check
+cat recon/$TARGET/live-hosts.txt | awk '{print $1}' | \
+  httpx -H "Origin: https://evil.com" -match-string "access-control-allow-origin"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## What actually pays (and what does not)
 
 CORS pays High **only** when an attacker-controlled origin can perform a

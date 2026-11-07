@@ -14,6 +14,33 @@ tags: [wordpress, plugin, automation, redteam]
 
 Use after initial WordPress detection recon (hunt-wordpress Phase 1). You have a list of confirmed WP domains and need to find which specific plugin CVEs are exploitable. This skill automates plugin detection, version extraction, CVE matching, and exploitation PoC generation at scale.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`, `python3`, `wpscan`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# One-shot: detect all plugin versions on a target
+cat targets.txt | while read t; do
+  echo "=== $t ==="
+  # Extract plugin readme versions
+  for p in revslider elementskit elementor woocommerce gravityforms jetpack; do
+    v=$(curl --max-time 30 --connect-timeout 10 -sk "https://$t/wp-content/plugins/$p/readme.txt" | grep -i "stable tag\|version" | head -1)
+    [ -n "$v" ] && echo "PLUGIN: $p=$v"
+  done
+  # REST API namespace enumeration
+  curl --max-time 30 --connect-timeout 10 -sk "https://$t/wp-json/" | python3 -c "import sys,json; d=json.load(sys.stdin); [print('REST:',n) for n in d.get('namespaces',[])]" 2>/dev/null
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Quick Reference
 
 ```bash

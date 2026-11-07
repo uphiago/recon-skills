@@ -10,6 +10,34 @@ tags: [cicd, pipeline, hunt, redteam]
 
 # HUNT-CICD — CI/CD Pipeline Security
 
+## When to Use
+
+- Target has a public GitHub/GitLab org, exposed CI dashboards (Jenkins/TeamCity/Drone/Argo).
+- Build artifacts/images are reachable.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `jq`, `trufflehog`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Fingerprint — the X-Jenkins header leaks the exact version (drives CVE selection)
+curl --max-time 30 --connect-timeout 10 -sI "https://$TARGET/" | grep -iE "x-jenkins|x-hudson"
+curl --max-time 30 --connect-timeout 10 -sI "https://$TARGET/login" | grep -i "x-jenkins-session"
+for p in /script /jenkins/script /ci/script /scriptText /jenkins/scriptText; do
+  code=$(curl --max-time 30 --connect-timeout 10 -s -o /dev/null -w "%{http_code}" "https://$TARGET$p")
+  echo "$p -> $code"   # 200 on /script == anon script console; 403/401 == auth required (NOT a finding alone)
+done
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 Jenkins `/script` console reachable = immediate RCE. A GitHub Actions `pull_request_target` (or `workflow_run`) workflow that checks out the **PR head ref** and references untrusted `${{ github.event.* }}` in a shell `run:` = "Pwnrequest" → secret exfil from a fork PR with zero approval.

@@ -27,6 +27,20 @@ Launch a patched Chromium binary with C++ source-level fingerprint modifications
 - Need to access reCAPTCHA-protected endpoints without solving CAPTCHAs.
 - Running automated recon behind residential proxies — stealth browser prevents IP+UA correlation.
 
+## How to Run
+
+```bash
+pip install cloakbrowser
+python3 -c "
+from cloakbrowser import launch
+browser = launch()
+page = browser.new_page()
+page.goto('https://target.com')
+print(page.title())
+browser.close()
+"
+```
+
 ## Prerequisites
 
 - `terminal` with python3 and pip.

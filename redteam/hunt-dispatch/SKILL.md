@@ -20,6 +20,39 @@ hunt-dispatch mode=wapt box=blackbox
 hunt-dispatch mode=wapt box=greybox
 ```
 
+## When to Use
+
+- /hunt has just received a mode answer (redteam or wapt + blackbox|greybox) and needs to load the appropriate skills and print the taxonomy.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `kubectl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+HOSTS="$TARGET"
+if [ -f "recon/$TARGET/live-hosts.txt" ]; then
+  HOSTS=$(cat "recon/$TARGET/live-hosts.txt")
+fi
+for H in $HOSTS; do
+  echo "=== $H ==="
+  # -L follow redirects, -D - dump headers, -o body; cap body to keep context small
+  curl --max-time 30 --connect-timeout 10 -sSL -D - -o /tmp/fp_body "https://$H" 2>/dev/null | tr -d '\r'
+  # surface body-only platform markers
+  grep -aoE '__NEXT_DATA__|/_next/|VIEWSTATE|rO0[AB]|laravel_session|Ignition|Telescope|Whitelabel|/actuator|application/grpc|socket\.io|swagger|\.js\.map' \
+    /tmp/fp_body | sort -u
+done
+rm -f /tmp/fp_body
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## step 1 — fingerprint (red team only)
 
 fingerprint **every** live host, not just the apex. for multi-host / wildcard

@@ -16,6 +16,37 @@ Most common on: PostgREST (Supabase), FastAPI (Python), Zod (Next.js/Node), tRPC
 
 ---
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+SUPABASE_URL="https://PROJECT.supabase.co"
+ANON_KEY="eyJ..."
+
+# Fuzz with common table names — read the hints
+for table in users profiles posts products orders data config settings; do
+  echo "=== $table ==="
+  curl --max-time 30 --connect-timeout 10 -sk "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=1" \
+    -H "apikey: ${ANON_KEY}" \
+    -H "Authorization: Bearer ${ANON_KEY}" 2>/dev/null | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+hint=d.get('hint','')
+if hint: print(f'  -> {hint}')
+"
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Phase 1 — PostgREST Error Hint Enumeration
 
 PostgREST is the REST API layer for Supabase/PostgreSQL. When you query a non-existent table, it returns a hint with the real table name.

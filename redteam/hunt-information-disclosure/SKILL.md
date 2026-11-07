@@ -27,6 +27,22 @@ Hunt for information exposure through stack traces, debug endpoints, versioned p
 - API responses differ by object existence (user enumeration by status/length/time).
 - Debug endpoints, health checks, or status pages expose internal state.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `jq`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Trigger errors on common paths
+for path in "/nonexistent" "/%00" "/.." "/error" "/debug"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com$path" | grep -iE "stack|trace|exception|error|warning|debug|line [0-9]+" | head -5
+done
+```
+
 ## Quick Detection
 
 ```bash

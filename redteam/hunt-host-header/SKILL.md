@@ -10,6 +10,41 @@ tags: [host-header, hunt, redteam]
 
 # HUNT-HOST-HEADER — Host Header Injection
 
+## When to Use
+
+- The target surface matches this skill's scope (`hunt-host-header`) and you need a focused procedure for it.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `openssl`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# 1a. Override Host directly
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/forgot-password \
+  -H "Host: evil.com" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your-test-account@target.com"}'
+
+# 1b. X-Forwarded-Host (behind reverse proxy that trusts it)
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/forgot-password \
+  -H "Host: $TARGET" \
+  -H "X-Forwarded-Host: evil.com" \
+  -d "email=your-test-account@target.com"
+
+# 1c. Host + X-Forwarded-Host combo, and X-Host
+curl --max-time 30 --connect-timeout 10 -s -X POST https://$TARGET/forgot-password \
+# ... (continues in Procedure)
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## Grounding / Provenance
 
 This skill is built from the public Host-header attack literature, not invented payloads.

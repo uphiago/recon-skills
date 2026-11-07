@@ -27,6 +27,22 @@ Hunt FastAPI-specific vulnerabilities in dependency injection authorization gaps
 - WebSocket endpoints exist alongside REST API.
 - Application uses Pydantic v1 or v2 for request validation.
 
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `ffuf`, `jq`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# FastAPI fingerprinting
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/openapi.json" | jq '.info.title' 2>/dev/null
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/docs" -w "%{http_code}\n" -o /dev/null
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/redoc" -w "%{http_code}\n" -o /dev/null
+```
+
 ## Quick Detection
 
 ```bash

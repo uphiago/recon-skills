@@ -19,11 +19,34 @@ Flask applications with `debug=True` enable the Werkzeug debugger, which exposes
 - A `?__debugger__=yes` parameter appears in URL resources (CSS, JS, PNG)
 - The error page contains `var CONSOLE_MODE`, `var EVALEX`, or `SECRET=` in the HTML
 
+## How to Run
+
+```bash
+# Check if Werkzeug debugger is active — trigger an error
+TARGET=target.com
+PORT=5000   # set to the observed Werkzeug port
+
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT/sitemap.xml" 2>/dev/null | grep -oE "(Werkzeug|Debugger|SECRET|CONSOLE_MODE|EVALEX)" | head -5
+
+# Try to trigger error on common paths
+for path in "/error" "/500" "/test" "/debug" "/sitemap.xml" "/env" "/config"; do
+  result=$(curl --max-time 30 --connect-timeout 10 -sk "https://target.com:PORT$path" 2>/dev/null)
+  if echo "$result" | grep -q "Traceback\|Error\|Werkzeug"; then
+    echo "TRIGGERED: $path"
+    echo "$result" | grep -oE '(File|Error|SECRET|CONSOLE_MODE|EVALEX)[^<]*' | head -5
+  fi
+done
+```
+
 ## Prerequisites
 
 - `terminal` with curl
 - A Flask API server with `debug=True` in production (misconfiguration)
 - An endpoint that triggers HTTP 500 (unhandled exception)
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
 
 ## Quick Detection
 

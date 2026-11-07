@@ -8,6 +8,32 @@ category: redteam
 tags: [apk, android, mobile, reverse-engineering, redteam]
 ---
 
+## When to Use
+
+- Target has a mobile app catalogue (Play Store developer page), when you find an APK URL hosted on a web server.
+- When post-recon mentions "mobile app" in scope.
+
+## Prerequisites
+
+- Explicit authorization, target boundaries, and rate limits for the target.
+- Tooling: `curl`, `gh`, `mitmproxy`, `openssl`, `python3`.
+- A writable evidence directory: `export OUTPUT_DIR="${OUTPUT_DIR:-./output}" && mkdir -p "$OUTPUT_DIR"`.
+- For any state-changing step (writes, uploads, credential attempts), obtain explicit confirmation immediately before the command.
+
+## How to Run
+
+```bash
+# Find developer page from the target's brand name
+curl --max-time 30 --connect-timeout 10 -sk -A "Mozilla/5.0" "https://play.google.com/store/apps/developer?id=<Brand+Name>" -o /tmp/dev.html
+
+# Extract package IDs
+grep -oE 'id=[a-zA-Z0-9._]+' /tmp/dev.html | sort -u
+```
+
+## Procedure
+
+The phases below are the procedure. Keep each probe bounded (`--max-time`), record evidence beneath `OUTPUT_DIR`, and stop at the stop-conditions listed in Pitfalls.
+
 ## When to use this skill
 
 Trigger when:
