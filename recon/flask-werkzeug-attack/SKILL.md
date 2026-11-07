@@ -203,4 +203,4 @@ curl --max-time 30 --connect-timeout 10 -sk -D- "https://target.com:PORT/sitemap
 - **`hunt-django`** / **`hunt-fastapi`** — Python-framework vulnerability hunting
 - **`js-secrets-extraction`** — Finding API keys that may work with the Flask API
 - **`source-leak-hunt`** — Finding .env and config files that may contain Flask SECRET_KEY
-- **`cache-attack`** — Cache poisoning via Werkzeug error page (if CDN caches the 500 response)
+- **`hunt-cache-poison`** — Cache poisoning via Werkzeug error page (if CDN caches the 500 response)

