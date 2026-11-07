@@ -13,7 +13,7 @@ metadata:
     - source-leak-hunt
     - js-secrets-extraction
     - error-log-mining
-    - web-enumeration
+    - source-leak-hunt
 ---
 
 # Information Disclosure Hunting
@@ -190,4 +190,4 @@ Each disclosure type provides inputs for other attack vectors:
 - **`source-leak-hunt`** — Focused on `.env`, `.git`, and config file leakage.
 - **`js-secrets-extraction`** — API keys and tokens in JavaScript bundles.
 - **`error-log-mining`** — PHP error logs with credential and query leakage.
-- **`web-enumeration`** — Path discovery that reveals sensitive endpoints.
+- **`source-leak-hunt`** — Path discovery that reveals sensitive endpoints.

@@ -16,7 +16,7 @@ metadata:
     - report-writing
     - subdomain-enumeration
     - triage-validation
-    - web-enumeration
+    - source-leak-hunt
     - web2-recon
 ---
 

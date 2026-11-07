@@ -13,7 +13,7 @@ metadata:
     - hunt-sqli
     - hunt-api-misconfig
     - hunt-idor
-    - web-enumeration
+    - source-leak-hunt
 ---
 
 # FastAPI Security Hunting
@@ -176,4 +176,4 @@ curl --max-time 30 --connect-timeout 10 -sk -X POST "https://target.com/graphql"
 
 - **`hunt-api-misconfig`** — Broader API configuration issues including Swagger/OpenAPI exposure.
 - **`hunt-idor`** — Object-level authorization gaps in FastAPI path parameters.
-- **`web-enumeration`** — Directory and endpoint discovery through OpenAPI schema mining.
+- **`source-leak-hunt`** — Directory and endpoint discovery through OpenAPI schema mining.

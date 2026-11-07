@@ -10,7 +10,7 @@ metadata:
   tags: [recon, CMS, fingerprinting, technology, WordPress, Drupal, Joomla, Magento]
   category: recon
   related_skills:
-    - web-enumeration
+    - source-leak-hunt
     - wordpress-plugin-hunt
     - visual-recon
     - wp-mass-recon
@@ -218,7 +218,7 @@ nuclei -l wordpress_sites.txt -t nuclei-templates/http/cves/2024/
 
 ## Related Skills
 
-- **`web-enumeration`** — Once CMS is identified, enumerate its specific paths and endpoints.
+- **`source-leak-hunt`** — Once CMS is identified, enumerate its specific paths and endpoints.
 - **`wordpress-plugin-hunt`** — Deep plugin version detection for WordPress targets.
 - **`wp-mass-recon`** — Batch WordPress vulnerability scanning.
 - **`visual-recon`** — Confirm CMS detection with visual screenshot verification.

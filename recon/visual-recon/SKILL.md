@@ -11,7 +11,7 @@ metadata:
   category: recon
   related_skills:
     - subdomain-enumeration
-    - web-enumeration
+    - source-leak-hunt
     - cms-detection
     - port-service-discovery
 ---
@@ -195,5 +195,5 @@ gowitness report list --db gowitness.db \
 ## Related Skills
 
 - **`subdomain-enumeration`** — Generate the list of alive subdomains.
-- **`web-enumeration`** — Deep dive into individual hosts found via screenshots.
+- **`source-leak-hunt`** — Deep dive into individual hosts found via screenshots.
 - **`cms-detection`** — Automated CMS and framework detection on discovered hosts.

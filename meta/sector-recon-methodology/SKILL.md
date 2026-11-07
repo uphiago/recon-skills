@@ -15,7 +15,7 @@ metadata:
     - attack-patterns-reference
     - subdomain-enumeration
     - cross-wave-delta-analysis
-    - web-enumeration
+    - source-leak-hunt
 ---
 
 # Sector Recon Methodology Skill
