@@ -1374,7 +1374,12 @@ Run this self-test to confirm the toolkit is operational:
    semgrep --version >/dev/null 2>&1 && echo "PASS: semgrep available" || echo "FAIL: pip3 install semgrep"
    ```
 
-All 5 tests should pass for a fully operational toolkit.
+6. **Wordlist availability** — confirm SecLists is cloned:
+   ```bash
+   ls /usr/share/seclists/Discovery/Web-Content/common.txt >/dev/null 2>&1 && echo "PASS: SecLists present" || echo "FAIL: git clone https://github.com/danielmiessler/SecLists.git /usr/share/seclists"
+   ```
+
+All 6 tests should pass for a fully operational toolkit. Missing Go binaries can be installed via `go install`; Python tools via `pip3 install`.
 
 
 ---
@@ -1681,4 +1686,4 @@ Use the scaffold from the start. Half-organized engagements lose findings — a 
 ### When the orchestrator gets it wrong
 
 Across 30+ Phase 2 verification tests in this repo, the orchestrator correctly auto-triggered the matching skill in every test — zero misfires. If on a future target the orchestrator misroutes (loads the wrong hunt-* for the topic), the cause is almost always the `description:` frontmatter field on the target skill: a missing keyword that would have matched the user's intent. Fix forward by editing that skill's frontmatter `description:` field to include the missing trigger word. Don't add another layer of dispatch logic; tighten the description.
-- **`bb-local-toolkit`** — When you need to know which local clone has the command-line for a given task. Workflow primitive: this skill is general bug-bounty guidance; `bb-local-toolkit` answers the specific "where is jhaddix/SecLists installed on this machine?" question.
+- **`bb-methodology`** — When the question is "where do I start / what do I do next" rather than a concrete class. Workflow primitive: this skill names the topic-matched hunt-* skills; `bb-methodology` owns the 5-phase workflow and the engagement-mode gate.
