@@ -14,6 +14,7 @@ metadata:
     - tls-fingerprint-impersonation
     - http2-header-impersonation
     - ops-proxyns
+    - evasion-stack-guide
 ---
 
 # Stealth Browser Launch

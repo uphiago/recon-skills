@@ -12,6 +12,7 @@ metadata:
   related_skills:
     - stealth-browser-launch
     - tls-fingerprint-impersonation
+    - evasion-stack-guide
 ---
 
 # Humanize Automation

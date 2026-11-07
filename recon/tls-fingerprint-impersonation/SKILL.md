@@ -13,6 +13,7 @@ metadata:
     - http2-header-impersonation
     - stealth-browser-launch
     - humanize-automation
+    - evasion-stack-guide
 ---
 
 # TLS Fingerprint Impersonation

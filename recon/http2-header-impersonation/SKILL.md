@@ -12,6 +12,7 @@ metadata:
   related_skills:
     - tls-fingerprint-impersonation
     - stealth-browser-launch
+    - evasion-stack-guide
 ---
 
 # HTTP/2 Header Impersonation
